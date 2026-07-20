@@ -1316,6 +1316,12 @@ async function renderExperiments(panel) {
   const liveCount = experiments.filter((experiment) => ["running", "monitoring"].includes(experiment.status)).length;
   const plannedCount = experiments.filter((experiment) => experiment.status === "planned").length;
   const readyCount = experiments.filter((experiment) => ["won", "lost", "inconclusive"].includes(experiment.decision_recommendation)).length;
+  const activeQueue = sorted.filter((experiment) => (experimentFilters.app === "all" || experiment.app_id === experimentFilters.app) && ["running", "monitoring"].includes(experiment.status));
+  const reviewDate = (experiment) => {
+    if (!experiment.start_date) return null;
+    const days = experiment.evaluation_days ?? 14;
+    return addDays(experiment.start_date, days);
+  };
 
   panel.innerHTML = `
     <div class="mini-stat-grid aso-workflow-summary">
@@ -1324,6 +1330,10 @@ async function renderExperiments(panel) {
       <article><span>Planned</span><strong>${plannedCount}</strong></article>
       <article><span>Decision recorded</span><strong>${readyCount}</strong></article>
     </div>
+    <section class="panel aso-experiment-queue">
+      <div class="panel-head"><h3>Active experiment queue</h3><span>${activeQueue.length ? `${activeQueue.length} to monitor` : "nothing live"}</span></div>
+      ${activeQueue.length ? activeQueue.map((experiment) => { const app = apps.find((item) => item.id === experiment.app_id); const due = reviewDate(experiment); const reviewState = due && due <= toDateStr(new Date()) ? "Review now" : due ? `Review ${due}` : "Set a start date"; return `<button type="button" class="aso-experiment-queue-row" data-open-experiment="${experiment.id}"><span><strong>${escapeHtml(experiment.title)}</strong><small>${escapeHtml(app?.name ?? "Unknown app")} · ${escapeHtml(experiment.target_metric.replaceAll("_", " "))}</small></span><span class="${reviewState === "Review now" ? "status-partial" : "muted"}">${reviewState}</span></button>`; }).join("") : '<p class="empty-state">No experiments are running. Turn a high-confidence insight into one focused test when the evidence supports a listing change.</p>'}
+    </section>
     <section class="panel aso-experiment-form" id="aso-experiment-form" ${experimentFormOpen ? "" : "hidden"}>
       <div class="panel-head"><h3>Log a new experiment</h3><button type="button" class="aso-link-button" data-close-experiment-form>Close</button></div>
       <label class="aso-field">
@@ -1366,7 +1376,7 @@ async function renderExperiments(panel) {
       <p id="aso-exp-status" class="empty-state" hidden></p>
     </section>
     <section class="panel">
-      <div class="panel-head"><h3>Experiments</h3><div class="aso-panel-actions"><span>${visibleExperiments.length}/${experiments.length} shown</span><button type="button" class="aso-action-primary" data-open-experiment-form>Log experiment</button></div></div>
+      <div class="panel-head"><h3>Experiment archive</h3><div class="aso-panel-actions"><span>${visibleExperiments.length}/${experiments.length} shown</span><button type="button" class="aso-action-primary" data-open-experiment-form>Log experiment</button></div></div>
       <div class="aso-filter-toolbar"><select id="aso-experiment-app"><option value="all">All apps</option>${apps.map((app) => `<option value="${app.id}" ${experimentFilters.app === app.id ? "selected" : ""}>${escapeHtml(app.name)}</option>`).join("")}</select><select id="aso-experiment-status"><option value="active" ${experimentFilters.status === "active" ? "selected" : ""}>Active queue</option><option value="running" ${experimentFilters.status === "running" ? "selected" : ""}>Running</option><option value="monitoring" ${experimentFilters.status === "monitoring" ? "selected" : ""}>Monitoring</option><option value="planned" ${experimentFilters.status === "planned" ? "selected" : ""}>Planned</option><option value="closed" ${experimentFilters.status === "closed" ? "selected" : ""}>Closed</option><option value="all" ${experimentFilters.status === "all" ? "selected" : ""}>All statuses</option></select></div>
       ${
         visibleExperiments.length === 0
@@ -1599,7 +1609,7 @@ async function renderCompetitors(panel) {
     if (competitorFilters.app !== "all" && competitor.app_id !== competitorFilters.app) return false;
     return competitorFilters.change === "all" || event.change_type === competitorFilters.change;
   });
-  const importantEvents = competitorEvents.filter((event) => ["first_screenshot", "icon", "title", "subtitle", "pricing", "app_update"].includes(event.change_type)).slice(0, 6);
+  const timelineEvents = competitorEvents.slice(0, 20);
   const latestRanks = latestSnapshots(rankSnapshots);
   const battles = [];
   for (const competitor of scopedCompetitors) {
@@ -1630,16 +1640,16 @@ async function renderCompetitors(panel) {
 
   panel.innerHTML = `
     <section class="panel">
-      <div class="panel-head"><h3>Important competitor changes</h3><span>${importantEvents.length} highlighted</span></div>
-      <div class="aso-filter-toolbar"><select id="aso-competitor-app"><option value="all">All apps</option>${apps.map((app) => `<option value="${app.id}" ${competitorFilters.app === app.id ? "selected" : ""}>${escapeHtml(app.name)}</option>`).join("")}</select><select id="aso-competitor-change"><option value="all">All change types</option>${changeTypes.map((type) => `<option value="${escapeHtml(type)}" ${competitorFilters.change === type ? "selected" : ""}>${escapeHtml(type.replaceAll("_", " "))}</option>`).join("")}</select><span>${competitorEvents.length} changes shown</span></div>
-      ${importantEvents.length ? importantEvents.map((event) => { const competitor = competitors.find((item) => item.id === event.competitor_id); return `<div class="aso-change-row"><span class="mono">${event.happened_at.slice(0, 10)}</span><span>${escapeHtml(competitor?.name ?? "Unknown")}</span><span class="priority-medium">${escapeHtml(event.change_type.replaceAll("_", " "))}</span>${event.old_value || event.new_value ? `<span class="muted">${escapeHtml(event.old_value ?? "—")} → ${escapeHtml(event.new_value ?? "—")}</span>` : ""}</div>`; }).join("") : '<p class="empty-state">No high-signal competitor changes match these filters.</p>'}
+      <div class="panel-head"><h3>Competitive landscape</h3><span>${battleSummaries.length} competitor${battleSummaries.length === 1 ? "" : "s"} with shared terms</span></div>
+      ${battleSummaries.length ? `<table class="aso-table"><thead><tr><th>Competitor</th><th>Tracked against</th><th>Shared terms</th><th>You lead</th><th>Competitor leads</th></tr></thead><tbody>${battleSummaries.map((summary) => `<tr><td>${escapeHtml(summary.competitor.name)}</td><td class="mono">${escapeHtml(apps.find((app) => app.id === summary.competitor.app_id)?.name.split(" ")[0] ?? "-")}</td><td class="mono">${summary.rows.length}</td><td class="mono"><span class="up">${summary.ownerLeads}</span></td><td class="mono"><span class="down">${summary.rivalLeads}</span></td></tr>`).join("")}</tbody></table>` : '<p class="empty-state">Run a collection after adding competitors and shared keywords to compare their ranks against yours.</p>'}
     </section>
     <section class="panel">
-      <div class="panel-head"><h3>All competitor changes</h3><span>detected on each collection run</span></div>
+      <div class="panel-head"><h3>Competitor timeline</h3><button type="button" class="aso-action-primary" data-scroll-to="aso-competitor-form">Add competitor</button></div>
+      <div class="aso-filter-toolbar"><select id="aso-competitor-app"><option value="all">All apps</option>${apps.map((app) => `<option value="${app.id}" ${competitorFilters.app === app.id ? "selected" : ""}>${escapeHtml(app.name)}</option>`).join("")}</select><select id="aso-competitor-change"><option value="all">All change types</option>${changeTypes.map((type) => `<option value="${escapeHtml(type)}" ${competitorFilters.change === type ? "selected" : ""}>${escapeHtml(type.replaceAll("_", " "))}</option>`).join("")}</select><span>${competitorEvents.length} changes shown</span></div>
       ${
-        competitorEvents.length === 0
+        timelineEvents.length === 0
           ? `<p class="empty-state">No changes detected yet. Once competitors are tracked, each daily collection diffs their public metadata and logs changes here.</p>`
-          : competitorEvents
+          : timelineEvents
               .map((e) => {
                 const comp = competitors.find((c) => c.id === e.competitor_id);
                 return `<div class="aso-change-row">
@@ -1650,25 +1660,6 @@ async function renderCompetitors(panel) {
                 </div>`;
               })
               .join("")
-      }
-    </section>
-    <section class="panel">
-      <div class="panel-head"><h3>Keyword battlefield</h3><span>latest public storefront snapshot</span></div>
-      ${
-        battleSummaries.length
-          ? `<table class="aso-table">
-              <thead><tr><th>Competitor</th><th>Tracked against</th><th>Shared terms</th><th>You lead</th><th>Competitor leads</th></tr></thead>
-              <tbody>${battleSummaries
-                .map((summary) => `<tr>
-                  <td>${escapeHtml(summary.competitor.name)}</td>
-                  <td class="mono">${escapeHtml(apps.find((app) => app.id === summary.competitor.app_id)?.name.split(" ")[0] ?? "-")}</td>
-                  <td class="mono">${summary.rows.length}</td>
-                  <td class="mono"><span class="up">${summary.ownerLeads}</span></td>
-                  <td class="mono"><span class="down">${summary.rivalLeads}</span></td>
-                </tr>`)
-                .join("")}</tbody>
-            </table>`
-          : '<p class="empty-state">Run a collection after adding competitors and shared keywords to compare their ranks against yours.</p>'
       }
     </section>
     <section class="panel">
@@ -1692,7 +1683,7 @@ async function renderCompetitors(panel) {
       }
     </section>
     <section class="panel">
-      <div class="panel-head"><h3>Tracked competitors (${scopedCompetitors.length})</h3><button type="button" class="aso-action-primary" data-scroll-to="aso-competitor-form">Add competitor</button></div>
+      <div class="panel-head"><h3>Tracked competitors (${scopedCompetitors.length})</h3><span>current public metadata</span></div>
       ${
         scopedCompetitors.length === 0
           ? `<p class="empty-state">No competitors tracked. Add one below by App Store URL or numeric id.</p>`
@@ -1835,8 +1826,8 @@ async function renderReviews(panel) {
       <div class="panel-head"><h3>Recurring low-review signals</h3><span>last 30 days</span></div>
       ${
         topTopics.length
-          ? `<table class="aso-table"><thead><tr><th>Signal</th><th>Low reviews</th><th>Vs prior 30d</th><th>Share</th></tr></thead><tbody>${topTopics
-              .map(([topic, count]) => { const delta = count - (previousTopics.get(topic) ?? 0); return `<tr><td>${escapeHtml(topic.replaceAll("_", " "))}</td><td class="mono">${count}</td><td class="mono ${delta > 0 ? "down" : delta < 0 ? "up" : ""}">${delta > 0 ? "+" : ""}${delta}</td><td class="mono">${low.length ? formatPct((count / low.length) * 100) : "-"}</td></tr>`; })
+          ? `<table class="aso-table"><thead><tr><th>Signal</th><th>Low reviews</th><th>Vs prior 30d</th><th>Share</th><th></th></tr></thead><tbody>${topTopics
+              .map(([topic, count]) => { const delta = count - (previousTopics.get(topic) ?? 0); const state = delta > 0 ? "Worsening" : delta < 0 ? "Improving" : "Steady"; return `<tr><td>${escapeHtml(topic.replaceAll("_", " "))}<small class="aso-topic-state ${delta > 0 ? "down" : delta < 0 ? "up" : ""}">${state}</small></td><td class="mono">${count}</td><td class="mono ${delta > 0 ? "down" : delta < 0 ? "up" : ""}">${delta > 0 ? "+" : ""}${delta}</td><td class="mono">${low.length ? formatPct((count / low.length) * 100) : "-"}</td><td><button type="button" class="aso-link-button" data-open-review-topic="${escapeHtml(topic)}">Inspect</button></td></tr>`; })
               .join("")}</tbody></table>`
           : '<p class="empty-state">Topic signals appear once recent written reviews match a recurring issue pattern.</p>'
       }
@@ -1872,6 +1863,12 @@ async function renderReviews(panel) {
   ].forEach(([selector, key]) =>
     panel.querySelector(selector)?.addEventListener("change", (event) => {
       reviewFilters[key] = event.target.value;
+      renderSubTab(panel);
+    }),
+  );
+  panel.querySelectorAll("[data-open-review-topic]").forEach((button) =>
+    button.addEventListener("click", () => {
+      reviewFilters.topic = button.dataset.openReviewTopic;
       renderSubTab(panel);
     }),
   );

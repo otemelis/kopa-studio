@@ -33,7 +33,7 @@ Status: complete
 
 ## Priority 4: Evidence Workspaces
 
-Status: planned
+Status: in progress
 
 - Merge competitor change feeds into one filterable timeline with a concise landscape view.
 - Turn review topics into a trend and triage workflow.
