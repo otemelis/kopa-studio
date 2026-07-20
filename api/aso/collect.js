@@ -54,9 +54,11 @@ export default async function handler(request, response) {
 
 async function runCollection(trigger) {
   if (collectionInFlight) return { ok: false, message: "A collection run is already in progress." };
-  collectionInFlight = true;
-
   const db = serviceClient();
+  const lockHolder = `${trigger}:${crypto.randomUUID()}`;
+  const acquired = await db.rpc("aso_try_acquire_collection_lock", { p_holder: lockHolder });
+  if (!acquired) return { ok: false, message: "A collection run is already in progress. Try again in a few minutes." };
+  collectionInFlight = true;
   const counters = { processed: 0, succeeded: 0, failed: 0, warnings: 0, retries: 0 };
   const errors = [];
   const startedAt = new Date().toISOString();
@@ -288,16 +290,18 @@ async function runCollection(trigger) {
           const position = results.find((r) => r.store_app_id === app.store_app_id)?.position ?? null;
           const history = await db.select(
             "aso_keyword_rank_snapshots",
-            `keyword_id=eq.${keyword.id}&store_app_id=eq.${app.store_app_id}&order=captured_at.asc&select=captured_at,rank`,
+            `keyword_id=eq.${keyword.id}&store_app_id=eq.${app.store_app_id}&app_kind=eq.owned&captured_on=lt.${capturedOn}&order=captured_at.asc&select=captured_at,rank`,
           );
           const nowIso = new Date().toISOString();
           const derived = deriveRankFields(history, position, nowIso);
-          await db.insert("aso_keyword_rank_snapshots", [
+          await db.upsert("aso_keyword_rank_snapshots", [
             {
               keyword_id: keyword.id,
               store_app_id: app.store_app_id,
               app_kind: "owned",
               captured_at: nowIso,
+              captured_on: capturedOn,
+              collection_key: `${capturedOn}:owned:${keyword.id}:${app.store_app_id}`,
               rank: position,
               found: position != null,
               result_depth: depth,
@@ -306,7 +310,7 @@ async function runCollection(trigger) {
               checksum,
               source: "public_store",
             },
-          ]);
+          ], "collection_key");
         }
 
         // Competitors tracked against any owned app linked to this keyword.
@@ -318,12 +322,14 @@ async function runCollection(trigger) {
             if (seenCompetitors.has(comp.store_app_id)) continue;
             seenCompetitors.add(comp.store_app_id);
             const position = results.find((r) => r.store_app_id === comp.store_app_id)?.position ?? null;
-            await db.insert("aso_keyword_rank_snapshots", [
+            await db.upsert("aso_keyword_rank_snapshots", [
               {
                 keyword_id: keyword.id,
                 store_app_id: comp.store_app_id,
                 app_kind: "competitor",
                 captured_at: new Date().toISOString(),
+                captured_on: capturedOn,
+                collection_key: `${capturedOn}:competitor:${keyword.id}:${comp.store_app_id}`,
                 rank: position,
                 found: position != null,
                 result_depth: depth,
@@ -335,7 +341,7 @@ async function runCollection(trigger) {
                 checksum,
                 source: "public_store",
               },
-            ]);
+            ], "collection_key");
           }
         }
 
@@ -386,6 +392,7 @@ async function runCollection(trigger) {
     return { ok: false, message: msg(error), runId: run.id };
   } finally {
     collectionInFlight = false;
+    await db.rpc("aso_release_collection_lock", { p_holder: lockHolder }).catch(() => undefined);
   }
 }
 
@@ -426,19 +433,24 @@ async function runInsightEngine(db) {
     }
     for (const list of metricsByCountry.values()) list.sort((a, b) => (a.date < b.date ? -1 : 1));
 
-    const kwIds = new Set(appKeywords.filter((ak) => ak.app_id === app.id).map((ak) => ak.keyword_id));
     const ctx = {
       app,
       storefronts: storefronts.filter((sf) => sf.app_id === app.id),
       metricsByCountry,
-      keywords: keywords
-        .filter((k) => kwIds.has(k.id))
-        .map((keyword) => ({
+      keywords: appKeywords
+        .filter((link) => link.app_id === app.id && link.status !== "paused")
+        .map((link) => {
+          const keyword = keywords.find((k) => k.id === link.keyword_id);
+          if (!keyword) return null;
+          return {
           keyword,
+          priority: link.priority ?? keyword.priority,
           snapshots: snapshots
             .filter((sn) => sn.keyword_id === keyword.id && sn.store_app_id === app.store_app_id)
             .sort((a, b) => (a.captured_at < b.captured_at ? -1 : 1)),
-        })),
+          };
+        })
+        .filter(Boolean),
       changeEvents: changeEvents.filter((c) => c.app_id === app.id),
       reviews: reviews.filter((r) => r.app_id === app.id),
       experiments: experiments.filter((e) => e.app_id === app.id),

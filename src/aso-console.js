@@ -349,7 +349,7 @@ async function renderKeywords(panel) {
                 <td class="mono">${rankDelta(r.latest?.change_30d)}</td>
                 <td class="mono">${r.latest?.best_rank != null ? `#${r.latest.best_rank}` : "—"}</td>
                 <td class="mono">${r.compCount || "—"}</td>
-                <td class="mono">${escapeHtml(r.keyword.priority)}</td>
+                <td class="mono">${escapeHtml(r.link.priority ?? r.keyword.priority)}</td>
                 <td class="mono aso-table-actions">
                   <button type="button" data-edit-keyword="${r.link.id}">Edit</button>
                   <button type="button" data-delete-keyword="${r.link.id}">Delete</button>
@@ -412,7 +412,7 @@ car escape game"></textarea>
 }
 
 function renderKeywordEditHtml(row, groups) {
-  const currentGroup = groups.find((g) => g.id === row.keyword.group_id);
+  const currentGroup = groups.find((g) => g.id === row.link.group_id);
   return `
     <section class="panel">
       <div class="panel-head">
@@ -430,7 +430,7 @@ function renderKeywordEditHtml(row, groups) {
       <label class="aso-field aso-field-narrow">
         <span>Priority</span>
         <select id="aso-edit-priority">
-          ${["high", "medium", "low"].map((p) => `<option value="${p}" ${row.keyword.priority === p ? "selected" : ""}>${p[0].toUpperCase()}${p.slice(1)}</option>`).join("")}
+          ${["high", "medium", "low"].map((p) => `<option value="${p}" ${(row.link.priority ?? row.keyword.priority) === p ? "selected" : ""}>${p[0].toUpperCase()}${p.slice(1)}</option>`).join("")}
         </select>
       </label>
       <label class="aso-field">
@@ -439,7 +439,11 @@ function renderKeywordEditHtml(row, groups) {
       </label>
       <label class="aso-field">
         <span>Notes (optional)</span>
-        <textarea id="aso-edit-notes" rows="3" placeholder="Why are we tracking this?">${escapeHtml(row.keyword.notes ?? "")}</textarea>
+        <textarea id="aso-edit-notes" rows="3" placeholder="Why are we tracking this?">${escapeHtml(row.link.notes ?? "")}</textarea>
+      </label>
+      <label class="aso-field aso-field-narrow">
+        <span>Target rank (optional)</span>
+        <input id="aso-edit-target-rank" type="number" min="1" value="${row.link.target_rank ?? ""}" />
       </label>
       <button type="button" id="aso-edit-submit">Save keyword</button>
       <p id="aso-edit-status" class="empty-state" hidden></p>
@@ -500,10 +504,16 @@ function wireKeywordEditForm(panel, row, appKeywords) {
     const priority = panel.querySelector("#aso-edit-priority").value;
     const groupName = panel.querySelector("#aso-edit-group").value;
     const notes = panel.querySelector("#aso-edit-notes").value.trim() || null;
+    const targetRankValue = panel.querySelector("#aso-edit-target-rank").value;
+    const targetRank = targetRankValue ? Number(targetRankValue) : null;
     status.hidden = false;
 
     if (term.length < 2) {
       status.textContent = "Keyword must be at least two characters.";
+      return;
+    }
+    if (targetRank != null && (!Number.isInteger(targetRank) || targetRank < 1)) {
+      status.textContent = "Target rank must be a whole number greater than zero.";
       return;
     }
 
@@ -531,11 +541,14 @@ function wireKeywordEditForm(panel, row, appKeywords) {
         {
           term,
           country: countryInfo.country,
-          priority,
-          group_id: groupId,
-          notes,
         },
         `id=eq.${row.keyword.id}`,
+      );
+      await pgWrite(
+        "PATCH",
+        "aso_app_keywords",
+        { priority, group_id: groupId, notes, target_rank: targetRank, updated_at: new Date().toISOString() },
+        `id=eq.${row.link.id}`,
       );
       editingKeywordLinkId = null;
       status.textContent = countryInfo.warning ? `${countryInfo.warning} Saved as ${countryInfo.country.toUpperCase()}.` : "Saved.";
@@ -580,10 +593,14 @@ function wireKeywordForm(panel) {
       for (const term of terms) {
         const [keyword] = await pgUpsert(
           "aso_keywords",
-          [{ term, country: countryInfo.country, language: null, group_id: groupId, priority, notes: null }],
+          [{ term, country: countryInfo.country, language: null, group_id: null, priority: "medium", notes: null }],
           "term,country",
         );
-        await pgUpsert("aso_app_keywords", [{ app_id: appId, keyword_id: keyword.id }], "app_id,keyword_id");
+        await pgUpsert(
+          "aso_app_keywords",
+          [{ app_id: appId, keyword_id: keyword.id, priority, group_id: groupId, notes: null, target_rank: null, status: "active", updated_at: new Date().toISOString() }],
+          "app_id,keyword_id",
+        );
       }
       const warning = countryInfo.warning ? `${countryInfo.warning} ` : "";
       status.textContent = `${warning}Tracking ${terms.length} keyword(s) in ${countryInfo.country.toUpperCase()}. Run a collection from the Sync tab to start ranking them.`;
@@ -1015,14 +1032,34 @@ async function renderCompetitors(panel) {
 // ── Sync ─────────────────────────────────────────────────────────────────
 
 async function renderSync(panel) {
-  const [runs, errors] = await Promise.all([
+  const today = toDateStr(new Date());
+  const [runs, errors, apps, appKeywords, snapshots] = await Promise.all([
     pg("aso_sync_runs", "select=*&order=started_at.desc&limit=20"),
     pg("aso_sync_errors", "select=*&order=created_at.desc&limit=20"),
+    pg("aso_apps", "select=id,store_app_id,name"),
+    pg("aso_app_keywords", "select=app_id,keyword_id,status"),
+    pg("aso_keyword_rank_snapshots", `app_kind=eq.owned&captured_on=gte.${addDays(today, -2)}&select=keyword_id,store_app_id,captured_on`),
   ]);
 
   const lastOk = runs.find((r) => r.status === "ok" || r.status === "partial");
+  const activeLinks = appKeywords.filter((link) => link.status !== "paused");
+  const freshLinks = activeLinks.filter((link) => {
+    const app = apps.find((item) => item.id === link.app_id);
+    return app && snapshots.some((snapshot) => snapshot.keyword_id === link.keyword_id && snapshot.store_app_id === app.store_app_id);
+  });
+  const staleCount = activeLinks.length - freshLinks.length;
 
   panel.innerHTML = `
+    <section class="panel">
+      <div class="panel-head"><h3>Data quality</h3><span>${activeLinks.length ? `${freshLinks.length}/${activeLinks.length} keyword-app pairs fresh` : "no active keywords"}</span></div>
+      <p class="empty-state">${
+        activeLinks.length === 0
+          ? "Add keywords to start measuring search visibility."
+          : staleCount === 0
+            ? "All active keyword observations were refreshed in the last three days."
+            : `${staleCount} active keyword-app pair${staleCount === 1 ? " is" : "s are"} missing a fresh observation. Rankings and related insights may be incomplete until the next collection succeeds.`
+      }</p>
+    </section>
     <section class="panel">
       <div class="panel-head">
         <h3>Collection runs</h3>

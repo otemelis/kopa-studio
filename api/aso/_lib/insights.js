@@ -145,7 +145,7 @@ function ruleKeywordRisingAfterChange(ctx) {
   for (const change of changes) {
     const changeDate = change.happened_at.slice(0, 10);
     if (daysAgo(changeDate, ctx.today) > 45 || daysAgo(changeDate, ctx.today) < 5) continue;
-    for (const { keyword, snapshots } of ctx.keywords) {
+    for (const { keyword, priority, snapshots } of ctx.keywords) {
       if (change.country && change.country !== keyword.country) continue;
       const before = snapshots.filter((s) => s.captured_at.slice(0, 10) < changeDate);
       const after = snapshots.filter((s) => s.captured_at.slice(0, 10) >= changeDate);
@@ -219,18 +219,18 @@ function ruleKeywordDeclinedAfterRemoval(ctx) {
         title: `"${keyword.term}" dropped after being removed from the ${change.change_type}`,
         observation: `"${keyword.term}" (${keyword.country.toUpperCase()}) went from ${formatRank(beforeRank)} to ${formatRank(afterRank)} after the ${change.change_type} change on ${changeDate} removed the term.`,
         interpretation: "Losing metadata coverage for a term usually costs ranking; the timing here matches, though other factors may contribute.",
-        recommendation: `If "${keyword.term}" is strategically important (priority: ${keyword.priority}), consider restoring it to the ${change.change_type}.`,
+        recommendation: `If "${keyword.term}" is strategically important (priority: ${priority}), consider restoring it to the ${change.change_type}.`,
         evidence: [
           ev("Rank before removal", formatRank(beforeRank), "public_store"),
           ev("Rank now", formatRank(afterRank), "public_store"),
           ev("Change event", `${change.change_type} on ${changeDate}`, change.origin === "manual" ? "manual" : "public_store"),
-          ev("Keyword priority", keyword.priority, "manual"),
+          ev("Keyword priority", priority, "manual"),
         ],
         comparison_window: `Before vs after ${changeDate}`,
         confidence: "medium_high",
-        impact: keyword.priority === "high" ? "high" : "medium",
+        impact: priority === "high" ? "high" : "medium",
         effort: "low",
-        priority: keyword.priority === "high" ? "high" : "medium",
+        priority: priority === "high" ? "high" : "medium",
         dedupe_key: `keyword_declined_after_removal:${keyword.id}:${changeDate}`,
       });
     }
@@ -242,11 +242,11 @@ function ruleKeywordOpportunity(ctx) {
   const out = [];
   const title = ctx.app.name.toLowerCase();
   const subtitle = (ctx.app.subtitle ?? "").toLowerCase();
-  for (const { keyword, snapshots } of ctx.keywords) {
+  for (const { keyword, priority, snapshots } of ctx.keywords) {
     if (snapshots.length < 5) continue;
     const last = snapshots[snapshots.length - 1];
     if (last.rank == null || last.rank < 11 || last.rank > 50) continue;
-    if (keyword.priority === "low") continue;
+    if (priority === "low") continue;
     const weekAgo = rankChange(last.rank, snapshotRankNearDaysAgo(snapshots, 7, ctx.today));
     if (weekAgo != null && weekAgo < -3) continue;
     const term = keyword.term.toLowerCase();
@@ -268,13 +268,13 @@ function ruleKeywordOpportunity(ctx) {
         ev("Current rank", formatRank(last.rank), "public_store"),
         ev("7-day change", weekAgo != null ? (weekAgo > 0 ? `+${weekAgo}` : String(weekAgo)) : "—", "calculated"),
         ev("Metadata coverage", inTitle ? "In title" : "In subtitle", "public_store"),
-        ev("Priority", keyword.priority, "manual"),
+        ev("Priority", priority, "manual"),
       ],
       comparison_window: "Last 14 days",
       confidence: "medium",
-      impact: keyword.priority === "high" ? "high" : "medium",
+      impact: priority === "high" ? "high" : "medium",
       effort: "low",
-      priority: keyword.priority === "high" ? "high" : "medium",
+      priority: priority === "high" ? "high" : "medium",
       dedupe_key: `keyword_opportunity:${keyword.id}`,
     });
   }
@@ -285,8 +285,8 @@ function ruleMetadataMismatch(ctx) {
   const out = [];
   const title = ctx.app.name.toLowerCase();
   const subtitle = (ctx.app.subtitle ?? "").toLowerCase();
-  const missing = ctx.keywords.filter(({ keyword }) => {
-    if (keyword.priority !== "high") return false;
+  const missing = ctx.keywords.filter(({ keyword, priority }) => {
+    if (priority !== "high") return false;
     const term = keyword.term.toLowerCase();
     return !title.includes(term) && !subtitle.includes(term);
   });

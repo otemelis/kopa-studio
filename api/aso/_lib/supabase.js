@@ -64,6 +64,12 @@ export function serviceClient() {
         body: JSON.stringify(patch),
       });
     },
+    async rpc(name, args = {}) {
+      return request(`rpc/${name}`, {
+        method: "POST",
+        body: JSON.stringify(args),
+      });
+    },
   };
 }
 
