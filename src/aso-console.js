@@ -253,6 +253,20 @@ async function renderPortfolio(panel) {
   const totalDownloads = rows.reduce((a, r) => a + r.cmp.current.downloads, 0);
   const totalPv = rows.reduce((a, r) => a + r.cmp.current.page_views, 0);
   const avgConv = totalPv > 0 ? totalDownloads / totalPv : null;
+  const countries = new Map();
+  for (const metric of metrics.filter((item) => item.country && item.country !== "all")) {
+    const app = apps.find((item) => item.id === metric.app_id);
+    if (!app) continue;
+    const key = `${app.id}:${metric.country}`;
+    const country = countries.get(key) ?? { app, country: metric.country, impressions: 0, pageViews: 0, downloads: 0 };
+    country.impressions += metric.impressions ?? 0;
+    country.pageViews += metric.page_views ?? 0;
+    country.downloads += metric.downloads ?? 0;
+    countries.set(key, country);
+  }
+  const countryRows = [...countries.values()]
+    .sort((a, b) => b.pageViews + b.downloads - (a.pageViews + a.downloads))
+    .slice(0, 12);
 
   panel.innerHTML = `
     <div class="metric-grid">
@@ -281,6 +295,28 @@ async function renderPortfolio(panel) {
             .join("")}
         </tbody>
       </table>
+    </section>
+    <section class="panel">
+      <div class="panel-head"><h3>Storefront countries</h3><span>last 30 days</span></div>
+      ${
+        countryRows.length
+          ? `<table class="aso-table">
+              <thead><tr><th>App</th><th>Country</th><th>Impressions</th><th>Product page views</th><th>Downloads</th><th>Conversion</th></tr></thead>
+              <tbody>${countryRows
+                .map(
+                  (row) => `<tr>
+                    <td>${escapeHtml(row.app.name)}</td>
+                    <td class="mono">${escapeHtml(row.country.toUpperCase())}</td>
+                    <td class="mono">${formatNumber(row.impressions)}</td>
+                    <td class="mono">${formatNumber(row.pageViews)}</td>
+                    <td class="mono">${formatNumber(row.downloads)}</td>
+                    <td class="mono">${row.pageViews ? formatPct((row.downloads / row.pageViews) * 100, 1) : "-"}</td>
+                  </tr>`,
+                )
+                .join("")}</tbody>
+            </table>`
+          : '<p class="empty-state">Country metrics will appear after App Store Connect Discovery and Engagement reports are available.</p>'
+      }
     </section>
     <p class="empty-state">Downloads/conversion: last 14 days. Ranks are a public storefront snapshot (iTunes Search), not the exact on-device position.</p>
   `;
@@ -1033,13 +1069,14 @@ async function renderCompetitors(panel) {
 
 async function renderSync(panel) {
   const today = toDateStr(new Date());
-  const [runs, errors, apps, appKeywords, snapshots, connections] = await Promise.all([
+  const [runs, errors, apps, appKeywords, snapshots, connections, analyticsStatus] = await Promise.all([
     pg("aso_sync_runs", "select=*&order=started_at.desc&limit=20"),
     pg("aso_sync_errors", "select=*&order=created_at.desc&limit=20"),
     pg("aso_apps", "select=id,store_app_id,name"),
     pg("aso_app_keywords", "select=app_id,keyword_id,status"),
     pg("aso_keyword_rank_snapshots", `app_kind=eq.owned&captured_on=gte.${addDays(today, -2)}&select=keyword_id,store_app_id,captured_on`),
     pg("aso_platform_connections", "provider=eq.appstore_connect&select=*&limit=1"),
+    callApi("/api/aso/appstore-connect", { action: "analytics_status" }).catch(() => null),
   ]);
 
   const lastOk = runs.find((r) => r.status === "ok" || r.status === "partial");
@@ -1050,6 +1087,8 @@ async function renderSync(panel) {
   });
   const staleCount = activeLinks.length - freshLinks.length;
   const appStoreConnect = connections[0] ?? null;
+  const analyticsRequest = analyticsStatus?.requests?.[0] ?? null;
+  const analyticsMessage = analyticsRequest?.last_error ?? (analyticsRequest ? `Report request ${analyticsRequest.status}. ${analyticsRequest.last_checked_at ? `Last checked ${analyticsRequest.last_checked_at.slice(0, 16).replace("T", " ")}.` : "Apple can take 1-2 days to generate the first report."}` : "Request the App Store Discovery and Engagement report to measure product-page visits, discovery impressions, sources, and countries.");
 
   panel.innerHTML = `
     <section class="panel">
@@ -1057,6 +1096,10 @@ async function renderSync(panel) {
       <button type="button" class="aso-run-collection" data-test-appstore-connect>Test connection</button>
       <button type="button" class="aso-link-button" data-sync-sales>Sync sales data</button>
       <p id="aso-appstore-connect-status" class="empty-state">${escapeHtml(appStoreConnect?.last_test_message ?? "No connection configured.")}</p>
+      <div class="panel-head"><h3>Storefront analytics</h3><span class="status-${analyticsRequest?.status === "active" ? "ok" : analyticsRequest?.status === "error" ? "failed" : "partial"}">${analyticsRequest?.status ?? "not requested"}</span></div>
+      <button type="button" class="aso-link-button" data-provision-analytics>Request report</button>
+      <button type="button" class="aso-link-button" data-sync-analytics>Sync storefront data</button>
+      <p id="aso-analytics-status" class="empty-state">${escapeHtml(analyticsMessage)}</p>
     </section>
     <section class="panel">
       <div class="panel-head"><h3>Data quality</h3><span>${activeLinks.length ? `${freshLinks.length}/${activeLinks.length} keyword-app pairs fresh` : "no active keywords"}</span></div>
@@ -1142,6 +1185,36 @@ async function renderSync(panel) {
       const result = await callApi("/api/aso/appstore-connect", { action: "sync_sales" });
       status.textContent = result.message;
       setTimeout(() => renderSubTab(panel), 1200);
+    } catch (error) {
+      status.textContent = error.message;
+      btn.disabled = false;
+    }
+  });
+
+  panel.querySelector("[data-provision-analytics]").addEventListener("click", async (e) => {
+    const btn = e.target;
+    const status = panel.querySelector("#aso-analytics-status");
+    btn.disabled = true;
+    status.textContent = "Requesting Apple Discovery and Engagement analytics…";
+    try {
+      const result = await callApi("/api/aso/appstore-connect", { action: "provision_analytics" });
+      status.textContent = result.message;
+      setTimeout(() => renderSubTab(panel), 1500);
+    } catch (error) {
+      status.textContent = error.message;
+      btn.disabled = false;
+    }
+  });
+
+  panel.querySelector("[data-sync-analytics]").addEventListener("click", async (e) => {
+    const btn = e.target;
+    const status = panel.querySelector("#aso-analytics-status");
+    btn.disabled = true;
+    status.textContent = "Downloading Apple storefront analytics…";
+    try {
+      const result = await callApi("/api/aso/appstore-connect", { action: "sync_analytics" });
+      status.textContent = result.message;
+      setTimeout(() => renderSubTab(panel), 1500);
     } catch (error) {
       status.textContent = error.message;
       btn.disabled = false;

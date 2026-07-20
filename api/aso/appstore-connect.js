@@ -1,4 +1,5 @@
 import { hasAppStoreConnectConfig, listAppStoreConnectApps } from "./_lib/appstore-connect.js";
+import { hasDiscoveryAnalyticsProvisioning, provisionDiscoveryRequests, syncDiscoveryAnalytics } from "./_lib/appstore-analytics.js";
 import { hasSalesReportsConfig, salesSyncMessage, syncDailySalesMetrics } from "./_lib/appstore-sales.js";
 import { requireAdmin, serviceClient } from "./_lib/supabase.js";
 
@@ -20,18 +21,57 @@ export default async function handler(request, response) {
   const db = serviceClient();
 
   if (action === "status") {
-    const [connection] = await db.select("aso_platform_connections", "provider=eq.appstore_connect&select=*");
-    response.status(200).json({ configured: hasAppStoreConnectConfig(), connection: connection ?? null });
+    const [[connection], requests] = await Promise.all([
+      db.select("aso_platform_connections", "provider=eq.appstore_connect&select=*"),
+      db.select("aso_analytics_report_requests", "select=app_id,status,last_checked_at,last_error,created_at"),
+    ]);
+    response.status(200).json({ configured: hasAppStoreConnectConfig(), provisioningConfigured: hasDiscoveryAnalyticsProvisioning(), connection: connection ?? null, analytics: requests });
     return;
   }
 
-  if (action !== "test" && action !== "sync_sales") {
+  if (action === "analytics_status") {
+    const requests = await db.select("aso_analytics_report_requests", "select=app_id,status,last_checked_at,last_error,created_at");
+    response.status(200).json({ configured: hasAppStoreConnectConfig(), provisioningConfigured: hasDiscoveryAnalyticsProvisioning(), requests });
+    return;
+  }
+
+  if (action !== "test" && action !== "sync_sales" && action !== "provision_analytics" && action !== "sync_analytics") {
     response.status(400).json({ error: "Unknown App Store Connect action." });
     return;
   }
 
-  if (!hasAppStoreConnectConfig()) {
+  if (action !== "provision_analytics" && !hasAppStoreConnectConfig()) {
     response.status(400).json({ error: "App Store Connect is not configured in Vercel yet." });
+    return;
+  }
+
+  if (action === "provision_analytics") {
+    if (!hasDiscoveryAnalyticsProvisioning()) {
+      response.status(400).json({ error: "Missing the temporary App Store Connect Admin setup key in Vercel environment variables." });
+      return;
+    }
+    try {
+      const apps = await db.select("aso_apps", "platform=eq.ios&appstore_connect_id=not.is.null&select=id,name,appstore_connect_id");
+      if (!apps.length) {
+        response.status(400).json({ error: "No tracked iOS apps are mapped to App Store Connect. Test the connection first." });
+        return;
+      }
+      const result = await provisionDiscoveryRequests(db, apps);
+      response.status(200).json({ ok: true, message: result.created ? `Requested Discovery and Engagement analytics for ${result.created} app(s). Apple may take 1-2 days to begin generating reports.` : "Discovery and Engagement analytics is already requested for every mapped app.", ...result });
+    } catch (error) {
+      response.status(502).json({ error: error instanceof Error ? error.message : "Analytics provisioning failed." });
+    }
+    return;
+  }
+
+  if (action === "sync_analytics") {
+    try {
+      const apps = await db.select("aso_apps", "platform=eq.ios&appstore_connect_id=not.is.null&select=id,name,appstore_connect_id");
+      const result = await syncDiscoveryAnalytics(db, apps);
+      response.status(200).json({ ok: true, message: result.segments ? `Imported ${result.dailyRows} country-day storefront metric row(s) from ${result.segments} Apple report segment(s).` : "Apple has not generated a Discovery and Engagement report yet. The first ongoing report can take 1-2 days.", ...result });
+    } catch (error) {
+      response.status(502).json({ error: error instanceof Error ? error.message : "Storefront analytics sync failed." });
+    }
     return;
   }
 

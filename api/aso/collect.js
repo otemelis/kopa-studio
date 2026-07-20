@@ -15,6 +15,7 @@ import { deriveRankFields, toDateStr, compareWindows, addDays } from "./_lib/cal
 import { diffMetadata, metadataChecksum } from "./_lib/metadata-diff.js";
 import { lookupApp, searchApps } from "./_lib/providers.js";
 import { hasSalesReportsConfig, salesSyncMessage, syncDailySalesMetrics } from "./_lib/appstore-sales.js";
+import { syncDiscoveryAnalytics } from "./_lib/appstore-analytics.js";
 import { draftToInsertRow, evaluateRulesForApp, filterAgainstExisting } from "./_lib/insights.js";
 import { requireAdmin, serviceClient } from "./_lib/supabase.js";
 
@@ -370,6 +371,21 @@ async function runCollection(trigger) {
       }
     }
 
+    // Discovery reports are requested deliberately from the console with a
+    // temporary Admin key. Once requested, the routine reader key can sync
+    // new report segments alongside the daily collection.
+    let storefrontAnalytics = { state: "not_requested", imported: 0 };
+    const requests = await db.select("aso_analytics_report_requests", "select=id");
+    if (requests.length) {
+      try {
+        const result = await syncDiscoveryAnalytics(db, apps);
+        storefrontAnalytics = { state: result.segments ? "ok" : "pending", ...result };
+      } catch (error) {
+        counters.warnings++;
+        storefrontAnalytics = { state: "warning", message: msg(error), imported: 0 };
+      }
+    }
+
     // ── Insight engine ────────────────────────────────────────────────
     const created = await runInsightEngine(db);
 
@@ -387,6 +403,7 @@ async function runCollection(trigger) {
           keywords_total: allTrackedKeywords.length,
           insights_created: created,
           sales,
+          storefront_analytics: storefrontAnalytics,
         },
       },
       `id=eq.${run.id}`,
