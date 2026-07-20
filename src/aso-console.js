@@ -34,7 +34,7 @@ let keywordFilters = { query: "", app: "all", country: "all", priority: "all", m
 let selectedKeywordLinkIds = new Set();
 let workspaceAppScope = localStorage.getItem(WORKSPACE_APP_SCOPE_KEY) ?? "all";
 let portfolioSort = "insights";
-let insightFilters = { app: "all", priority: "important" };
+let insightFilters = { app: "all", priority: "important", source: "all" };
 let competitorFilters = { app: "all", change: "all" };
 let reviewFilters = { app: "all", rating: "all", country: "all", topic: "all" };
 
@@ -1097,6 +1097,33 @@ function wireKeywordForm(panel) {
 
 // ── Insights ─────────────────────────────────────────────────────────────
 
+function insightSource(ruleId) {
+  if (ruleId === "data_collection_failure") return "operations";
+  if (ruleId.startsWith("competitor_")) return "competitors";
+  if (ruleId.startsWith("review_")) return "reviews";
+  if (ruleId.startsWith("experiment_")) return "experiments";
+  if (ruleId.includes("keyword") || ruleId === "metadata_mismatch") return "keywords";
+  return "performance";
+}
+
+function insightDestination(insight) {
+  const source = insightSource(insight.rule_id);
+  if (source === "operations") return { tab: "sync", label: "Open Sync" };
+  if (source === "competitors") return { tab: "competitors", label: "Open competitors" };
+  if (source === "reviews") return { tab: "reviews", label: "Open reviews" };
+  if (source === "experiments") return { tab: "experiments", label: "Open experiment" };
+  if (source === "keywords") return { tab: "keywords", label: "Open keywords" };
+  return { tab: "experiments", label: "Plan experiment" };
+}
+
+function metadataMarkets(insight) {
+  if (insight.rule_id !== "metadata_mismatch") return [];
+  const terms = insight.evidence?.find((item) => item.label === "Missing terms")?.value ?? "";
+  const counts = new Map();
+  for (const match of terms.matchAll(/\(([A-Z]{2})\)/g)) counts.set(match[1], (counts.get(match[1]) ?? 0) + 1);
+  return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+}
+
 async function renderInsights(panel) {
   const [rawInsights, apps, keywords, health] = await Promise.all([
     pg("aso_insights", "status=eq.active&select=*&order=created_at.desc"),
@@ -1117,6 +1144,7 @@ async function renderInsights(panel) {
     if (insightFilters.app !== "all" && insight.app_id !== insightFilters.app) return false;
     if (insightFilters.priority === "important" && !["high", "medium"].includes(insight.priority)) return false;
     if (insightFilters.priority !== "all" && insightFilters.priority !== "important" && insight.priority !== insightFilters.priority) return false;
+    if (insightFilters.source !== "all" && insightSource(insight.rule_id) !== insightFilters.source) return false;
     return true;
   });
   const highCount = insights.filter((insight) => insight.priority === "high").length;
@@ -1131,25 +1159,22 @@ async function renderInsights(panel) {
     <div class="aso-filter-toolbar">
       <select id="aso-insight-app"><option value="all">All apps</option>${apps.map((app) => `<option value="${app.id}" ${insightFilters.app === app.id ? "selected" : ""}>${escapeHtml(app.name)}</option>`).join("")}</select>
       <select id="aso-insight-priority"><option value="important" ${insightFilters.priority === "important" ? "selected" : ""}>High and medium priority</option><option value="high" ${insightFilters.priority === "high" ? "selected" : ""}>High priority only</option><option value="medium" ${insightFilters.priority === "medium" ? "selected" : ""}>Medium priority only</option><option value="low" ${insightFilters.priority === "low" ? "selected" : ""}>Low priority only</option><option value="all" ${insightFilters.priority === "all" ? "selected" : ""}>All priorities</option></select>
+      <select id="aso-insight-source"><option value="all">All sources</option>${[["keywords", "Keywords"], ["competitors", "Competitors"], ["reviews", "Reviews"], ["experiments", "Experiments"], ["operations", "Operations"], ["performance", "Performance"]].map(([value, label]) => `<option value="${value}" ${insightFilters.source === value ? "selected" : ""}>${label}</option>`).join("")}</select>
       <span>${visibleInsights.length}/${insights.length} shown</span>
     </div>` + (visibleInsights.length ? visibleInsights : [])
     .map((i) => {
       const app = apps.find((a) => a.id === i.app_id);
       const keyword = keywords.find((k) => k.id === i.keyword_id);
+      const destination = insightDestination(i);
+      const markets = metadataMarkets(i);
       return `
       <article class="panel aso-insight">
         <div class="panel-head">
           <h3>${escapeHtml(i.title)}</h3>
           <span class="priority-${i.priority}">${i.priority} priority</span>
         </div>
-        <p>${escapeHtml(i.observation)}</p>
-        <p class="muted">${escapeHtml(i.interpretation)}</p>
-        <p><strong>Recommended action:</strong> ${escapeHtml(i.recommendation)}</p>
-        <dl class="aso-evidence">
-          ${i.evidence
-            .map((e) => `<div><dt>${escapeHtml(e.label)}</dt><dd>${escapeHtml(e.value)}</dd></div>`)
-            .join("")}
-        </dl>
+        <p class="aso-insight-summary">${escapeHtml(i.observation)}</p>
+        <p class="aso-insight-next"><strong>Next:</strong> ${escapeHtml(i.recommendation)}</p>
         <div class="aso-insight-meta">
           <span>Confidence: ${escapeHtml(i.confidence.replace("_", "-"))}</span>
           <span>Impact: ${escapeHtml(i.impact)}</span>
@@ -1157,10 +1182,13 @@ async function renderInsights(panel) {
           ${app ? `<span>${escapeHtml(app.name)}</span>` : ""}
           ${keyword ? `<span>"${escapeHtml(keyword.term)}"</span>` : ""}
         </div>
+        ${markets.length ? `<div class="aso-market-groups"><span>Missing by market</span>${markets.map(([country, count]) => `<b>${country} · ${count}</b>`).join("")}</div>` : ""}
         <div class="aso-insight-actions">
-          <button type="button" class="aso-action-primary" data-create-experiment data-insight-id="${i.id}">Create experiment draft</button>
+          <button type="button" class="aso-action-primary" data-insight-destination="${destination.tab}">${destination.label}</button>
+          ${["competitors", "keywords", "performance"].includes(insightSource(i.rule_id)) && i.app_id ? `<button type="button" class="aso-link-button" data-create-experiment data-insight-id="${i.id}">Create experiment</button>` : ""}
           <details class="aso-secondary-actions"><summary>More</summary><div><button type="button" data-insight-action="completed" data-insight-id="${i.id}">Mark done</button><button type="button" data-insight-action="snoozed" data-insight-id="${i.id}">Snooze 14d</button><button type="button" data-insight-action="dismissed" data-insight-id="${i.id}">Dismiss</button></div></details>
         </div>
+        <details class="aso-insight-detail"><summary>Evidence and reasoning</summary><div><p class="muted">${escapeHtml(i.interpretation)}</p><dl class="aso-evidence">${i.evidence.map((e) => `<div><dt>${escapeHtml(e.label)}</dt><dd>${escapeHtml(e.value)}</dd></div>`).join("")}</dl></div></details>
       </article>`;
     })
     .join("") || '<section class="panel"><h3>No insights match these filters</h3><p class="empty-state">Try broadening the app or priority filter.</p></section>';
@@ -1168,9 +1196,18 @@ async function renderInsights(panel) {
   [
     ["#aso-insight-app", "app"],
     ["#aso-insight-priority", "priority"],
+    ["#aso-insight-source", "source"],
   ].forEach(([selector, key]) =>
     panel.querySelector(selector)?.addEventListener("change", (event) => {
       insightFilters[key] = event.target.value;
+      renderSubTab(panel);
+    }),
+  );
+
+  panel.querySelectorAll("[data-insight-destination]").forEach((button) =>
+    button.addEventListener("click", () => {
+      activeSubTab = button.dataset.insightDestination;
+      document.querySelectorAll("[data-aso-tab]").forEach((tab) => tab.classList.toggle("active", tab.dataset.asoTab === activeSubTab));
       renderSubTab(panel);
     }),
   );

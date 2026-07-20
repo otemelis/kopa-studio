@@ -17,7 +17,7 @@ Success measure: a user can open a relevant app scope, load a saved view, and up
 
 ## Priority 2: Insight Triage
 
-Status: planned
+Status: in progress
 
 - Collapse evidence until requested and lead with signal, confidence, impact, and next action.
 - Route each rule type to the right destination: Sync, Keywords, Competitors, or an experiment draft.
