@@ -441,6 +441,15 @@ function deltaClass(v) {
   return v > 0 ? "up" : v < 0 ? "down" : "";
 }
 
+function timeSince(value) {
+  if (!value) return "Never";
+  const elapsed = Math.max(0, Date.now() - new Date(value).getTime());
+  const hours = Math.floor(elapsed / 3600000);
+  if (hours < 1) return "Just now";
+  if (hours < 48) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
+}
+
 // ── Keywords ─────────────────────────────────────────────────────────────
 
 async function renderKeywords(panel) {
@@ -1417,7 +1426,7 @@ async function renderReviews(panel) {
 
 async function renderSync(panel) {
   const today = toDateStr(new Date());
-  const [runs, errors, apps, appKeywords, snapshots, connections, analyticsStatus] = await Promise.all([
+  const [runs, errors, apps, appKeywords, snapshots, connections, analyticsStatus, metrics] = await Promise.all([
     pg("aso_sync_runs", "select=*&order=started_at.desc&limit=20"),
     pg("aso_sync_errors", "select=*&order=created_at.desc&limit=20"),
     pg("aso_apps", "select=id,store_app_id,name"),
@@ -1425,6 +1434,7 @@ async function renderSync(panel) {
     pg("aso_keyword_rank_snapshots", `app_kind=eq.owned&captured_on=gte.${addDays(today, -2)}&select=keyword_id,store_app_id,captured_on`),
     pg("aso_platform_connections", "provider=eq.appstore_connect&select=*&limit=1"),
     callApi("/api/aso/appstore-connect", { action: "analytics_status" }).catch(() => null),
+    pg("aso_daily_metrics", `date=gte.${addDays(today, -7)}&select=app_id,date,country,source`),
   ]);
 
   const lastOk = runs.find((r) => r.status === "ok" || r.status === "partial");
@@ -1434,11 +1444,38 @@ async function renderSync(panel) {
     return app && snapshots.some((snapshot) => snapshot.keyword_id === link.keyword_id && snapshot.store_app_id === app.store_app_id);
   });
   const staleCount = activeLinks.length - freshLinks.length;
+  const lastRunFailed = runs[0]?.status === "failed";
+  const lastOkAge = lastOk ? Date.now() - new Date(lastOk.started_at).getTime() : Infinity;
+  const latestDiscoveryDate = metrics.filter((metric) => metric.source === "appstore_connect_discovery").map((metric) => metric.date).sort().at(-1) ?? null;
+  const latestDiscoveryAt = latestDiscoveryDate ? `${latestDiscoveryDate}T00:00:00Z` : null;
+  const recentDiscovery = metrics.filter((metric) => metric.source === "appstore_connect_discovery" && metric.date >= addDays(today, -3));
+  const discoveryApps = new Set(recentDiscovery.map((metric) => metric.app_id));
+  const marketsCovered = new Set(recentDiscovery.filter((metric) => metric.country && metric.country !== "all").map((metric) => `${metric.app_id}:${metric.country}`));
+  const actionReady = activeLinks.length > 0 && staleCount === 0 && lastOkAge <= 3 * 86400000 && !lastRunFailed;
+  const appCoverage = apps.map((app) => {
+    const links = activeLinks.filter((link) => link.app_id === app.id);
+    const fresh = freshLinks.filter((link) => link.app_id === app.id);
+    return { app, links: links.length, fresh: fresh.length, storefront: discoveryApps.has(app.id) };
+  });
   const appStoreConnect = connections[0] ?? null;
   const analyticsRequest = analyticsStatus?.requests?.[0] ?? null;
   const analyticsMessage = analyticsRequest?.last_error ?? (analyticsRequest ? `Report request ${analyticsRequest.status}. ${analyticsRequest.last_checked_at ? `Last checked ${analyticsRequest.last_checked_at.slice(0, 16).replace("T", " ")}.` : "Apple can take 1-2 days to generate the first report."}` : "Request the App Store Discovery and Engagement report to measure product-page visits, discovery impressions, sources, and countries.");
 
   panel.innerHTML = `
+    <section class="panel aso-data-health">
+      <div class="panel-head"><h3>Data health</h3><span class="status-${actionReady ? "ok" : "partial"}">${actionReady ? "action-ready" : "needs attention"}</span></div>
+      <div class="aso-health-banner ${actionReady ? "ready" : "attention"}">
+        <strong>${actionReady ? "Search visibility is fresh enough to act on." : "Treat ranking conclusions carefully until coverage is refreshed."}</strong>
+        <span>${lastRunFailed ? "The most recent collection failed." : lastOk ? `Last successful collection ${timeSince(lastOk.started_at)}.` : "No successful collection recorded yet."}</span>
+      </div>
+      <div class="mini-stat-grid aso-workflow-summary">
+        <article><span>Keyword coverage</span><strong>${activeLinks.length ? `${freshLinks.length}/${activeLinks.length}` : "-"}</strong><small>fresh in 3 days</small></article>
+        <article><span>Last collection</span><strong>${timeSince(lastOk?.started_at)}</strong><small>${lastOk?.trigger ?? "no run"}</small></article>
+        <article><span>Storefront report</span><strong>${latestDiscoveryAt ? timeSince(latestDiscoveryAt) : "Pending"}</strong><small>${latestDiscoveryAt ? "latest imported day" : "no Discovery data"}</small></article>
+        <article><span>Markets covered</span><strong>${marketsCovered.size}</strong><small>${discoveryApps.size}/${apps.length} app(s), last 3 days</small></article>
+      </div>
+      ${appCoverage.length ? `<div class="aso-health-coverage">${appCoverage.map(({ app, links, fresh, storefront }) => `<div><span>${escapeHtml(app.name)}</span><span class="mono">${links ? `${fresh}/${links} keywords` : "no keywords"}</span><span class="${storefront ? "status-ok" : "muted"}">${storefront ? "storefront data" : "storefront pending"}</span></div>`).join("")}</div>` : ""}
+    </section>
     <section class="panel">
       <div class="panel-head"><h3>App Store Connect</h3><span class="status-${appStoreConnect?.status === "configured" ? "ok" : appStoreConnect?.status === "error" ? "failed" : "partial"}">${appStoreConnect?.status ?? "unconfigured"}</span></div>
       <button type="button" class="aso-run-collection" data-test-appstore-connect>Test connection</button>
@@ -1450,7 +1487,7 @@ async function renderSync(panel) {
       <p id="aso-analytics-status" class="empty-state">${escapeHtml(analyticsMessage)}</p>
     </section>
     <section class="panel">
-      <div class="panel-head"><h3>Data quality</h3><span>${activeLinks.length ? `${freshLinks.length}/${activeLinks.length} keyword-app pairs fresh` : "no active keywords"}</span></div>
+      <div class="panel-head"><h3>Collection coverage</h3><span>${activeLinks.length ? `${freshLinks.length}/${activeLinks.length} keyword-app pairs fresh` : "no active keywords"}</span></div>
       <p class="empty-state">${
         activeLinks.length === 0
           ? "Add keywords to start measuring search visibility."

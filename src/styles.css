@@ -31,6 +31,16 @@ footer{background:var(--moss);color:var(--paper);padding:80px 6vw 30px;display:g
 .aso-workflow-summary strong.up,.aso-workflow-summary strong.down{color:inherit}
 .aso-workflow-summary article:has(.up){background:#101912}
 .aso-workflow-summary article:has(.down){background:#1b1310}
+.aso-workflow-summary small{display:block;margin-top:8px;color:#657168;font-size:9px;text-transform:uppercase}
+.aso-data-health{display:grid;gap:14px}
+.aso-health-banner{display:grid;gap:5px;padding:14px 16px;border:1px solid #29312c;font:12px/1.45 Manrope}
+.aso-health-banner strong{font:500 13px Manrope}
+.aso-health-banner span{color:#839086}
+.aso-health-banner.ready{border-color:#38633b;background:#101912}
+.aso-health-banner.attention{border-color:#5f5630;background:#18170f}
+.aso-health-coverage{display:grid;gap:0;border-top:1px solid #29312c}
+.aso-health-coverage div{display:grid;grid-template-columns:minmax(120px,1fr) auto auto;gap:16px;align-items:center;padding:10px 0;border-bottom:1px solid #202620;color:#c7cdc8;font:11px Manrope}
+.aso-health-coverage .mono{font-size:10px;color:#839086}
 .aso-table{width:100%;border-collapse:collapse;font-size:12px}
 .aso-table th{text-align:left;font:9px DM Mono;text-transform:uppercase;color:#657168;letter-spacing:.06em;padding:0 12px 10px 0;white-space:nowrap}
 .aso-table td{padding:10px 12px 10px 0;border-top:1px solid #202620;white-space:nowrap;color:#c7cdc8}
@@ -121,6 +131,8 @@ footer{background:var(--moss);color:var(--paper);padding:80px 6vw 30px;display:g
   .panel{padding:16px}
   .panel-pair,.aso-portfolio-grid{grid-template-columns:1fr;gap:10px}
   .aso-briefing-grid{grid-template-columns:1fr;gap:10px}
+  .aso-health-coverage div{grid-template-columns:1fr auto;gap:6px 12px}
+  .aso-health-coverage div span:last-child{grid-column:1/-1}
   .aso-subnav{top:58px;margin:0 -2px}
 }
 @media(max-width:480px){
