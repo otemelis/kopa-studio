@@ -1,7 +1,6 @@
-// Apple public store provider — lookup + keyword search rankings only in
-// this pass (reviews are deferred; see acros-studio/lib/aso/providers.ts
-// for the fuller version this was ported from, which also has a reviews
-// RSS reader to add back when the Reviews tab ships).
+// Apple public store provider — lookup, keyword search rankings, and recent
+// public customer reviews. The review feed is rate-limited through the same
+// polite queue as all other public Apple requests.
 //
 // Low request rate, in-memory caching, retries with exponential backoff, a
 // descriptive user agent, no scraping tricks. Honest limitation: iTunes
@@ -97,6 +96,44 @@ export async function searchApps(term, country, limit) {
       rating: typeof r.averageUserRating === "number" ? Math.round(r.averageUserRating * 100) / 100 : null,
       rating_count: r.userRatingCount ?? null,
     }));
+}
+
+function label(value) {
+  return typeof value === "string" ? value : value?.label ?? null;
+}
+
+export function parseCustomerReviewFeed(body) {
+  const entries = Array.isArray(body?.feed?.entry) ? body.feed.entry : [];
+  return entries
+    .filter((entry) => label(entry["im:rating"]) != null)
+    .map((entry) => {
+      const rating = Number(label(entry["im:rating"]));
+      const reviewRef = label(entry.id);
+      const reviewedAt = label(entry.updated);
+      if (!reviewRef || !reviewedAt || !Number.isInteger(rating) || rating < 1 || rating > 5) return null;
+      return {
+        reviewRef,
+        rating,
+        title: label(entry.title),
+        body: label(entry.content) || label(entry.title) || "(No written review)",
+        author: label(entry.author?.name),
+        version: label(entry["im:version"]),
+        reviewedAt,
+      };
+    })
+    .filter(Boolean);
+}
+
+export async function fetchRecentReviews(storeAppId, country, pages = 2) {
+  const reviews = new Map();
+  for (let page = 1; page <= pages; page++) {
+    const url = `https://itunes.apple.com/${encodeURIComponent(country)}/rss/customerreviews/page=${page}/id=${encodeURIComponent(storeAppId)}/sortby=mostrecent/json`;
+    const body = await politeFetchJson(url);
+    const rows = parseCustomerReviewFeed(body);
+    for (const row of rows) reviews.set(row.reviewRef, row);
+    if (rows.length === 0) break;
+  }
+  return [...reviews.values()];
 }
 
 /** Parse an App Store URL or a bare numeric id into a store app id. */

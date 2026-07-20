@@ -2,10 +2,9 @@
 // acros-studio/lib/aso/insights.ts (types stripped only; thresholds and
 // logic unchanged, that file is covered by 47 passing vitest tests).
 //
-// review_topic_surge is omitted in this port — it depends on classify.js
-// (review classification), which ships with the deferred Reviews tab.
-// rating_deterioration is kept: it only needs raw review ratings/versions.
-// experiment_ready, data_collection_failure and the rest are unchanged.
+// Review classifications use a transparent local ruleset in this pass. The
+// engine deliberately labels them as signals rather than pretending to infer
+// intent from a handful of reviews.
 
 import {
   addDays,
@@ -562,6 +561,60 @@ function ruleRatingDeterioration(ctx) {
   ];
 }
 
+function ruleReviewTopicSurge(ctx) {
+  const recentCutoff = addDays(ctx.today, -13);
+  const baselineCutoff = addDays(ctx.today, -55);
+  const classifications = new Map((ctx.reviewClassifications ?? []).map((item) => [item.review_id, item]));
+  const recentNegative = ctx.reviews.filter((review) => review.reviewed_at.slice(0, 10) >= recentCutoff && review.rating <= 2);
+  const baselineNegative = ctx.reviews.filter(
+    (review) => review.reviewed_at.slice(0, 10) >= baselineCutoff && review.reviewed_at.slice(0, 10) < recentCutoff && review.rating <= 2,
+  );
+  if (recentNegative.length < 4) return [];
+
+  const countTopics = (reviews) => {
+    const counts = new Map();
+    for (const review of reviews) {
+      for (const topic of classifications.get(review.id)?.topics ?? []) counts.set(topic, (counts.get(topic) ?? 0) + 1);
+    }
+    return counts;
+  };
+  const recentTopics = countTopics(recentNegative);
+  const baselineTopics = countTopics(baselineNegative);
+  const out = [];
+  for (const [topic, count] of recentTopics) {
+    const prior = baselineTopics.get(topic) ?? 0;
+    if (count < 3 || count / recentNegative.length < 0.35 || count < prior + 2) continue;
+    const examples = recentNegative
+      .filter((review) => classifications.get(review.id)?.topics?.includes(topic))
+      .slice(0, 2)
+      .map((review) => review.version)
+      .filter(Boolean);
+    out.push({
+      rule_id: "review_topic_surge",
+      app_id: ctx.app.id,
+      keyword_id: null,
+      experiment_id: null,
+      country: null,
+      title: `${topic.replaceAll("_", " ")} is recurring in recent low reviews for ${ctx.app.name}`,
+      observation: `${count} of ${recentNegative.length} recent 1-2 star reviews matched the ${topic.replaceAll("_", " ")} signal, up from ${prior} in the preceding six weeks.${examples.length ? ` The signal appears in reviews mentioning version ${examples[0]}.` : ""}`,
+      interpretation: "This is a rules-based topic signal from review text, not a complete sentiment analysis. The recurrence is enough to justify reading the underlying reviews before changing the product or listing.",
+      recommendation: "Review the matching low-star reviews, identify the concrete failure or request, and log a product or communication experiment with a clear owner.",
+      evidence: [
+        ev("Recent low reviews matching topic", `${count} of ${recentNegative.length}`, "public_store"),
+        ev("Prior six-week matches", String(prior), "public_store"),
+        ...(examples.length ? [ev("Version mentioned", examples[0], "public_store")] : []),
+      ],
+      comparison_window: "Last 14 days vs prior six weeks",
+      confidence: count >= 5 ? "medium_high" : "medium",
+      impact: "high",
+      effort: "medium",
+      priority: "high",
+      dedupe_key: `review_topic_surge:${ctx.app.id}:${topic}`,
+    });
+  }
+  return out;
+}
+
 function ruleExperimentReady(ctx) {
   const out = [];
   for (const exp of ctx.experiments) {
@@ -656,6 +709,7 @@ const RULE_FNS = [
   ruleMetadataMismatch,
   ruleStorefrontUnderperformance,
   ruleRatingDeterioration,
+  ruleReviewTopicSurge,
   ruleExperimentReady,
   ruleDataCollectionFailure,
 ];

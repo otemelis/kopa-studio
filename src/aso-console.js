@@ -169,6 +169,7 @@ const SUB_TABS = [
   ["insights", "Insights"],
   ["experiments", "Experiments"],
   ["competitors", "Competitors"],
+  ["reviews", "Reviews"],
   ["sync", "Sync"],
 ];
 
@@ -215,6 +216,7 @@ async function renderSubTab(panel) {
     else if (activeSubTab === "insights") await renderInsights(panel);
     else if (activeSubTab === "experiments") await renderExperiments(panel);
     else if (activeSubTab === "competitors") await renderCompetitors(panel);
+    else if (activeSubTab === "reviews") await renderReviews(panel);
     else if (activeSubTab === "sync") await renderSync(panel);
   } catch (error) {
     panel.innerHTML = `<section class="panel"><h3>Could not load this view</h3><p class="empty-state">${escapeHtml(error.message)}</p></section>`;
@@ -1169,6 +1171,72 @@ async function renderCompetitors(panel) {
       btn.disabled = false;
     }
   });
+}
+
+// ── Reviews ─────────────────────────────────────────────────────────────
+
+function reviewTopics(review, classifications) {
+  return classifications.find((item) => item.review_id === review.id)?.topics ?? [];
+}
+
+async function renderReviews(panel) {
+  const today = toDateStr(new Date());
+  const [reviews, classifications, apps] = await Promise.all([
+    pg("aso_reviews", `reviewed_at=gte.${addDays(today, -90)}&select=*&order=reviewed_at.desc`),
+    pg("aso_review_classifications", "select=*&order=classified_at.desc&limit=2000"),
+    pg("aso_apps", "select=id,name"),
+  ]);
+  const recentCutoff = addDays(today, -29);
+  const recent = reviews.filter((review) => review.reviewed_at.slice(0, 10) >= recentCutoff);
+  const average = recent.length ? recent.reduce((sum, review) => sum + review.rating, 0) / recent.length : null;
+  const low = recent.filter((review) => review.rating <= 2);
+  const topics = new Map();
+  for (const review of low) {
+    for (const topic of reviewTopics(review, classifications)) topics.set(topic, (topics.get(topic) ?? 0) + 1);
+  }
+  const topTopics = [...topics.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  panel.innerHTML = `
+    <div class="metric-grid">
+      <article><span>Reviews, 30 days</span><strong>${formatNumber(recent.length)}</strong></article>
+      <article><span>Average rating</span><strong>${average != null ? average.toFixed(1) : "-"}</strong></article>
+      <article><span>Low ratings</span><strong>${formatNumber(low.length)}</strong></article>
+    </div>
+    <section class="panel">
+      <div class="panel-head"><h3>Recurring low-review signals</h3><span>last 30 days</span></div>
+      ${
+        topTopics.length
+          ? `<table class="aso-table"><thead><tr><th>Signal</th><th>Low reviews</th><th>Share</th></tr></thead><tbody>${topTopics
+              .map(([topic, count]) => `<tr><td>${escapeHtml(topic.replaceAll("_", " "))}</td><td class="mono">${count}</td><td class="mono">${low.length ? formatPct((count / low.length) * 100) : "-"}</td></tr>`)
+              .join("")}</tbody></table>`
+          : '<p class="empty-state">Topic signals appear once recent written reviews match a recurring issue pattern.</p>'
+      }
+    </section>
+    <section class="panel">
+      <div class="panel-head"><h3>Recent reviews</h3><span>public App Store feed</span></div>
+      ${
+        reviews.length
+          ? reviews
+              .slice(0, 30)
+              .map((review) => {
+                const app = apps.find((item) => item.id === review.app_id);
+                const topics = reviewTopics(review, classifications);
+                return `<article class="aso-insight">
+                  <div class="panel-head"><h3>${"★".repeat(review.rating)}${"☆".repeat(5 - review.rating)} ${escapeHtml(review.title ?? "Untitled review")}</h3><span>${escapeHtml(review.country.toUpperCase())}</span></div>
+                  <p>${escapeHtml(review.body)}</p>
+                  <div class="aso-insight-meta">
+                    ${app ? `<span>${escapeHtml(app.name)}</span>` : ""}
+                    ${review.version ? `<span>Version ${escapeHtml(review.version)}</span>` : ""}
+                    <span>${escapeHtml(review.reviewed_at.slice(0, 10))}</span>
+                    ${topics.map((topic) => `<span>${escapeHtml(topic.replaceAll("_", " "))}</span>`).join("")}
+                  </div>
+                </article>`;
+              })
+              .join("")
+          : '<p class="empty-state">Reviews will appear after the next collection. Kopa reads the most recent public reviews for each tracked app and primary storefront.</p>'
+      }
+    </section>
+  `;
 }
 
 // ── Sync ─────────────────────────────────────────────────────────────────

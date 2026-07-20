@@ -3,9 +3,7 @@
 //
 // Scope: owned-app + competitor public metadata refresh and change
 // detection, keyword search + rank snapshots (owned apps and competitors),
-// then the insight rule engine. Review collection is still deferred (see
-// docs note in insights.js) — that table stays empty until the Reviews tab
-// ships.
+// then public customer-review collection and the insight rule engine.
 //
 // Idempotent: metadata/competitor snapshots only insert on checksum change,
 // search results upsert one-per-day, rank snapshots insert once per
@@ -14,6 +12,7 @@
 import { deriveRankFields, toDateStr, compareWindows, addDays } from "./_lib/calc.js";
 import { diffMetadata, metadataChecksum } from "./_lib/metadata-diff.js";
 import { lookupApp, searchApps } from "./_lib/providers.js";
+import { syncRecentReviews } from "./_lib/appstore-reviews.js";
 import { hasSalesReportsConfig, salesSyncMessage, syncDailySalesMetrics } from "./_lib/appstore-sales.js";
 import { syncDiscoveryAnalytics } from "./_lib/appstore-analytics.js";
 import { draftToInsertRow, evaluateRulesForApp, filterAgainstExisting } from "./_lib/insights.js";
@@ -354,6 +353,16 @@ async function runCollection(trigger) {
       }
     }
 
+    // ── Public customer reviews ───────────────────────────────────────
+    let reviews = { state: "not_run", imported: 0 };
+    try {
+      const result = await syncRecentReviews(db, apps);
+      reviews = { state: "ok", ...result };
+    } catch (error) {
+      counters.warnings++;
+      reviews = { state: "warning", message: msg(error), imported: 0 };
+    }
+
     // ── First-party daily sales ───────────────────────────────────────
     let sales = { state: "not_configured", imported: 0 };
     if (hasSalesReportsConfig()) {
@@ -402,6 +411,7 @@ async function runCollection(trigger) {
           keywords: trackedKeywords.length,
           keywords_total: allTrackedKeywords.length,
           insights_created: created,
+          reviews,
           sales,
           storefront_analytics: storefrontAnalytics,
         },
@@ -434,7 +444,7 @@ async function runCollection(trigger) {
 
 async function runInsightEngine(db) {
   const today = toDateStr(new Date());
-  const [apps, storefronts, metrics, storefrontMetrics, appKeywords, keywords, snapshots, competitorRankSnapshots, competitors, changeEvents, reviews, experiments, syncRuns, existingInsights] =
+  const [apps, storefronts, metrics, storefrontMetrics, appKeywords, keywords, snapshots, competitorRankSnapshots, competitors, changeEvents, reviews, reviewClassifications, experiments, syncRuns, existingInsights] =
     await Promise.all([
       db.select("aso_apps", "select=*"),
       db.select("aso_app_storefronts", "select=*"),
@@ -447,6 +457,7 @@ async function runInsightEngine(db) {
       db.select("aso_competitors", "select=*"),
       db.select("aso_metadata_change_events", "select=*"),
       db.select("aso_reviews", `reviewed_at=gte.${addDays(today, -80)}&select=*`),
+      db.select("aso_review_classifications", "select=*&order=classified_at.desc&limit=2000"),
       db.select("aso_experiments", "select=*"),
       db.select("aso_sync_runs", "order=started_at.desc&limit=20&select=*"),
       db.select("aso_insights", "select=dedupe_key,status,updated_at,snoozed_until"),
@@ -486,6 +497,7 @@ async function runInsightEngine(db) {
       storefrontMetricsByCountry,
       competitors: competitors.filter((competitor) => competitor.app_id === app.id),
       competitorRankSnapshots,
+      reviewClassifications,
       keywords: appKeywords
         .filter((link) => link.app_id === app.id && link.status !== "paused")
         .map((link) => {
