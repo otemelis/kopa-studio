@@ -14,7 +14,19 @@ function base64url(value) {
 }
 
 function privateKey() {
-  return requiredEnv("APP_STORE_CONNECT_PRIVATE_KEY").replace(/\\n/g, "\n").trim();
+  const raw = requiredEnv("APP_STORE_CONNECT_PRIVATE_KEY").trim();
+  const unquoted =
+    raw.length >= 2 && ((raw.startsWith('"') && raw.endsWith('"')) || (raw.startsWith("'") && raw.endsWith("'")))
+      ? raw.slice(1, -1)
+      : raw;
+  const pem = unquoted.replace(/\\r?n/g, "\n").trim();
+  if (pem.includes("-----BEGIN PRIVATE KEY-----") && pem.includes("-----END PRIVATE KEY-----")) return pem;
+
+  // Base64 avoids multiline environment-variable handling entirely.
+  const decoded = Buffer.from(pem.replace(/\s/g, ""), "base64").toString("utf8").trim();
+  if (decoded.includes("-----BEGIN PRIVATE KEY-----") && decoded.includes("-----END PRIVATE KEY-----")) return decoded;
+
+  throw new Error("APP_STORE_CONNECT_PRIVATE_KEY must contain the complete .p8 PEM, including BEGIN/END lines, or a base64-encoded .p8 file.");
 }
 
 export function hasAppStoreConnectConfig() {
@@ -36,7 +48,13 @@ export function createAppStoreConnectToken() {
   const signer = createSign("SHA256");
   signer.update(unsigned);
   signer.end();
-  const signature = signer.sign({ key: privateKey(), dsaEncoding: "ieee-p1363" }).toString("base64url");
+  const key = privateKey();
+  let signature;
+  try {
+    signature = signer.sign({ key, dsaEncoding: "ieee-p1363" }).toString("base64url");
+  } catch {
+    throw new Error("APP_STORE_CONNECT_PRIVATE_KEY could not be decoded. Re-enter the complete Apple .p8 key without modifying it.");
+  }
   return `${unsigned}.${signature}`;
 }
 
