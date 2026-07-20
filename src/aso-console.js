@@ -450,6 +450,12 @@ function timeSince(value) {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
+function wireScrollActions(panel) {
+  panel.querySelectorAll("[data-scroll-to]").forEach((button) =>
+    button.addEventListener("click", () => panel.querySelector(`#${button.dataset.scrollTo}`)?.scrollIntoView({ behavior: "smooth", block: "start" })),
+  );
+}
+
 // ── Keywords ─────────────────────────────────────────────────────────────
 
 async function renderKeywords(panel) {
@@ -502,7 +508,7 @@ async function renderKeywords(panel) {
       <article><span>Currently ranked</span><strong>${ranked}</strong></article>
     </div>
     <section class="panel">
-      <div class="panel-head"><h3>Keywords (${rows.length})</h3><span>gaining/declining vs 7 days ago</span></div>
+      <div class="panel-head"><h3>Keywords (${rows.length})</h3><div class="aso-panel-actions"><span>gaining/declining vs 7 days ago</span><button type="button" class="aso-action-primary" data-scroll-to="aso-keyword-form">Add keywords</button></div></div>
       <table class="aso-table">
         <thead><tr><th>Keyword</th><th>App</th><th>Country</th><th>Rank</th><th>7d</th><th>30d</th><th>Best</th><th>Comp.</th><th>Priority</th><th>Actions</th></tr></thead>
         <tbody>
@@ -533,6 +539,7 @@ async function renderKeywords(panel) {
     ${formHtml}
   `;
   wireKeywordActions(panel, rows);
+  wireScrollActions(panel);
   if (editingRow) wireKeywordEditForm(panel, editingRow, appKeywords);
   wireKeywordForm(panel);
 }
@@ -544,7 +551,7 @@ function rankDelta(value) {
 
 function renderKeywordFormHtml(apps) {
   return `
-    <section class="panel">
+    <section class="panel" id="aso-keyword-form">
       <div class="panel-head"><h3>Add keywords</h3><span>one per line, collected once per day per country</span></div>
       <label class="aso-field">
         <span>App</span>
@@ -941,7 +948,7 @@ async function renderExperiments(panel) {
       <article><span>Decision recorded</span><strong>${readyCount}</strong></article>
     </div>
     <section class="panel">
-      <div class="panel-head"><h3>Experiments (${experiments.length})</h3><span>tap a row for pre/post analysis</span></div>
+      <div class="panel-head"><h3>Experiments (${experiments.length})</h3><div class="aso-panel-actions"><span>tap a row for pre/post analysis</span><button type="button" class="aso-action-primary" data-scroll-to="aso-experiment-form">Log experiment</button></div></div>
       ${
         experiments.length === 0
           ? `<p class="empty-state">No experiments logged yet — every icon, screenshot or metadata change is worth logging below.</p>`
@@ -967,7 +974,7 @@ async function renderExperiments(panel) {
       }
     </section>
     ${open ? renderExperimentDetailHtml(open, apps) : ""}
-    <section class="panel">
+    <section class="panel" id="aso-experiment-form">
       <div class="panel-head"><h3>Log a new experiment</h3></div>
       <label class="aso-field">
         <span>App</span>
@@ -1016,6 +1023,8 @@ async function renderExperiments(panel) {
       renderSubTab(panel);
     }),
   );
+
+  wireScrollActions(panel);
 
   if (open) wireExperimentDetailForm(panel, open);
 
@@ -1275,7 +1284,7 @@ async function renderCompetitors(panel) {
       }
     </section>
     <section class="panel">
-      <div class="panel-head"><h3>Tracked competitors (${competitors.length})</h3></div>
+      <div class="panel-head"><h3>Tracked competitors (${competitors.length})</h3><button type="button" class="aso-action-primary" data-scroll-to="aso-competitor-form">Add competitor</button></div>
       ${
         competitors.length === 0
           ? `<p class="empty-state">No competitors tracked. Add one below by App Store URL or numeric id.</p>`
@@ -1298,7 +1307,7 @@ async function renderCompetitors(panel) {
             </table>`
       }
     </section>
-    <section class="panel">
+    <section class="panel" id="aso-competitor-form">
       <div class="panel-head"><h3>Add competitor</h3></div>
       <label class="aso-field">
         <span>Track against</span>
@@ -1321,6 +1330,8 @@ async function renderCompetitors(panel) {
       }
     }),
   );
+
+  wireScrollActions(panel);
 
   panel.querySelector("#aso-comp-submit").addEventListener("click", async () => {
     const btn = panel.querySelector("#aso-comp-submit");
