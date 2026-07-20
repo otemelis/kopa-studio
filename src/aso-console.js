@@ -1046,6 +1046,8 @@ const CHANGE_TYPES = [
 ];
 
 let openExperimentId = null;
+let experimentFormOpen = false;
+let experimentFilters = { app: "all", status: "active" };
 
 async function renderExperiments(panel) {
   const [experiments, apps] = await Promise.all([
@@ -1060,6 +1062,12 @@ async function renderExperiments(panel) {
 
   const order = { running: 0, monitoring: 1, planned: 2, won: 3, lost: 4, inconclusive: 5, reverted: 6 };
   const sorted = [...experiments].sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9));
+  const visibleExperiments = sorted.filter((experiment) => {
+    if (experimentFilters.app !== "all" && experiment.app_id !== experimentFilters.app) return false;
+    if (experimentFilters.status === "active") return ["running", "monitoring", "planned"].includes(experiment.status);
+    if (experimentFilters.status === "closed") return ["won", "lost", "inconclusive", "reverted"].includes(experiment.status);
+    return experimentFilters.status === "all" || experiment.status === experimentFilters.status;
+  });
 
   const open = openExperimentId ? experiments.find((e) => e.id === openExperimentId) : null;
   const liveCount = experiments.filter((experiment) => ["running", "monitoring"].includes(experiment.status)).length;
@@ -1073,35 +1081,8 @@ async function renderExperiments(panel) {
       <article><span>Planned</span><strong>${plannedCount}</strong></article>
       <article><span>Decision recorded</span><strong>${readyCount}</strong></article>
     </div>
-    <section class="panel">
-      <div class="panel-head"><h3>Experiments (${experiments.length})</h3><div class="aso-panel-actions"><span>tap a row for pre/post analysis</span><button type="button" class="aso-action-primary" data-scroll-to="aso-experiment-form">Log experiment</button></div></div>
-      ${
-        experiments.length === 0
-          ? `<p class="empty-state">No experiments logged yet — every icon, screenshot or metadata change is worth logging below.</p>`
-          : `<table class="aso-table">
-              <thead><tr><th>Title</th><th>App</th><th>Change</th><th>Market</th><th>Kopa</th><th>Status</th><th>Started</th></tr></thead>
-              <tbody>
-                ${sorted
-                  .map((e) => {
-                    const app = apps.find((a) => a.id === e.app_id);
-                    return `<tr class="aso-row-link" data-open-experiment="${e.id}">
-                      <td>${escapeHtml(e.title)}</td>
-                      <td class="mono">${escapeHtml(app?.name.split(" ")[0] ?? "—")}</td>
-                      <td class="mono">${escapeHtml(e.change_type.replaceAll("_", " "))}</td>
-                      <td class="mono">${e.country.toUpperCase()}</td>
-                      <td class="mono">${escapeHtml(e.decision_recommendation ?? "-")}</td>
-                      <td class="mono status-${e.status === "won" ? "ok" : e.status === "lost" ? "failed" : "partial"}">${e.status}</td>
-                      <td class="mono">${e.start_date ?? "—"}</td>
-                    </tr>`;
-                  })
-                  .join("")}
-              </tbody>
-            </table>`
-      }
-    </section>
-    ${open ? renderExperimentDetailHtml(open, apps) : ""}
-    <section class="panel" id="aso-experiment-form">
-      <div class="panel-head"><h3>Log a new experiment</h3></div>
+    <section class="panel aso-experiment-form" id="aso-experiment-form" ${experimentFormOpen ? "" : "hidden"}>
+      <div class="panel-head"><h3>Log a new experiment</h3><button type="button" class="aso-link-button" data-close-experiment-form>Close</button></div>
       <label class="aso-field">
         <span>App</span>
         <select id="aso-exp-app">${apps.map((a) => `<option value="${a.id}">${escapeHtml(a.name)}</option>`).join("")}</select>
@@ -1141,6 +1122,34 @@ async function renderExperiments(panel) {
       <button type="button" id="aso-exp-submit">Create experiment</button>
       <p id="aso-exp-status" class="empty-state" hidden></p>
     </section>
+    <section class="panel">
+      <div class="panel-head"><h3>Experiments</h3><div class="aso-panel-actions"><span>${visibleExperiments.length}/${experiments.length} shown</span><button type="button" class="aso-action-primary" data-open-experiment-form>Log experiment</button></div></div>
+      <div class="aso-filter-toolbar"><select id="aso-experiment-app"><option value="all">All apps</option>${apps.map((app) => `<option value="${app.id}" ${experimentFilters.app === app.id ? "selected" : ""}>${escapeHtml(app.name)}</option>`).join("")}</select><select id="aso-experiment-status"><option value="active" ${experimentFilters.status === "active" ? "selected" : ""}>Active queue</option><option value="running" ${experimentFilters.status === "running" ? "selected" : ""}>Running</option><option value="monitoring" ${experimentFilters.status === "monitoring" ? "selected" : ""}>Monitoring</option><option value="planned" ${experimentFilters.status === "planned" ? "selected" : ""}>Planned</option><option value="closed" ${experimentFilters.status === "closed" ? "selected" : ""}>Closed</option><option value="all" ${experimentFilters.status === "all" ? "selected" : ""}>All statuses</option></select></div>
+      ${
+        visibleExperiments.length === 0
+          ? `<p class="empty-state">No experiments logged yet — every icon, screenshot or metadata change is worth logging below.</p>`
+          : `<table class="aso-table">
+              <thead><tr><th>Title</th><th>App</th><th>Change</th><th>Market</th><th>Kopa</th><th>Status</th><th>Started</th></tr></thead>
+              <tbody>
+                ${visibleExperiments
+                  .map((e) => {
+                    const app = apps.find((a) => a.id === e.app_id);
+                    return `<tr class="aso-row-link" data-open-experiment="${e.id}">
+                      <td>${escapeHtml(e.title)}</td>
+                      <td class="mono">${escapeHtml(app?.name.split(" ")[0] ?? "—")}</td>
+                      <td class="mono">${escapeHtml(e.change_type.replaceAll("_", " "))}</td>
+                      <td class="mono">${e.country.toUpperCase()}</td>
+                      <td class="mono">${escapeHtml(e.decision_recommendation ?? "-")}</td>
+                      <td class="mono status-${e.status === "won" ? "ok" : e.status === "lost" ? "failed" : "partial"}">${e.status}</td>
+                      <td class="mono">${e.start_date ?? "—"}</td>
+                    </tr>`;
+                  })
+                  .join("")}
+              </tbody>
+            </table>`
+      }
+    </section>
+    ${open ? renderExperimentDetailHtml(open, apps) : ""}
   `;
 
   panel.querySelectorAll("[data-open-experiment]").forEach((row) =>
@@ -1150,17 +1159,33 @@ async function renderExperiments(panel) {
     }),
   );
 
-  wireScrollActions(panel);
-
   if (open) wireExperimentDetailForm(panel, open);
+  panel.querySelector("[data-open-experiment-form]")?.addEventListener("click", () => {
+    experimentFormOpen = true;
+    openExperimentId = null;
+    renderSubTab(panel);
+  });
+  panel.querySelector("[data-close-experiment-form]")?.addEventListener("click", () => {
+    experimentFormOpen = false;
+    renderSubTab(panel);
+  });
+  [
+    ["#aso-experiment-app", "app"],
+    ["#aso-experiment-status", "status"],
+  ].forEach(([selector, key]) =>
+    panel.querySelector(selector)?.addEventListener("change", (event) => {
+      experimentFilters[key] = event.target.value;
+      renderSubTab(panel);
+    }),
+  );
 
-  panel.querySelector("#aso-exp-target-metric").addEventListener("change", (event) => {
+  panel.querySelector("#aso-exp-target-metric")?.addEventListener("change", (event) => {
     const conversion = event.target.value === "conversion";
     panel.querySelector("#aso-exp-threshold").value = conversion ? "1" : "10";
     panel.querySelector("#aso-exp-threshold-unit").textContent = conversion ? "pp" : "%";
   });
 
-  panel.querySelector("#aso-exp-submit").addEventListener("click", async () => {
+  panel.querySelector("#aso-exp-submit")?.addEventListener("click", async () => {
     const submit = panel.querySelector("#aso-exp-submit");
     const status = panel.querySelector("#aso-exp-status");
     status.hidden = false;
@@ -1202,6 +1227,7 @@ async function renderExperiments(panel) {
         },
       ]);
       status.textContent = "Experiment created.";
+      experimentFormOpen = false;
       setTimeout(() => renderSubTab(panel), 800);
     } catch (error) {
       status.textContent = error.message;
