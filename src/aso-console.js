@@ -364,7 +364,7 @@ const ALERT_KINDS = [
 
 async function renderBriefing(panel) {
   const today = toDateStr(new Date());
-  const [apps, metrics, insights, changes, reviews, experiments, preferences] = await Promise.all([
+  const [apps, metrics, insights, changes, reviews, experiments, preferences, runs] = await Promise.all([
     pg("aso_apps", "select=id,name"),
     pg("aso_daily_metrics", `date=gte.${addDays(today, -14)}&select=*`),
     pg("aso_insights", "status=eq.active&select=*&order=created_at.desc"),
@@ -372,6 +372,7 @@ async function renderBriefing(panel) {
     pg("aso_reviews", `reviewed_at=gte.${addDays(today, -7)}&select=id,rating`),
     pg("aso_experiments", "status=in.(running,monitoring)&select=id,title,decision_recommendation"),
     pg("aso_alert_preferences", "select=kind,enabled"),
+    pg("aso_sync_runs", "select=status,started_at&order=started_at.desc&limit=5"),
   ]);
   const comparison = compareWindows(metrics, 7, today);
   const priorities = { high: 0, medium: 1, low: 2 };
@@ -381,6 +382,7 @@ async function renderBriefing(panel) {
   const lowReviews = reviews.filter((review) => review.rating <= 2).length;
   const recommendations = experiments.filter((experiment) => ["winner", "loser", "inconclusive"].includes(experiment.decision_recommendation)).length;
   const preferenceMap = new Map(preferences.map((preference) => [preference.kind, preference.enabled]));
+  const lastOk = runs.find((run) => run.status === "ok" || run.status === "partial");
   const lines = [
     `Kopa ASO weekly briefing - ${today}`,
     `Downloads: ${formatNumber(comparison.current.downloads)} (${formatPct(comparison.downloads_pct)})`,
@@ -392,7 +394,7 @@ async function renderBriefing(panel) {
 
   panel.innerHTML = `
     <section class="panel aso-briefing-summary">
-      <div class="panel-head"><h3>Weekly briefing</h3><span>week ending ${today}</span></div>
+      <div class="panel-head"><h3>Weekly briefing</h3><span>week ending ${today} · data refreshed ${timeSince(lastOk?.started_at)}</span></div>
       <div class="metric-grid">
         <article><span>Downloads</span><strong>${formatNumber(comparison.current.downloads)}</strong><small class="${deltaClass(comparison.downloads_pct)}">${formatPct(comparison.downloads_pct)}</small></article>
         <article><span>Product-page views</span><strong>${formatNumber(comparison.current.page_views)}</strong><small class="${deltaClass(comparison.page_views_pct)}">${formatPct(comparison.page_views_pct)}</small></article>
@@ -408,7 +410,7 @@ async function renderBriefing(panel) {
       ${
         alerts.length
           ? alerts
-              .map((alert) => `<div class="aso-change-row"><span class="priority-${alert.priority}">${alert.priority}</span><span>${escapeHtml(alert.title)}</span><span class="muted">${escapeHtml(alert.recommendation)}</span></div>`)
+              .map((alert) => { const tab = alert.rule_id.startsWith("competitor_") ? "competitors" : alert.rule_id.startsWith("experiment_") ? "experiments" : alert.rule_id.startsWith("review_") ? "reviews" : alert.rule_id.includes("keyword") ? "keywords" : "insights"; return `<div class="aso-briefing-action"><div><span class="priority-${alert.priority}">${alert.priority}</span><strong>${escapeHtml(alert.title)}</strong><p>${escapeHtml(alert.recommendation)}</p></div><div><button type="button" class="aso-link-button" data-briefing-open="${tab}">View evidence</button><button type="button" class="aso-link-button" data-briefing-action="completed" data-insight-id="${alert.id}">Done</button><button type="button" class="aso-link-button" data-briefing-action="snoozed" data-insight-id="${alert.id}">Snooze</button></div></div>`; })
               .join("")
           : '<p class="empty-state">No active signals yet. Kopa will add a briefing item when there is enough evidence to act.</p>'
       }
@@ -455,6 +457,27 @@ async function renderBriefing(panel) {
         alert(error.message);
       } finally {
         input.disabled = false;
+      }
+    }),
+  );
+  panel.querySelectorAll("[data-briefing-open]").forEach((button) =>
+    button.addEventListener("click", () => {
+      activeSubTab = button.dataset.briefingOpen;
+      document.querySelectorAll("[data-aso-tab]").forEach((tab) => tab.classList.toggle("active", tab.dataset.asoTab === activeSubTab));
+      renderSubTab(panel);
+    }),
+  );
+  panel.querySelectorAll("[data-briefing-action]").forEach((button) =>
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      try {
+        const patch = { status: button.dataset.briefingAction, updated_at: new Date().toISOString() };
+        if (patch.status === "snoozed") patch.snoozed_until = new Date(Date.now() + 14 * 86400000).toISOString();
+        await pgWrite("PATCH", "aso_insights", patch, `id=eq.${button.dataset.insightId}`);
+        renderSubTab(panel);
+      } catch (error) {
+        button.disabled = false;
+        alert(error.message);
       }
     }),
   );
@@ -1674,8 +1697,16 @@ async function renderSync(panel) {
   const appStoreConnect = connections[0] ?? null;
   const analyticsRequest = analyticsStatus?.requests?.[0] ?? null;
   const analyticsMessage = analyticsRequest?.last_error ?? (analyticsRequest ? `Report request ${analyticsRequest.status}. ${analyticsRequest.last_checked_at ? `Last checked ${analyticsRequest.last_checked_at.slice(0, 16).replace("T", " ")}.` : "Apple can take 1-2 days to generate the first report."}` : "Request the App Store Discovery and Engagement report to measure product-page visits, discovery impressions, sources, and countries.");
+  const nextStep = appStoreConnect?.status !== "configured"
+    ? { title: "Check App Store Connect", detail: "Confirm that Kopa can read your Apple account before relying on storefront data.", target: "[data-test-appstore-connect]", label: "Test connection" }
+    : !analyticsRequest
+      ? { title: "Request storefront analytics", detail: "Apple needs a Discovery and Engagement report request before visits, sources, and countries can appear.", target: "[data-provision-analytics]", label: "Request report" }
+      : !actionReady
+        ? { title: "Refresh collection coverage", detail: staleCount ? `${staleCount} keyword observation${staleCount === 1 ? " is" : "s are"} stale.` : "Run a fresh collection before acting on rank movement.", target: "[data-run-collection]", label: "Run collection" }
+        : { title: "Data is ready for review", detail: "Keyword coverage is fresh. Review this week’s action queue before running another manual collection.", target: null, label: null };
 
   panel.innerHTML = `
+    <section class="panel aso-next-step"><div><span>Recommended next step</span><h3>${nextStep.title}</h3><p>${nextStep.detail}</p></div>${nextStep.target ? `<button type="button" class="aso-action-primary" data-recommended-action="${nextStep.target}">${nextStep.label}</button>` : '<span class="status-ok">Ready</span>'}</section>
     <section class="panel aso-data-health">
       <div class="panel-head"><h3>Data health</h3><span class="status-${actionReady ? "ok" : "partial"}">${actionReady ? "action-ready" : "needs attention"}</span></div>
       <div class="aso-health-banner ${actionReady ? "ready" : "attention"}">
@@ -1743,6 +1774,11 @@ async function renderSync(panel) {
         : ""
     }
   `;
+
+  panel.querySelector("[data-recommended-action]")?.addEventListener("click", (event) => {
+    const target = panel.querySelector(event.target.dataset.recommendedAction);
+    target?.click();
+  });
 
   panel.querySelector("[data-run-collection]").addEventListener("click", async (e) => {
     const btn = e.target;

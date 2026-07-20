@@ -206,11 +206,11 @@ Status: in progress
 
 ### Milestone 4: Trust and Operating Rhythm
 
-Status: planned
+Status: in progress
 
-- Shared data-freshness language across views.
-- Weekly action queue with state and direct evidence links.
-- Simplified Sync recommendations and failure recovery.
+- Briefing freshness, weekly action queue, and direct evidence links: implemented.
+- Sync recommendation with a direct recovery or collection action: implemented.
+- Shared freshness treatment beyond Briefing and Sync: next in this milestone.
 
 ### Milestone 5: Validation
 
