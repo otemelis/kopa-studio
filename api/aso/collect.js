@@ -14,7 +14,7 @@
 import { deriveRankFields, toDateStr, compareWindows, addDays } from "./_lib/calc.js";
 import { diffMetadata, metadataChecksum } from "./_lib/metadata-diff.js";
 import { lookupApp, searchApps } from "./_lib/providers.js";
-import { hasSalesReportsConfig, syncDailySalesMetrics } from "./_lib/appstore-sales.js";
+import { hasSalesReportsConfig, salesSyncMessage, syncDailySalesMetrics } from "./_lib/appstore-sales.js";
 import { draftToInsertRow, evaluateRulesForApp, filterAgainstExisting } from "./_lib/insights.js";
 import { requireAdmin, serviceClient } from "./_lib/supabase.js";
 
@@ -361,7 +361,7 @@ async function runCollection(trigger) {
         sales = { state: "ok", ...result };
         await db.upsert(
           "aso_platform_connections",
-          [{ provider: "appstore_connect", status: "configured", last_sync_at: new Date().toISOString(), last_test_ok: true, last_test_message: `Sales sync imported ${result.imported} country row(s).`, last_test_at: new Date().toISOString() }],
+          [{ provider: "appstore_connect", status: "configured", last_sync_at: new Date().toISOString(), last_test_ok: true, last_test_message: salesSyncMessage(result), last_test_at: new Date().toISOString() }],
           "provider",
         );
       } catch (error) {

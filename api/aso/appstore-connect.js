@@ -1,5 +1,5 @@
 import { hasAppStoreConnectConfig, listAppStoreConnectApps } from "./_lib/appstore-connect.js";
-import { hasSalesReportsConfig, syncDailySalesMetrics } from "./_lib/appstore-sales.js";
+import { hasSalesReportsConfig, salesSyncMessage, syncDailySalesMetrics } from "./_lib/appstore-sales.js";
 import { requireAdmin, serviceClient } from "./_lib/supabase.js";
 
 export default async function handler(request, response) {
@@ -45,10 +45,10 @@ export default async function handler(request, response) {
       const result = await syncDailySalesMetrics(db, apps);
       await db.upsert(
         "aso_platform_connections",
-        [{ provider: "appstore_connect", status: "configured", last_sync_at: new Date().toISOString(), last_test_ok: true, last_test_message: `Sales sync imported ${result.imported} country row(s).`, last_test_at: new Date().toISOString() }],
+        [{ provider: "appstore_connect", status: "configured", last_sync_at: new Date().toISOString(), last_test_ok: true, last_test_message: salesSyncMessage(result), last_test_at: new Date().toISOString() }],
         "provider",
       );
-      response.status(200).json({ ok: true, ...result });
+      response.status(200).json({ ok: true, message: salesSyncMessage(result), ...result });
     } catch (error) {
       response.status(502).json({ error: error instanceof Error ? error.message : "Sales sync failed." });
     }

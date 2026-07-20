@@ -77,6 +77,12 @@ export function parseDailySalesSummary(text) {
   });
 }
 
+export function salesSyncMessage(result) {
+  if (result.noData || result.reportRows === 0) return "Apple returned no Summary Sales rows for the latest available day.";
+  if (result.imported === 0) return `Apple returned ${result.reportRows} sales row(s), but none match Kopa's tracked apps.`;
+  return `Sales sync imported ${result.imported} country row(s) for ${result.dates.join(", ")}.`;
+}
+
 export async function syncDailySalesMetrics(db, ownedApps) {
   let report;
   try {
@@ -84,14 +90,15 @@ export async function syncDailySalesMetrics(db, ownedApps) {
   } catch (error) {
     // Apple doesn't publish a Summary Sales report until at least one unit
     // exists. An absent report is not a broken integration.
-    if (error?.status === 404) return { imported: 0, unmatchedRows: 0, dates: [], noData: true };
+    if (error?.status === 404) return { imported: 0, reportRows: 0, unmatchedRows: 0, dates: [], noData: true };
     throw error;
   }
   const appByStoreId = new Map(ownedApps.map((app) => [String(app.store_app_id), app]));
   const aggregates = new Map();
   let unmatchedRows = 0;
 
-  for (const row of parseDailySalesSummary(report)) {
+  const reportRows = parseDailySalesSummary(report);
+  for (const row of reportRows) {
     const app = appByStoreId.get(row.storeAppId);
     if (!app || !/^\d{4}-\d{2}-\d{2}$/.test(row.date) || !row.country) {
       unmatchedRows++;
@@ -119,5 +126,5 @@ export async function syncDailySalesMetrics(db, ownedApps) {
   }));
 
   await db.upsert("aso_daily_metrics", rows, "app_id,date,country,source");
-  return { imported: rows.length, unmatchedRows, dates: [...new Set(rows.map((row) => row.date))] };
+  return { imported: rows.length, reportRows: reportRows.length, unmatchedRows, dates: [...new Set(rows.map((row) => row.date))] };
 }

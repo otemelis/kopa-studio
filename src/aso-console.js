@@ -1140,7 +1140,7 @@ async function renderSync(panel) {
     status.textContent = "Syncing daily Sales and Trends data…";
     try {
       const result = await callApi("/api/aso/appstore-connect", { action: "sync_sales" });
-      status.textContent = result.imported ? `Imported ${result.imported} daily country row(s) for ${result.dates.join(", ")}.` : "Apple returned no matching sales rows for tracked apps.";
+      status.textContent = result.message;
       setTimeout(() => renderSubTab(panel), 1200);
     } catch (error) {
       status.textContent = error.message;
