@@ -25,6 +25,7 @@ import {
 const SESSION_KEY = "kopa-admin-session-v1";
 let runtimeConfig = null;
 let activeSubTab = "portfolio";
+let editingKeywordLinkId = null;
 
 function getSession() {
   try {
@@ -112,7 +113,7 @@ async function pgWrite(method, table, body, query = "") {
         "Content-Type": "application/json",
         Prefer: "return=representation",
       },
-      body: JSON.stringify(body),
+      body: body == null ? undefined : JSON.stringify(body),
     }),
   );
   if (!res.ok) {
@@ -170,6 +171,22 @@ const SUB_TABS = [
   ["competitors", "Competitors"],
   ["sync", "Sync"],
 ];
+
+const COUNTRY_ALIASES = {
+  ko: ["kr", "Korean is a language code. South Korea's App Store storefront is KR."],
+  ja: ["jp", "Japanese is a language code. Japan's App Store storefront is JP."],
+  zh: ["tw", "Chinese is a language code. Use TW, HK, MO, or CN for the storefront."],
+  uk: ["gb", "Use GB for the United Kingdom App Store storefront."],
+};
+
+function normalizeCountry(input) {
+  const raw = String(input ?? "").trim().toLowerCase();
+  if (!raw) return { country: "us", warning: null };
+  if (!/^[a-z]{2}$/.test(raw)) throw new Error("Country must be a two-letter App Store storefront code, like us, se, tw, hk, kr, or cn.");
+  const alias = COUNTRY_ALIASES[raw];
+  if (!alias) return { country: raw, warning: null };
+  return { country: alias[0], warning: alias[1] };
+}
 
 export function mountAsoTab(root) {
   root.innerHTML = `
@@ -309,15 +326,17 @@ async function renderKeywords(panel) {
       const owned = kwSnaps.filter((sn) => sn.store_app_id === app.store_app_id && sn.app_kind === "owned");
       const latest = owned[owned.length - 1] ?? null;
       const compCount = new Set(kwSnaps.filter((sn) => sn.app_kind === "competitor").map((sn) => sn.store_app_id)).size;
-      return { keyword, app, latest, compCount };
+      return { link, keyword, app, latest, compCount };
     })
     .filter(Boolean);
+
+  const editingRow = editingKeywordLinkId ? rows.find((r) => r.link.id === editingKeywordLinkId) : null;
 
   panel.innerHTML = `
     <section class="panel">
       <div class="panel-head"><h3>Keywords (${rows.length})</h3><span>gaining/declining vs 7 days ago</span></div>
       <table class="aso-table">
-        <thead><tr><th>Keyword</th><th>App</th><th>Country</th><th>Rank</th><th>7d</th><th>30d</th><th>Best</th><th>Comp.</th><th>Priority</th></tr></thead>
+        <thead><tr><th>Keyword</th><th>App</th><th>Country</th><th>Rank</th><th>7d</th><th>30d</th><th>Best</th><th>Comp.</th><th>Priority</th><th>Actions</th></tr></thead>
         <tbody>
           ${rows
             .map(
@@ -331,6 +350,10 @@ async function renderKeywords(panel) {
                 <td class="mono">${r.latest?.best_rank != null ? `#${r.latest.best_rank}` : "—"}</td>
                 <td class="mono">${r.compCount || "—"}</td>
                 <td class="mono">${escapeHtml(r.keyword.priority)}</td>
+                <td class="mono aso-table-actions">
+                  <button type="button" data-edit-keyword="${r.link.id}">Edit</button>
+                  <button type="button" data-delete-keyword="${r.link.id}">Delete</button>
+                </td>
               </tr>`,
             )
             .join("")}
@@ -338,8 +361,11 @@ async function renderKeywords(panel) {
       </table>
     </section>
     <p class="empty-state">${competitors.length} competitor(s) tracked across the portfolio.</p>
+    ${editingRow ? renderKeywordEditHtml(editingRow, groups) : ""}
     ${formHtml}
   `;
+  wireKeywordActions(panel, rows);
+  if (editingRow) wireKeywordEditForm(panel, editingRow, appKeywords);
   wireKeywordForm(panel);
 }
 
@@ -385,12 +411,147 @@ car escape game"></textarea>
   `;
 }
 
+function renderKeywordEditHtml(row, groups) {
+  const currentGroup = groups.find((g) => g.id === row.keyword.group_id);
+  return `
+    <section class="panel">
+      <div class="panel-head">
+        <h3>Edit keyword</h3>
+        <button type="button" class="aso-link-button" data-cancel-keyword-edit>Cancel</button>
+      </div>
+      <label class="aso-field">
+        <span>Keyword</span>
+        <input id="aso-edit-term" type="text" value="${escapeHtml(row.keyword.term)}" />
+      </label>
+      <label class="aso-field aso-field-narrow">
+        <span>Country</span>
+        <input id="aso-edit-country" type="text" value="${escapeHtml(row.keyword.country)}" maxlength="2" />
+      </label>
+      <label class="aso-field aso-field-narrow">
+        <span>Priority</span>
+        <select id="aso-edit-priority">
+          ${["high", "medium", "low"].map((p) => `<option value="${p}" ${row.keyword.priority === p ? "selected" : ""}>${p[0].toUpperCase()}${p.slice(1)}</option>`).join("")}
+        </select>
+      </label>
+      <label class="aso-field">
+        <span>Group (optional)</span>
+        <input id="aso-edit-group" type="text" value="${escapeHtml(currentGroup?.name ?? "")}" placeholder="Core" />
+      </label>
+      <label class="aso-field">
+        <span>Notes (optional)</span>
+        <textarea id="aso-edit-notes" rows="3" placeholder="Why are we tracking this?">${escapeHtml(row.keyword.notes ?? "")}</textarea>
+      </label>
+      <button type="button" id="aso-edit-submit">Save keyword</button>
+      <p id="aso-edit-status" class="empty-state" hidden></p>
+    </section>
+  `;
+}
+
+async function keywordGroupIdFromName(name) {
+  const groupName = name.trim();
+  if (!groupName) return null;
+  const existing = await pg("aso_keyword_groups", `name=eq.${encodeURIComponent(groupName)}&select=id`);
+  if (existing.length) return existing[0].id;
+  const [group] = await pgWrite("POST", "aso_keyword_groups", [{ name: groupName, kind: "core" }]);
+  return group.id;
+}
+
+function wireKeywordActions(panel, rows) {
+  panel.querySelectorAll("[data-edit-keyword]").forEach((btn) =>
+    btn.addEventListener("click", () => {
+      editingKeywordLinkId = btn.dataset.editKeyword;
+      renderSubTab(panel);
+    }),
+  );
+
+  panel.querySelectorAll("[data-delete-keyword]").forEach((btn) =>
+    btn.addEventListener("click", async () => {
+      const row = rows.find((r) => r.link.id === btn.dataset.deleteKeyword);
+      if (!row) return;
+      const ok = confirm(`Stop tracking "${row.keyword.term}" for ${row.app.name}? Existing historical snapshots will be removed if no other app tracks this keyword.`);
+      if (!ok) return;
+      btn.disabled = true;
+      try {
+        await pgWrite("DELETE", "aso_app_keywords", null, `id=eq.${row.link.id}`);
+        const remainingLinks = await pg("aso_app_keywords", `keyword_id=eq.${row.keyword.id}&select=id&limit=1`);
+        if (remainingLinks.length === 0) {
+          await pgWrite("DELETE", "aso_keywords", null, `id=eq.${row.keyword.id}`);
+        }
+        if (editingKeywordLinkId === row.link.id) editingKeywordLinkId = null;
+        renderSubTab(panel);
+      } catch (error) {
+        btn.disabled = false;
+        alert(error.message);
+      }
+    }),
+  );
+}
+
+function wireKeywordEditForm(panel, row, appKeywords) {
+  panel.querySelector("[data-cancel-keyword-edit]")?.addEventListener("click", () => {
+    editingKeywordLinkId = null;
+    renderSubTab(panel);
+  });
+
+  panel.querySelector("#aso-edit-submit")?.addEventListener("click", async () => {
+    const submit = panel.querySelector("#aso-edit-submit");
+    const status = panel.querySelector("#aso-edit-status");
+    const term = panel.querySelector("#aso-edit-term").value.trim().toLowerCase();
+    const priority = panel.querySelector("#aso-edit-priority").value;
+    const groupName = panel.querySelector("#aso-edit-group").value;
+    const notes = panel.querySelector("#aso-edit-notes").value.trim() || null;
+    status.hidden = false;
+
+    if (term.length < 2) {
+      status.textContent = "Keyword must be at least two characters.";
+      return;
+    }
+
+    let countryInfo;
+    try {
+      countryInfo = normalizeCountry(panel.querySelector("#aso-edit-country").value);
+    } catch (error) {
+      status.textContent = error.message;
+      return;
+    }
+
+    const sharedCount = appKeywords.filter((link) => link.keyword_id === row.keyword.id).length;
+    if (sharedCount > 1 && (term !== row.keyword.term || countryInfo.country !== row.keyword.country)) {
+      const ok = confirm(`This keyword is tracked by ${sharedCount} apps. Editing the term or country changes it everywhere. Continue?`);
+      if (!ok) return;
+    }
+
+    submit.disabled = true;
+    status.textContent = "Saving…";
+    try {
+      const groupId = await keywordGroupIdFromName(groupName);
+      await pgWrite(
+        "PATCH",
+        "aso_keywords",
+        {
+          term,
+          country: countryInfo.country,
+          priority,
+          group_id: groupId,
+          notes,
+        },
+        `id=eq.${row.keyword.id}`,
+      );
+      editingKeywordLinkId = null;
+      status.textContent = countryInfo.warning ? `${countryInfo.warning} Saved as ${countryInfo.country.toUpperCase()}.` : "Saved.";
+      setTimeout(() => renderSubTab(panel), 700);
+    } catch (error) {
+      status.textContent = error.message;
+      submit.disabled = false;
+    }
+  });
+}
+
 function wireKeywordForm(panel) {
   const submit = panel.querySelector("#aso-kw-submit");
   if (!submit) return;
   submit.addEventListener("click", async () => {
     const appId = panel.querySelector("#aso-kw-app").value;
-    const country = panel.querySelector("#aso-kw-country").value.trim().toLowerCase() || "us";
     const priority = panel.querySelector("#aso-kw-priority").value;
     const groupName = panel.querySelector("#aso-kw-group").value.trim();
     const terms = panel
@@ -405,28 +566,27 @@ function wireKeywordForm(panel) {
       status.textContent = "Enter at least one keyword.";
       return;
     }
+    let countryInfo;
+    try {
+      countryInfo = normalizeCountry(panel.querySelector("#aso-kw-country").value);
+    } catch (error) {
+      status.textContent = error.message;
+      return;
+    }
     submit.disabled = true;
     status.textContent = "Saving…";
     try {
-      let groupId = null;
-      if (groupName) {
-        const existing = await pg("aso_keyword_groups", `name=eq.${encodeURIComponent(groupName)}&select=id`);
-        if (existing.length) {
-          groupId = existing[0].id;
-        } else {
-          const [group] = await pgWrite("POST", "aso_keyword_groups", [{ name: groupName, kind: "core" }]);
-          groupId = group.id;
-        }
-      }
+      const groupId = await keywordGroupIdFromName(groupName);
       for (const term of terms) {
         const [keyword] = await pgUpsert(
           "aso_keywords",
-          [{ term, country, language: null, group_id: groupId, priority, notes: null }],
+          [{ term, country: countryInfo.country, language: null, group_id: groupId, priority, notes: null }],
           "term,country",
         );
         await pgUpsert("aso_app_keywords", [{ app_id: appId, keyword_id: keyword.id }], "app_id,keyword_id");
       }
-      status.textContent = `Tracking ${terms.length} keyword(s) in ${country.toUpperCase()}. Run a collection from the Sync tab to start ranking them.`;
+      const warning = countryInfo.warning ? `${countryInfo.warning} ` : "";
+      status.textContent = `${warning}Tracking ${terms.length} keyword(s) in ${countryInfo.country.toUpperCase()}. Run a collection from the Sync tab to start ranking them.`;
       setTimeout(() => renderSubTab(panel), 1200);
     } catch (error) {
       status.textContent = error.message;

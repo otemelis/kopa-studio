@@ -51,12 +51,16 @@ footer{background:var(--moss);color:var(--paper);padding:80px 6vw 30px;display:g
 .aso-field{display:block;margin-bottom:18px;max-width:520px}
 .aso-field-narrow{max-width:120px}
 .aso-field span{display:block;font-size:9px;color:#839086;text-transform:uppercase;margin-bottom:8px}
-.aso-field input{width:100%;background:#151915;border:1px solid #354039;color:#e8eee9;padding:12px;font:13px DM Mono;border-radius:8px}
-#aso-add-submit,.aso-run-collection{border:0;background:#d8ff5f;color:#0d100e;font:500 11px DM Mono;text-transform:uppercase;padding:14px 22px;border-radius:8px;cursor:pointer;margin-bottom:14px}
-#aso-add-submit:disabled,.aso-run-collection:disabled{opacity:.5;cursor:default}
+.aso-field input,.aso-field select,.aso-field textarea{width:100%;background:#151915;border:1px solid #354039;color:#e8eee9;padding:12px;font:13px DM Mono;border-radius:8px}
+.aso-field textarea{resize:vertical;line-height:1.5}
+#aso-add-submit,#aso-kw-submit,#aso-edit-submit,.aso-run-collection{border:0;background:#d8ff5f;color:#0d100e;font:500 11px DM Mono;text-transform:uppercase;padding:14px 22px;border-radius:8px;cursor:pointer;margin-bottom:14px}
+#aso-add-submit:disabled,#aso-kw-submit:disabled,#aso-edit-submit:disabled,.aso-run-collection:disabled{opacity:.5;cursor:default}
 @media(max-width:800px){.aso-subnav{gap:6px}.aso-table{font-size:11px}.aso-evidence{grid-template-columns:1fr}}
 #dashboard-content[hidden],#aso-root[hidden]{display:none}
 .aso-row-link{cursor:pointer}
 .aso-row-link:hover td{color:#e8eee9}
 .aso-change-row{display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;font-size:12px;color:#c7cdc8;border-top:1px solid #202620;padding:10px 0}
 .aso-change-row:first-child{border-top:0}
+.aso-table-actions{display:flex;gap:8px}
+.aso-table-actions button,.aso-link-button{border:1px solid #354039;background:transparent;color:#839086;font:9px DM Mono;text-transform:uppercase;padding:7px 10px;border-radius:6px;cursor:pointer}
+.aso-table-actions button:hover,.aso-link-button:hover{color:#e8eee9;border-color:#55615a}
