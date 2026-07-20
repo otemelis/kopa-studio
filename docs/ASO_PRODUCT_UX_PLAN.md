@@ -25,7 +25,7 @@ Status: in progress
 
 ## Priority 3: Decision-First Briefing
 
-Status: in progress
+Status: complete
 
 - Limit the primary action queue to three decisive items.
 - Group remaining signals and make each action outcome explicit.
