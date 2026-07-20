@@ -198,11 +198,11 @@ Status: in progress
 
 ### Milestone 3: Evidence and Change Intelligence
 
-Status: planned
+Status: in progress
 
-- Competitor filtering and important-change queue.
-- Review filters, topic movement, and evidence links.
-- Metadata timeline aligned with visibility and conversion changes.
+- Competitor filtering and important-change queue: implemented.
+- Review filters and topic movement: implemented.
+- Metadata timeline aligned with visibility and conversion changes: next in this milestone.
 
 ### Milestone 4: Trust and Operating Rhythm
 

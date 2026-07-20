@@ -31,6 +31,8 @@ let keywordFormOpen = false;
 let keywordFilters = { query: "", app: "all", country: "all", priority: "all", movement: "all", sort: "priority" };
 let portfolioSort = "insights";
 let insightFilters = { app: "all", priority: "important" };
+let competitorFilters = { app: "all", change: "all" };
+let reviewFilters = { app: "all", rating: "all", country: "all", topic: "all" };
 
 function getSession() {
   try {
@@ -1348,10 +1350,18 @@ async function renderCompetitors(panel) {
     return;
   }
 
-  const competitorEvents = changeEvents.filter((e) => e.competitor_id != null);
+  const scopedCompetitors = competitorFilters.app === "all" ? competitors : competitors.filter((competitor) => competitor.app_id === competitorFilters.app);
+  const changeTypes = [...new Set(changeEvents.filter((event) => event.competitor_id != null).map((event) => event.change_type))].sort();
+  const competitorEvents = changeEvents.filter((event) => {
+    const competitor = competitors.find((item) => item.id === event.competitor_id);
+    if (!competitor) return false;
+    if (competitorFilters.app !== "all" && competitor.app_id !== competitorFilters.app) return false;
+    return competitorFilters.change === "all" || event.change_type === competitorFilters.change;
+  });
+  const importantEvents = competitorEvents.filter((event) => ["first_screenshot", "icon", "title", "subtitle", "pricing", "app_update"].includes(event.change_type)).slice(0, 6);
   const latestRanks = latestSnapshots(rankSnapshots);
   const battles = [];
-  for (const competitor of competitors) {
+  for (const competitor of scopedCompetitors) {
     const app = apps.find((item) => item.id === competitor.app_id);
     if (!app) continue;
     for (const link of appKeywords.filter((item) => item.app_id === app.id && item.status !== "paused")) {
@@ -1363,7 +1373,7 @@ async function renderCompetitors(panel) {
       battles.push({ competitor, app, keyword, priority: link.priority ?? keyword.priority, ownedRank: owned.rank, rivalRank: rival.rank });
     }
   }
-  const battleSummaries = competitors
+  const battleSummaries = scopedCompetitors
     .map((competitor) => {
       const rows = battles.filter((row) => row.competitor.id === competitor.id);
       const ownerLeads = rows.filter((row) => row.ownedRank != null && (row.rivalRank == null || row.ownedRank < row.rivalRank)).length;
@@ -1379,7 +1389,12 @@ async function renderCompetitors(panel) {
 
   panel.innerHTML = `
     <section class="panel">
-      <div class="panel-head"><h3>Competitor change feed</h3><span>detected on each collection run</span></div>
+      <div class="panel-head"><h3>Important competitor changes</h3><span>${importantEvents.length} highlighted</span></div>
+      <div class="aso-filter-toolbar"><select id="aso-competitor-app"><option value="all">All apps</option>${apps.map((app) => `<option value="${app.id}" ${competitorFilters.app === app.id ? "selected" : ""}>${escapeHtml(app.name)}</option>`).join("")}</select><select id="aso-competitor-change"><option value="all">All change types</option>${changeTypes.map((type) => `<option value="${escapeHtml(type)}" ${competitorFilters.change === type ? "selected" : ""}>${escapeHtml(type.replaceAll("_", " "))}</option>`).join("")}</select><span>${competitorEvents.length} changes shown</span></div>
+      ${importantEvents.length ? importantEvents.map((event) => { const competitor = competitors.find((item) => item.id === event.competitor_id); return `<div class="aso-change-row"><span class="mono">${event.happened_at.slice(0, 10)}</span><span>${escapeHtml(competitor?.name ?? "Unknown")}</span><span class="priority-medium">${escapeHtml(event.change_type.replaceAll("_", " "))}</span>${event.old_value || event.new_value ? `<span class="muted">${escapeHtml(event.old_value ?? "—")} → ${escapeHtml(event.new_value ?? "—")}</span>` : ""}</div>`; }).join("") : '<p class="empty-state">No high-signal competitor changes match these filters.</p>'}
+    </section>
+    <section class="panel">
+      <div class="panel-head"><h3>All competitor changes</h3><span>detected on each collection run</span></div>
       ${
         competitorEvents.length === 0
           ? `<p class="empty-state">No changes detected yet. Once competitors are tracked, each daily collection diffs their public metadata and logs changes here.</p>`
@@ -1436,14 +1451,14 @@ async function renderCompetitors(panel) {
       }
     </section>
     <section class="panel">
-      <div class="panel-head"><h3>Tracked competitors (${competitors.length})</h3><button type="button" class="aso-action-primary" data-scroll-to="aso-competitor-form">Add competitor</button></div>
+      <div class="panel-head"><h3>Tracked competitors (${scopedCompetitors.length})</h3><button type="button" class="aso-action-primary" data-scroll-to="aso-competitor-form">Add competitor</button></div>
       ${
-        competitors.length === 0
+        scopedCompetitors.length === 0
           ? `<p class="empty-state">No competitors tracked. Add one below by App Store URL or numeric id.</p>`
           : `<table class="aso-table">
               <thead><tr><th>Competitor</th><th>Tracked against</th><th>Rating</th><th>Version</th></tr></thead>
               <tbody>
-                ${competitors
+                ${scopedCompetitors
                   .map((c) => {
                     const app = apps.find((a) => a.id === c.app_id);
                     const latest = snapshots.find((s) => s.competitor_id === c.id);
@@ -1484,6 +1499,16 @@ async function renderCompetitors(panel) {
   );
 
   wireScrollActions(panel);
+
+  [
+    ["#aso-competitor-app", "app"],
+    ["#aso-competitor-change", "change"],
+  ].forEach(([selector, key]) =>
+    panel.querySelector(selector)?.addEventListener("change", (event) => {
+      competitorFilters[key] = event.target.value;
+      renderSubTab(panel);
+    }),
+  );
 
   panel.querySelector("#aso-comp-submit").addEventListener("click", async () => {
     const btn = panel.querySelector("#aso-comp-submit");
@@ -1533,27 +1558,44 @@ async function renderReviews(panel) {
     pg("aso_apps", "select=id,name"),
   ]);
   const recentCutoff = addDays(today, -29);
+  const previousCutoff = addDays(today, -59);
   const recent = reviews.filter((review) => review.reviewed_at.slice(0, 10) >= recentCutoff);
-  const average = recent.length ? recent.reduce((sum, review) => sum + review.rating, 0) / recent.length : null;
-  const low = recent.filter((review) => review.rating <= 2);
-  const topics = new Map();
-  for (const review of low) {
-    for (const topic of reviewTopics(review, classifications)) topics.set(topic, (topics.get(topic) ?? 0) + 1);
-  }
-  const topTopics = [...topics.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const previous = reviews.filter((review) => review.reviewed_at.slice(0, 10) >= previousCutoff && review.reviewed_at.slice(0, 10) < recentCutoff);
+  const topics = [...new Set(reviews.flatMap((review) => reviewTopics(review, classifications)))].sort();
+  const countries = [...new Set(reviews.map((review) => review.country).filter(Boolean))].sort();
+  const matchesFilters = (review) => {
+    if (reviewFilters.app !== "all" && review.app_id !== reviewFilters.app) return false;
+    if (reviewFilters.rating !== "all" && String(review.rating) !== reviewFilters.rating) return false;
+    if (reviewFilters.country !== "all" && review.country !== reviewFilters.country) return false;
+    return reviewFilters.topic === "all" || reviewTopics(review, classifications).includes(reviewFilters.topic);
+  };
+  const visibleReviews = recent.filter(matchesFilters);
+  const visiblePrevious = previous.filter(matchesFilters);
+  const average = visibleReviews.length ? visibleReviews.reduce((sum, review) => sum + review.rating, 0) / visibleReviews.length : null;
+  const low = visibleReviews.filter((review) => review.rating <= 2);
+  const previousLow = visiblePrevious.filter((review) => review.rating <= 2);
+  const topicCounts = (source) => {
+    const counts = new Map();
+    for (const review of source) for (const topic of reviewTopics(review, classifications)) counts.set(topic, (counts.get(topic) ?? 0) + 1);
+    return counts;
+  };
+  const currentTopics = topicCounts(low);
+  const previousTopics = topicCounts(previousLow);
+  const topTopics = [...currentTopics.entries()].sort((a, b) => b[1] - a[1]).slice(0, 5);
 
   panel.innerHTML = `
     <div class="metric-grid">
-      <article><span>Reviews, 30 days</span><strong>${formatNumber(recent.length)}</strong></article>
+      <article><span>Reviews, 30 days</span><strong>${formatNumber(visibleReviews.length)}</strong></article>
       <article><span>Average rating</span><strong>${average != null ? average.toFixed(1) : "-"}</strong></article>
       <article><span>Low ratings</span><strong>${formatNumber(low.length)}</strong></article>
     </div>
+    <div class="aso-filter-toolbar"><select id="aso-review-app"><option value="all">All apps</option>${apps.map((app) => `<option value="${app.id}" ${reviewFilters.app === app.id ? "selected" : ""}>${escapeHtml(app.name)}</option>`).join("")}</select><select id="aso-review-rating"><option value="all">All ratings</option>${[1, 2, 3, 4, 5].map((rating) => `<option value="${rating}" ${reviewFilters.rating === String(rating) ? "selected" : ""}>${rating} star${rating === 1 ? "" : "s"}</option>`).join("")}</select><select id="aso-review-country"><option value="all">All countries</option>${countries.map((country) => `<option value="${country}" ${reviewFilters.country === country ? "selected" : ""}>${escapeHtml(country.toUpperCase())}</option>`).join("")}</select><select id="aso-review-topic"><option value="all">All topics</option>${topics.map((topic) => `<option value="${topic}" ${reviewFilters.topic === topic ? "selected" : ""}>${escapeHtml(topic.replaceAll("_", " "))}</option>`).join("")}</select><span>${visibleReviews.length}/${recent.length} shown</span></div>
     <section class="panel">
       <div class="panel-head"><h3>Recurring low-review signals</h3><span>last 30 days</span></div>
       ${
         topTopics.length
-          ? `<table class="aso-table"><thead><tr><th>Signal</th><th>Low reviews</th><th>Share</th></tr></thead><tbody>${topTopics
-              .map(([topic, count]) => `<tr><td>${escapeHtml(topic.replaceAll("_", " "))}</td><td class="mono">${count}</td><td class="mono">${low.length ? formatPct((count / low.length) * 100) : "-"}</td></tr>`)
+          ? `<table class="aso-table"><thead><tr><th>Signal</th><th>Low reviews</th><th>Vs prior 30d</th><th>Share</th></tr></thead><tbody>${topTopics
+              .map(([topic, count]) => { const delta = count - (previousTopics.get(topic) ?? 0); return `<tr><td>${escapeHtml(topic.replaceAll("_", " "))}</td><td class="mono">${count}</td><td class="mono ${delta > 0 ? "down" : delta < 0 ? "up" : ""}">${delta > 0 ? "+" : ""}${delta}</td><td class="mono">${low.length ? formatPct((count / low.length) * 100) : "-"}</td></tr>`; })
               .join("")}</tbody></table>`
           : '<p class="empty-state">Topic signals appear once recent written reviews match a recurring issue pattern.</p>'
       }
@@ -1561,28 +1603,37 @@ async function renderReviews(panel) {
     <section class="panel">
       <div class="panel-head"><h3>Recent reviews</h3><span>public App Store feed</span></div>
       ${
-        reviews.length
-          ? reviews
+        visibleReviews.length
+          ? visibleReviews
               .slice(0, 30)
               .map((review) => {
                 const app = apps.find((item) => item.id === review.app_id);
-                const topics = reviewTopics(review, classifications);
-                return `<article class="aso-insight">
-                  <div class="panel-head"><h3>${"★".repeat(review.rating)}${"☆".repeat(5 - review.rating)} ${escapeHtml(review.title ?? "Untitled review")}</h3><span>${escapeHtml(review.country.toUpperCase())}</span></div>
+                const reviewTopicList = reviewTopics(review, classifications);
+                return `<details class="aso-review"><summary><span>${"★".repeat(review.rating)}${"☆".repeat(5 - review.rating)} ${escapeHtml(review.title ?? "Untitled review")}</span><span>${escapeHtml(review.country.toUpperCase())} · ${escapeHtml(review.reviewed_at.slice(0, 10))}</span></summary><div>
                   <p>${escapeHtml(review.body)}</p>
                   <div class="aso-insight-meta">
                     ${app ? `<span>${escapeHtml(app.name)}</span>` : ""}
                     ${review.version ? `<span>Version ${escapeHtml(review.version)}</span>` : ""}
-                    <span>${escapeHtml(review.reviewed_at.slice(0, 10))}</span>
-                    ${topics.map((topic) => `<span>${escapeHtml(topic.replaceAll("_", " "))}</span>`).join("")}
+                    ${reviewTopicList.map((topic) => `<span>${escapeHtml(topic.replaceAll("_", " "))}</span>`).join("")}
                   </div>
-                </article>`;
+                </div></details>`;
               })
               .join("")
           : '<p class="empty-state">Reviews will appear after the next collection. Kopa reads the most recent public reviews for each tracked app and primary storefront.</p>'
       }
     </section>
   `;
+  [
+    ["#aso-review-app", "app"],
+    ["#aso-review-rating", "rating"],
+    ["#aso-review-country", "country"],
+    ["#aso-review-topic", "topic"],
+  ].forEach(([selector, key]) =>
+    panel.querySelector(selector)?.addEventListener("change", (event) => {
+      reviewFilters[key] = event.target.value;
+      renderSubTab(panel);
+    }),
+  );
 }
 
 // ── Sync ─────────────────────────────────────────────────────────────────
