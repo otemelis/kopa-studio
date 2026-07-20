@@ -434,7 +434,7 @@ async function runCollection(trigger) {
 
 async function runInsightEngine(db) {
   const today = toDateStr(new Date());
-  const [apps, storefronts, metrics, storefrontMetrics, appKeywords, keywords, snapshots, changeEvents, reviews, experiments, syncRuns, existingInsights] =
+  const [apps, storefronts, metrics, storefrontMetrics, appKeywords, keywords, snapshots, competitorRankSnapshots, competitors, changeEvents, reviews, experiments, syncRuns, existingInsights] =
     await Promise.all([
       db.select("aso_apps", "select=*"),
       db.select("aso_app_storefronts", "select=*"),
@@ -443,6 +443,8 @@ async function runInsightEngine(db) {
       db.select("aso_app_keywords", "select=*"),
       db.select("aso_keywords", "select=*"),
       db.select("aso_keyword_rank_snapshots", `app_kind=eq.owned&captured_at=gte.${addDays(today, -60)}&select=*`),
+      db.select("aso_keyword_rank_snapshots", `app_kind=eq.competitor&captured_at=gte.${addDays(today, -14)}&select=*`),
+      db.select("aso_competitors", "select=*"),
       db.select("aso_metadata_change_events", "select=*"),
       db.select("aso_reviews", `reviewed_at=gte.${addDays(today, -80)}&select=*`),
       db.select("aso_experiments", "select=*"),
@@ -482,6 +484,8 @@ async function runInsightEngine(db) {
       storefronts: storefronts.filter((sf) => sf.app_id === app.id),
       metricsByCountry,
       storefrontMetricsByCountry,
+      competitors: competitors.filter((competitor) => competitor.app_id === app.id),
+      competitorRankSnapshots,
       keywords: appKeywords
         .filter((link) => link.app_id === app.id && link.status !== "paused")
         .map((link) => {

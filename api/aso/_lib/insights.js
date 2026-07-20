@@ -130,6 +130,50 @@ function ruleRankGainsNoSearchTrafficLift(ctx) {
   return out;
 }
 
+function ruleCompetitorWinsHighPriorityTerms(ctx) {
+  const out = [];
+  for (const competitor of ctx.competitors ?? []) {
+    const losses = [];
+    for (const entry of ctx.keywords.filter((item) => item.priority === "high")) {
+      const owned = entry.snapshots[entry.snapshots.length - 1];
+      const competitorSnapshots = (ctx.competitorRankSnapshots ?? [])
+        .filter((snapshot) => snapshot.keyword_id === entry.keyword.id && snapshot.store_app_id === competitor.store_app_id)
+        .sort((a, b) => (a.captured_at < b.captured_at ? -1 : 1));
+      const rival = competitorSnapshots[competitorSnapshots.length - 1];
+      if (!rival || rival.rank == null || rival.rank > 25) continue;
+      if (owned?.rank != null && owned.rank < rival.rank + 5) continue;
+      losses.push({ keyword: entry.keyword, ownedRank: owned?.rank ?? null, rivalRank: rival.rank });
+    }
+    if (losses.length < 2) continue;
+    const terms = losses.slice(0, 3).map((item) => `"${item.keyword.term}"`).join(", ");
+    out.push({
+      rule_id: "competitor_wins_high_priority_terms",
+      app_id: ctx.app.id,
+      keyword_id: losses[0].keyword.id,
+      experiment_id: null,
+      country: null,
+      title: `${competitor.name} is ahead on ${losses.length} high-priority terms for ${ctx.app.name}`,
+      observation: `${competitor.name} ranks in the top 25 while ${ctx.app.name} trails by at least five places or is unranked for ${terms}${losses.length > 3 ? ` and ${losses.length - 3} more` : ""}.`,
+      interpretation: "This is a shared-keyword competitive gap, not evidence that the competitor owns all relevant search demand. It does identify a focused set of terms where their listing currently has stronger visibility.",
+      recommendation: `Review ${competitor.name}'s title, first screenshot, release notes, and ranking movement for these terms. Create one focused experiment around the best-fit term cluster instead of copying the competitor's listing.`,
+      evidence: losses.slice(0, 3).map((item) =>
+        ev(
+          `${item.keyword.term} (${item.keyword.country.toUpperCase()})`,
+          `${ctx.app.name}: ${formatRank(item.ownedRank)}; ${competitor.name}: ${formatRank(item.rivalRank)}`,
+          "public_store",
+        ),
+      ),
+      comparison_window: "Latest public storefront ranking snapshot",
+      confidence: losses.length >= 4 ? "medium_high" : "medium",
+      impact: "high",
+      effort: "medium",
+      priority: "high",
+      dedupe_key: `competitor_wins_high_priority_terms:${ctx.app.id}:${competitor.id}:${losses.map((item) => item.keyword.id).sort().join(",")}`,
+    });
+  }
+  return out;
+}
+
 function ruleVisibilityUpConversionWeak(ctx) {
   const out = [];
   for (const [country, metrics] of ctx.metricsByCountry) {
@@ -605,6 +649,7 @@ const RULE_FNS = [
   ruleConversionStrongVisibilityWeak,
   ruleSearchDiscoveryFallsDespiteRanks,
   ruleRankGainsNoSearchTrafficLift,
+  ruleCompetitorWinsHighPriorityTerms,
   ruleKeywordRisingAfterChange,
   ruleKeywordDeclinedAfterRemoval,
   ruleKeywordOpportunity,

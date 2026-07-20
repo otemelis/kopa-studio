@@ -987,11 +987,14 @@ async function wireExperimentDetailForm(panel, exp) {
 // ── Competitors ──────────────────────────────────────────────────────────
 
 async function renderCompetitors(panel) {
-  const [competitors, apps, snapshots, changeEvents] = await Promise.all([
+  const [competitors, apps, snapshots, changeEvents, keywords, appKeywords, rankSnapshots] = await Promise.all([
     pg("aso_competitors", "select=*"),
     pg("aso_apps", "select=*"),
     pg("aso_competitor_snapshots", "select=*&order=captured_at.desc"),
     pg("aso_metadata_change_events", "select=*&order=happened_at.desc&limit=50"),
+    pg("aso_keywords", "select=*"),
+    pg("aso_app_keywords", "select=*"),
+    pg("aso_keyword_rank_snapshots", `captured_at=gte.${addDays(toDateStr(new Date()), -35)}&select=*`),
   ]);
 
   if (apps.length === 0) {
@@ -1000,6 +1003,33 @@ async function renderCompetitors(panel) {
   }
 
   const competitorEvents = changeEvents.filter((e) => e.competitor_id != null);
+  const latestRanks = latestSnapshots(rankSnapshots);
+  const battles = [];
+  for (const competitor of competitors) {
+    const app = apps.find((item) => item.id === competitor.app_id);
+    if (!app) continue;
+    for (const link of appKeywords.filter((item) => item.app_id === app.id && item.status !== "paused")) {
+      const keyword = keywords.find((item) => item.id === link.keyword_id);
+      if (!keyword) continue;
+      const owned = latestRanks.get(`${keyword.id}:${app.store_app_id}`);
+      const rival = latestRanks.get(`${keyword.id}:${competitor.store_app_id}`);
+      if (!owned || !rival || (owned.rank == null && rival.rank == null)) continue;
+      battles.push({ competitor, app, keyword, priority: link.priority ?? keyword.priority, ownedRank: owned.rank, rivalRank: rival.rank });
+    }
+  }
+  const battleSummaries = competitors
+    .map((competitor) => {
+      const rows = battles.filter((row) => row.competitor.id === competitor.id);
+      const ownerLeads = rows.filter((row) => row.ownedRank != null && (row.rivalRank == null || row.ownedRank < row.rivalRank)).length;
+      const rivalLeads = rows.filter((row) => row.rivalRank != null && (row.ownedRank == null || row.rivalRank < row.ownedRank)).length;
+      return { competitor, rows, ownerLeads, rivalLeads };
+    })
+    .filter((summary) => summary.rows.length)
+    .sort((a, b) => b.rivalLeads - a.rivalLeads || b.rows.length - a.rows.length);
+  const topBattles = [...battles]
+    .filter((row) => row.rivalRank != null)
+    .sort((a, b) => (b.ownedRank ?? 101) - (b.rivalRank ?? 101) - ((a.ownedRank ?? 101) - (a.rivalRank ?? 101)))
+    .slice(0, 20);
 
   panel.innerHTML = `
     <section class="panel">
@@ -1018,6 +1048,45 @@ async function renderCompetitors(panel) {
                 </div>`;
               })
               .join("")
+      }
+    </section>
+    <section class="panel">
+      <div class="panel-head"><h3>Keyword battlefield</h3><span>latest public storefront snapshot</span></div>
+      ${
+        battleSummaries.length
+          ? `<table class="aso-table">
+              <thead><tr><th>Competitor</th><th>Tracked against</th><th>Shared terms</th><th>You lead</th><th>Competitor leads</th></tr></thead>
+              <tbody>${battleSummaries
+                .map((summary) => `<tr>
+                  <td>${escapeHtml(summary.competitor.name)}</td>
+                  <td class="mono">${escapeHtml(apps.find((app) => app.id === summary.competitor.app_id)?.name.split(" ")[0] ?? "-")}</td>
+                  <td class="mono">${summary.rows.length}</td>
+                  <td class="mono"><span class="up">${summary.ownerLeads}</span></td>
+                  <td class="mono"><span class="down">${summary.rivalLeads}</span></td>
+                </tr>`)
+                .join("")}</tbody>
+            </table>`
+          : '<p class="empty-state">Run a collection after adding competitors and shared keywords to compare their ranks against yours.</p>'
+      }
+    </section>
+    <section class="panel">
+      <div class="panel-head"><h3>Contested terms</h3><span>largest competitor leads first</span></div>
+      ${
+        topBattles.length
+          ? `<table class="aso-table">
+              <thead><tr><th>Term</th><th>Market</th><th>Competitor</th><th>Your rank</th><th>Competitor rank</th><th>Priority</th></tr></thead>
+              <tbody>${topBattles
+                .map((row) => `<tr>
+                  <td>${escapeHtml(row.keyword.term)}</td>
+                  <td class="mono">${escapeHtml(row.keyword.country.toUpperCase())}</td>
+                  <td>${escapeHtml(row.competitor.name)}</td>
+                  <td class="mono">${formatRank(row.ownedRank)}</td>
+                  <td class="mono">${formatRank(row.rivalRank)}</td>
+                  <td class="mono">${escapeHtml(row.priority)}</td>
+                </tr>`)
+                .join("")}</tbody>
+            </table>`
+          : '<p class="empty-state">No contested rank data yet.</p>'
       }
     </section>
     <section class="panel">
