@@ -14,6 +14,7 @@
 import { deriveRankFields, toDateStr, compareWindows, addDays } from "./_lib/calc.js";
 import { diffMetadata, metadataChecksum } from "./_lib/metadata-diff.js";
 import { lookupApp, searchApps } from "./_lib/providers.js";
+import { hasSalesReportsConfig, syncDailySalesMetrics } from "./_lib/appstore-sales.js";
 import { draftToInsertRow, evaluateRulesForApp, filterAgainstExisting } from "./_lib/insights.js";
 import { requireAdmin, serviceClient } from "./_lib/supabase.js";
 
@@ -352,6 +353,23 @@ async function runCollection(trigger) {
       }
     }
 
+    // ── First-party daily sales ───────────────────────────────────────
+    let sales = { state: "not_configured", imported: 0 };
+    if (hasSalesReportsConfig()) {
+      try {
+        const result = await syncDailySalesMetrics(db, apps);
+        sales = { state: "ok", ...result };
+        await db.upsert(
+          "aso_platform_connections",
+          [{ provider: "appstore_connect", status: "configured", last_sync_at: new Date().toISOString(), last_test_ok: true, last_test_message: `Sales sync imported ${result.imported} country row(s).`, last_test_at: new Date().toISOString() }],
+          "provider",
+        );
+      } catch (error) {
+        counters.warnings++;
+        sales = { state: "warning", message: msg(error), imported: 0 };
+      }
+    }
+
     // ── Insight engine ────────────────────────────────────────────────
     const created = await runInsightEngine(db);
 
@@ -368,6 +386,7 @@ async function runCollection(trigger) {
           keywords: trackedKeywords.length,
           keywords_total: allTrackedKeywords.length,
           insights_created: created,
+          sales,
         },
       },
       `id=eq.${run.id}`,

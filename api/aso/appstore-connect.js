@@ -1,4 +1,5 @@
 import { hasAppStoreConnectConfig, listAppStoreConnectApps } from "./_lib/appstore-connect.js";
+import { hasSalesReportsConfig, syncDailySalesMetrics } from "./_lib/appstore-sales.js";
 import { requireAdmin, serviceClient } from "./_lib/supabase.js";
 
 export default async function handler(request, response) {
@@ -24,13 +25,33 @@ export default async function handler(request, response) {
     return;
   }
 
-  if (action !== "test") {
+  if (action !== "test" && action !== "sync_sales") {
     response.status(400).json({ error: "Unknown App Store Connect action." });
     return;
   }
 
   if (!hasAppStoreConnectConfig()) {
     response.status(400).json({ error: "App Store Connect is not configured in Vercel yet." });
+    return;
+  }
+
+  if (action === "sync_sales") {
+    if (!hasSalesReportsConfig()) {
+      response.status(400).json({ error: "Missing APP_STORE_CONNECT_VENDOR_NUMBER in Vercel environment variables." });
+      return;
+    }
+    try {
+      const apps = await db.select("aso_apps", "platform=eq.ios&select=id,store_app_id");
+      const result = await syncDailySalesMetrics(db, apps);
+      await db.upsert(
+        "aso_platform_connections",
+        [{ provider: "appstore_connect", status: "configured", last_sync_at: new Date().toISOString(), last_test_ok: true, last_test_message: `Sales sync imported ${result.imported} country row(s).`, last_test_at: new Date().toISOString() }],
+        "provider",
+      );
+      response.status(200).json({ ok: true, ...result });
+    } catch (error) {
+      response.status(502).json({ error: error instanceof Error ? error.message : "Sales sync failed." });
+    }
     return;
   }
 

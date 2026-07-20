@@ -20,7 +20,7 @@
   "crons": [
     {
       "path": "/api/aso/collect",
-      "schedule": "10 6 * * *"
+      "schedule": "30 17 * * *"
     }
   ],
   "functions": {

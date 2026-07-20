@@ -1055,6 +1055,7 @@ async function renderSync(panel) {
     <section class="panel">
       <div class="panel-head"><h3>App Store Connect</h3><span class="status-${appStoreConnect?.status === "configured" ? "ok" : appStoreConnect?.status === "error" ? "failed" : "partial"}">${appStoreConnect?.status ?? "unconfigured"}</span></div>
       <button type="button" class="aso-run-collection" data-test-appstore-connect>Test connection</button>
+      <button type="button" class="aso-link-button" data-sync-sales>Sync sales data</button>
       <p id="aso-appstore-connect-status" class="empty-state">${escapeHtml(appStoreConnect?.last_test_message ?? "No connection configured.")}</p>
     </section>
     <section class="panel">
@@ -1125,6 +1126,21 @@ async function renderSync(panel) {
     try {
       const result = await callApi("/api/aso/appstore-connect", { action: "test" });
       status.textContent = `Connected. ${result.visibleApps} App Store Connect app(s) visible; ${result.mappedApps} tracked app(s) matched.`;
+      setTimeout(() => renderSubTab(panel), 1200);
+    } catch (error) {
+      status.textContent = error.message;
+      btn.disabled = false;
+    }
+  });
+
+  panel.querySelector("[data-sync-sales]").addEventListener("click", async (e) => {
+    const btn = e.target;
+    const status = panel.querySelector("#aso-appstore-connect-status");
+    btn.disabled = true;
+    status.textContent = "Syncing daily Sales and Trends data…";
+    try {
+      const result = await callApi("/api/aso/appstore-connect", { action: "sync_sales" });
+      status.textContent = result.imported ? `Imported ${result.imported} daily country row(s) for ${result.dates.join(", ")}.` : "Apple returned no matching sales rows for tracked apps.";
       setTimeout(() => renderSubTab(panel), 1200);
     } catch (error) {
       status.textContent = error.message;
