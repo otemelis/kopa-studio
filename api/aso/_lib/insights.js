@@ -13,6 +13,7 @@ import {
   formatPct,
   formatPp,
   formatRank,
+  evaluateExperimentOutcome,
   prePostComparison,
   rankChange,
 } from "./calc.js";
@@ -621,32 +622,36 @@ function ruleExperimentReady(ctx) {
     if (exp.status !== "running" && exp.status !== "monitoring") continue;
     if (!exp.start_date) continue;
     const daysRunning = daysAgo(exp.start_date, ctx.today);
-    if (daysRunning < 14) continue;
+    const evaluationDays = exp.evaluation_days ?? 14;
+    if (daysRunning < evaluationDays) continue;
     const metrics = exp.country === "all" ? [...ctx.metricsByCountry.values()].flat() : ctx.metricsByCountry.get(exp.country) ?? [];
-    const cmp = prePostComparison(metrics, exp.start_date, 14);
+    const cmp = prePostComparison(metrics, exp.start_date, evaluationDays);
     if (!cmp.sufficient) continue;
+    const outcome = evaluateExperimentOutcome(cmp, exp);
+    const change = outcome.target === "conversion" ? formatPp(outcome.change) : formatPct(outcome.change);
+    const threshold = `${outcome.threshold}${outcome.unit === "percentage_points" ? " pp" : "%"}`;
     out.push({
       rule_id: "experiment_ready",
       app_id: ctx.app.id,
       keyword_id: null,
       experiment_id: exp.id,
       country: exp.country === "all" ? null : exp.country,
-      title: `Experiment "${exp.title}" is ready for evaluation`,
-      observation: `The experiment has run ${daysRunning} days with sufficient data on both sides of the change. 14d before vs after: impressions ${formatPct(cmp.impressions_pct)}, page views ${formatPct(cmp.page_views_pct)}, downloads ${formatPct(cmp.downloads_pct)}, conversion ${formatPp(cmp.conversion_pp)}.`,
-      interpretation: "Performance moved after the change, but other factors may also have contributed — judge against the hypothesis, not just the deltas.",
-      recommendation: "Review the pre/post comparison on the experiment page and record win, loss, or inconclusive.",
+      title: `Experiment "${exp.title}" has a ${outcome.recommendation} recommendation`,
+      observation: `The experiment has run ${daysRunning} days with sufficient data on both sides of the change. ${evaluationDays}d before vs after: impressions ${formatPct(cmp.impressions_pct)}, page views ${formatPct(cmp.page_views_pct)}, downloads ${formatPct(cmp.downloads_pct)}, conversion ${formatPp(cmp.conversion_pp)}. Its target metric moved ${change} against a ${threshold} threshold.`,
+      interpretation: "This is a threshold-based recommendation, not causal proof. Other store, product, and market changes can still affect a pre/post comparison.",
+      recommendation: `Review the comparison and hypothesis, then record ${outcome.recommendation === "winner" ? "a win" : outcome.recommendation === "loser" ? "a loss or revert" : "an inconclusive result"} on the experiment page.`,
       evidence: [
         ev("Days running", String(daysRunning), "calculated"),
-        ev("Downloads Δ (14d pre/post)", formatPct(cmp.downloads_pct), "calculated"),
-        ev("Conversion Δ", formatPp(cmp.conversion_pp), "calculated"),
+        ev("Target movement", change, "calculated"),
+        ev("Decision threshold", threshold, "manual"),
         ev("Target metric", exp.target_metric, "manual"),
       ],
-      comparison_window: "14 days before vs 14 days after start",
+      comparison_window: `${evaluationDays} days before vs ${evaluationDays} days after start`,
       confidence: "medium_high",
       impact: "medium",
       effort: "low",
       priority: "medium",
-      dedupe_key: `experiment_ready:${exp.id}`,
+      dedupe_key: `experiment_ready:${exp.id}:${outcome.recommendation}`,
     });
   }
   return out;

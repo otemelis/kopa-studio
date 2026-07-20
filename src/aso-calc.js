@@ -109,6 +109,19 @@ export function prePostComparison(metrics, changeDate, windowDays, minDaysEachSi
   };
 }
 
+export function evaluateExperimentOutcome(comparison, experiment) {
+  const target = experiment.target_metric ?? "conversion";
+  const unit = experiment.success_threshold_unit ?? (target === "conversion" ? "percentage_points" : "percent");
+  const threshold = Number(experiment.success_threshold ?? (unit === "percentage_points" ? 1 : 10));
+  const change = target === "conversion" ? comparison.conversion_pp : comparison[`${target}_pct`];
+  if (!comparison.sufficient || change == null || !Number.isFinite(threshold) || threshold < 0) {
+    return { recommendation: "awaiting_data", change, threshold, unit, target };
+  }
+  if (change >= threshold) return { recommendation: "winner", change, threshold, unit, target };
+  if (change <= -threshold) return { recommendation: "loser", change, threshold, unit, target };
+  return { recommendation: "inconclusive", change, threshold, unit, target };
+}
+
 export function formatPct(value, digits = 0) {
   if (value == null) return "—";
   const sign = value > 0 ? "+" : "";

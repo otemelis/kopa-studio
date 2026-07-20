@@ -17,6 +17,7 @@ import {
   formatPp,
   formatRank,
   latestSnapshots,
+  evaluateExperimentOutcome,
   prePostComparison,
   rankChange,
   toDateStr,
@@ -759,6 +760,7 @@ async function renderInsights(panel) {
 // ── Experiments ──────────────────────────────────────────────────────────
 
 const EXPERIMENT_STATUSES = ["planned", "running", "monitoring", "won", "lost", "inconclusive", "reverted"];
+const TARGET_METRICS = ["conversion", "downloads", "page_views", "impressions"];
 const CHANGE_TYPES = [
   "icon",
   "first_screenshot",
@@ -799,7 +801,7 @@ async function renderExperiments(panel) {
         experiments.length === 0
           ? `<p class="empty-state">No experiments logged yet — every icon, screenshot or metadata change is worth logging below.</p>`
           : `<table class="aso-table">
-              <thead><tr><th>Title</th><th>App</th><th>Change</th><th>Market</th><th>Status</th><th>Started</th></tr></thead>
+              <thead><tr><th>Title</th><th>App</th><th>Change</th><th>Market</th><th>Kopa</th><th>Status</th><th>Started</th></tr></thead>
               <tbody>
                 ${sorted
                   .map((e) => {
@@ -809,6 +811,7 @@ async function renderExperiments(panel) {
                       <td class="mono">${escapeHtml(app?.name.split(" ")[0] ?? "—")}</td>
                       <td class="mono">${escapeHtml(e.change_type.replaceAll("_", " "))}</td>
                       <td class="mono">${e.country.toUpperCase()}</td>
+                      <td class="mono">${escapeHtml(e.decision_recommendation ?? "-")}</td>
                       <td class="mono status-${e.status === "won" ? "ok" : e.status === "lost" ? "failed" : "partial"}">${e.status}</td>
                       <td class="mono">${e.start_date ?? "—"}</td>
                     </tr>`;
@@ -842,6 +845,18 @@ async function renderExperiments(panel) {
         <input id="aso-exp-country" type="text" value="all" />
       </label>
       <label class="aso-field aso-field-narrow">
+        <span>Target metric</span>
+        <select id="aso-exp-target-metric">${TARGET_METRICS.map((metric) => `<option value="${metric}">${metric.replaceAll("_", " ")}</option>`).join("")}</select>
+      </label>
+      <label class="aso-field aso-field-narrow">
+        <span>Success threshold <span id="aso-exp-threshold-unit">pp</span></span>
+        <input id="aso-exp-threshold" type="number" min="0" step="0.1" value="1" />
+      </label>
+      <label class="aso-field aso-field-narrow">
+        <span>Evaluation window</span>
+        <select id="aso-exp-evaluation-days"><option value="14">14 days</option><option value="21">21 days</option><option value="28">28 days</option></select>
+      </label>
+      <label class="aso-field aso-field-narrow">
         <span>Start date (blank = planned)</span>
         <input id="aso-exp-start" type="date" />
       </label>
@@ -859,6 +874,12 @@ async function renderExperiments(panel) {
 
   if (open) wireExperimentDetailForm(panel, open);
 
+  panel.querySelector("#aso-exp-target-metric").addEventListener("change", (event) => {
+    const conversion = event.target.value === "conversion";
+    panel.querySelector("#aso-exp-threshold").value = conversion ? "1" : "10";
+    panel.querySelector("#aso-exp-threshold-unit").textContent = conversion ? "pp" : "%";
+  });
+
   panel.querySelector("#aso-exp-submit").addEventListener("click", async () => {
     const submit = panel.querySelector("#aso-exp-submit");
     const status = panel.querySelector("#aso-exp-status");
@@ -872,6 +893,7 @@ async function renderExperiments(panel) {
     status.textContent = "Saving…";
     try {
       const startDate = panel.querySelector("#aso-exp-start").value || null;
+      const targetMetric = panel.querySelector("#aso-exp-target-metric").value;
       await pgWrite("POST", "aso_experiments", [
         {
           app_id: panel.querySelector("#aso-exp-app").value,
@@ -881,8 +903,13 @@ async function renderExperiments(panel) {
           country: panel.querySelector("#aso-exp-country").value.trim().toLowerCase() || "all",
           old_variant: null,
           new_variant: null,
-          target_metric: "conversion",
+          target_metric: targetMetric,
           secondary_metrics: null,
+          evaluation_days: Number(panel.querySelector("#aso-exp-evaluation-days").value),
+          success_threshold: Number(panel.querySelector("#aso-exp-threshold").value),
+          success_threshold_unit: targetMetric === "conversion" ? "percentage_points" : "percent",
+          decision_recommendation: null,
+          recommended_at: null,
           start_date: startDate,
           end_date: null,
           status: startDate ? "running" : "planned",
@@ -905,10 +932,14 @@ async function renderExperiments(panel) {
 
 function renderExperimentDetailHtml(exp, apps) {
   const app = apps.find((a) => a.id === exp.app_id);
+  const evaluationDays = exp.evaluation_days ?? 14;
+  const thresholdUnit = exp.success_threshold_unit === "percentage_points" ? "pp" : "%";
+  const threshold = exp.success_threshold ?? (thresholdUnit === "pp" ? 1 : 10);
   return `
     <section class="panel aso-insight">
       <div class="panel-head"><h3>${escapeHtml(exp.title)}</h3><span>${escapeHtml(app?.name ?? "")}</span></div>
       <p class="muted">${escapeHtml(exp.hypothesis ?? "No hypothesis recorded.")}</p>
+      <p class="empty-state">Target: ${escapeHtml(exp.target_metric.replaceAll("_", " "))}; threshold: ${escapeHtml(threshold)} ${thresholdUnit}; evaluation: ${evaluationDays} days before and after.</p>
       <div id="aso-exp-comparison">
         ${exp.start_date ? '<p class="loading-state">Loading comparison…</p>' : '<p class="empty-state">Set a start date to unlock the automatic before/after comparison.</p>'}
       </div>
@@ -937,6 +968,7 @@ function renderExperimentDetailHtml(exp, apps) {
 }
 
 async function wireExperimentDetailForm(panel, exp) {
+  let outcome = null;
   if (exp.start_date) {
     const today = toDateStr(new Date());
     const metrics = await pg(
@@ -944,17 +976,21 @@ async function wireExperimentDetailForm(panel, exp) {
       `app_id=eq.${exp.app_id}&date=gte.${addDays(exp.start_date, -60)}&date=lte.${today}&select=*`,
     ).catch(() => []);
     const scoped = exp.country === "all" ? metrics : metrics.filter((m) => m.country === exp.country);
-    const cmp = prePostComparison(scoped, exp.start_date, 14);
+    const evaluationDays = exp.evaluation_days ?? 14;
+    const cmp = prePostComparison(scoped, exp.start_date, evaluationDays);
     const box = panel.querySelector("#aso-exp-comparison");
     if (box) {
+      outcome = evaluateExperimentOutcome(cmp, exp);
+      const targetChange = outcome.target === "conversion" ? formatPp(outcome.change) : formatPct(outcome.change);
+      const threshold = `${outcome.threshold}${outcome.unit === "percentage_points" ? " pp" : "%"}`;
       box.innerHTML = !cmp.sufficient
-        ? `<p class="empty-state">Not enough metric data on both sides of ${exp.start_date} yet — connect App Store Connect or import a CSV for ${exp.country === "all" ? "any market" : exp.country.toUpperCase()}.</p>`
+        ? `<p class="empty-state">Not enough metric data on both sides of ${exp.start_date} yet for a ${evaluationDays}-day comparison.</p>`
         : `<div class="metric-grid">
             <article><span>Impressions</span><strong>${formatNumber(cmp.current.impressions)}</strong><small class="${deltaClass(cmp.impressions_pct)}">${formatPct(cmp.impressions_pct)}</small></article>
             <article><span>Downloads</span><strong>${formatNumber(cmp.current.downloads)}</strong><small class="${deltaClass(cmp.downloads_pct)}">${formatPct(cmp.downloads_pct)}</small></article>
             <article><span>Conversion</span><strong>${cmp.current.conversion != null ? formatPct(cmp.current.conversion * 100, 1) : "—"}</strong><small>${formatPp(cmp.conversion_pp)}</small></article>
           </div>
-          <p class="empty-state">14 days before vs after ${exp.start_date}. Performance moved after the change, but other factors may also have contributed.</p>`;
+          <p class="empty-state">Kopa recommends <strong>${outcome.recommendation}</strong>: ${escapeHtml(exp.target_metric.replaceAll("_", " "))} moved ${targetChange} against a ${threshold} threshold. This is directional pre/post evidence, not causal proof.</p>`;
     }
   }
 
@@ -973,6 +1009,8 @@ async function wireExperimentDetailForm(panel, exp) {
           result: panel.querySelector("#aso-exp-result").value.trim() || null,
           conclusion: panel.querySelector("#aso-exp-conclusion").value.trim() || null,
           next_action: panel.querySelector("#aso-exp-next-action").value.trim() || null,
+          decision_recommendation: outcome?.recommendation ?? "awaiting_data",
+          recommended_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         },
         `id=eq.${exp.id}`,
