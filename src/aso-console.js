@@ -24,15 +24,32 @@ import {
 } from "./aso-calc.js";
 
 const SESSION_KEY = "kopa-admin-session-v1";
+const KEYWORD_VIEWS_KEY = "kopa-aso-keyword-views-v1";
+const WORKSPACE_APP_SCOPE_KEY = "kopa-aso-workspace-app-v1";
 let runtimeConfig = null;
 let activeSubTab = "briefing";
 let editingKeywordLinkId = null;
 let keywordFormOpen = false;
 let keywordFilters = { query: "", app: "all", country: "all", priority: "all", movement: "all", sort: "priority" };
+let selectedKeywordLinkIds = new Set();
+let workspaceAppScope = localStorage.getItem(WORKSPACE_APP_SCOPE_KEY) ?? "all";
 let portfolioSort = "insights";
 let insightFilters = { app: "all", priority: "important" };
 let competitorFilters = { app: "all", change: "all" };
 let reviewFilters = { app: "all", rating: "all", country: "all", topic: "all" };
+
+function getSavedKeywordViews() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEYWORD_VIEWS_KEY) ?? "[]");
+    return Array.isArray(saved) ? saved : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveKeywordViews(views) {
+  localStorage.setItem(KEYWORD_VIEWS_KEY, JSON.stringify(views));
+}
 
 function getSession() {
   try {
@@ -203,6 +220,7 @@ export function mountAsoTab(root) {
       ${SUB_TABS.map(([id, label]) => `<button type="button" data-aso-tab="${id}" class="${id === activeSubTab ? "active" : ""}">${label}</button>`).join("")}
       <button type="button" class="aso-add-app" data-aso-add-app>+ Add app</button>
     </nav>
+    <div id="aso-working-context" class="aso-working-context"><span>Loading workspace context…</span></div>
     <div id="aso-panel" class="aso-panel"><p class="loading-state">Loading…</p></div>
   `;
   root.querySelectorAll("[data-aso-tab]").forEach((btn) =>
@@ -213,7 +231,31 @@ export function mountAsoTab(root) {
     }),
   );
   root.querySelector("[data-aso-add-app]").addEventListener("click", () => renderAddAppForm(root.querySelector("#aso-panel")));
+  renderWorkingContext(root);
   renderSubTab(root.querySelector("#aso-panel"));
+}
+
+async function renderWorkingContext(root) {
+  const context = root.querySelector("#aso-working-context");
+  if (!context) return;
+  try {
+    const [apps, health] = await Promise.all([pg("aso_apps", "select=id,name&order=name.asc"), getCollectionHealth()]);
+    if (workspaceAppScope !== "all" && !apps.some((app) => app.id === workspaceAppScope)) workspaceAppScope = "all";
+    context.innerHTML = `<div><span>Working context</span><select id="aso-working-app"><option value="all">All apps</option>${apps.map((app) => `<option value="${app.id}" ${workspaceAppScope === app.id ? "selected" : ""}>${escapeHtml(app.name)}</option>`).join("")}</select></div><div class="aso-working-health ${health.isFresh ? "ready" : "attention"}"><span>Collection</span><strong>${health.isFresh ? `${health.freshLinks.length}/${health.activeLinks.length} current` : `${health.staleCount} needs refresh`}</strong></div>`;
+    context.querySelector("#aso-working-app")?.addEventListener("change", (event) => {
+      workspaceAppScope = event.target.value;
+      localStorage.setItem(WORKSPACE_APP_SCOPE_KEY, workspaceAppScope);
+      keywordFilters.app = workspaceAppScope;
+      insightFilters.app = workspaceAppScope;
+      competitorFilters.app = workspaceAppScope;
+      reviewFilters.app = workspaceAppScope;
+      experimentFilters.app = workspaceAppScope;
+      selectedKeywordLinkIds.clear();
+      renderSubTab(root.querySelector("#aso-panel"));
+    });
+  } catch {
+    context.innerHTML = '<span>Working context unavailable</span>';
+  }
 }
 
 async function renderSubTab(panel) {
@@ -587,6 +629,17 @@ function keywordToolbarHtml(rows) {
   </div>`;
 }
 
+const KEYWORD_VIEW_PRESETS = [
+  ["high_unranked", "High-priority unranked", { priority: "high", movement: "unranked", sort: "priority" }],
+  ["high_declining", "High-priority declines", { priority: "high", movement: "declining", sort: "movement" }],
+  ["us_opportunity", "US opportunities", { country: "us", priority: "high", movement: "unranked", sort: "priority" }],
+];
+
+function keywordViewsHtml() {
+  const saved = getSavedKeywordViews();
+  return `<div class="aso-keyword-views"><select id="aso-keyword-view"><option value="">Views</option><optgroup label="Suggested">${KEYWORD_VIEW_PRESETS.map(([id, label]) => `<option value="preset:${id}">${label}</option>`).join("")}</optgroup>${saved.length ? `<optgroup label="Saved">${saved.map((view) => `<option value="saved:${escapeHtml(view.id)}">${escapeHtml(view.name)}</option>`).join("")}</optgroup>` : ""}</select><input id="aso-keyword-view-name" type="text" maxlength="40" placeholder="Save current view" /><button type="button" class="aso-link-button" data-save-keyword-view>Save</button><button type="button" class="aso-link-button" data-delete-keyword-view disabled>Delete</button></div>`;
+}
+
 // ── Keywords ─────────────────────────────────────────────────────────────
 
 async function renderKeywords(panel) {
@@ -631,6 +684,8 @@ async function renderKeywords(panel) {
   const declining = rows.filter((r) => (r.latest?.change_7d ?? 0) < 0).length;
   const ranked = rows.filter((r) => r.latest?.rank != null).length;
   const visibleRows = filteredKeywordRows(rows);
+  const visibleIds = new Set(visibleRows.map((row) => row.link.id));
+  const selectedCount = [...selectedKeywordLinkIds].filter((id) => rows.some((row) => row.link.id === id)).length;
   const editorHtml = editingRow ? renderKeywordEditHtml(editingRow, groups) : keywordFormOpen ? renderKeywordFormHtml(apps) : "";
 
   panel.innerHTML = `
@@ -643,14 +698,17 @@ async function renderKeywords(panel) {
     ${editorHtml}
     <section class="panel">
       <div class="panel-head"><h3>Keywords</h3><div class="aso-panel-actions"><span>${visibleRows.length}/${rows.length} shown</span><button type="button" class="aso-action-primary" data-open-keyword-form>${keywordFormOpen ? "Adding keywords" : "Add keywords"}</button></div></div>
+      ${keywordViewsHtml()}
       ${keywordToolbarHtml(rows)}
+      <div class="aso-keyword-bulk ${selectedCount ? "active" : ""}"><span>${selectedCount ? `${selectedCount} selected` : "Select terms to update in bulk"}</span><select id="aso-bulk-priority" ${selectedCount ? "" : "disabled"}><option value="">Set priority</option><option value="high">High priority</option><option value="medium">Medium priority</option><option value="low">Low priority</option></select><button type="button" class="aso-link-button" data-apply-bulk-priority ${selectedCount ? "" : "disabled"}>Apply</button><button type="button" class="aso-link-button" data-pause-keywords ${selectedCount ? "" : "disabled"}>Pause</button></div>
       <table class="aso-table">
-        <thead><tr><th>Keyword</th><th>App</th><th>Country</th><th>Rank</th><th>7d</th><th>30d</th><th>Best</th><th>Comp.</th><th>Priority</th><th>Actions</th></tr></thead>
+        <thead><tr><th><input type="checkbox" aria-label="Select shown keywords" data-select-visible ${visibleRows.length && visibleRows.every((row) => selectedKeywordLinkIds.has(row.link.id)) ? "checked" : ""} ${visibleRows.length ? "" : "disabled"} /></th><th>Keyword</th><th>App</th><th>Country</th><th>Rank</th><th>7d</th><th>30d</th><th>Best</th><th>Comp.</th><th>Priority</th><th>Actions</th></tr></thead>
         <tbody>
           ${visibleRows.length
             ? visibleRows
             .map(
               (r) => `<tr>
+                <td><input type="checkbox" aria-label="Select ${escapeHtml(r.keyword.term)}" data-select-keyword="${r.link.id}" ${selectedKeywordLinkIds.has(r.link.id) ? "checked" : ""} /></td>
                 <td>${escapeHtml(r.keyword.term)}</td>
                 <td class="mono">${escapeHtml(r.app.name.split(" ")[0])}</td>
                 <td class="mono">${r.keyword.country.toUpperCase()}</td>
@@ -667,7 +725,7 @@ async function renderKeywords(panel) {
               </tr>`,
             )
             .join("")
-            : '<tr><td colspan="10" class="empty-state">No keywords match these filters.</td></tr>'}
+            : '<tr><td colspan="11" class="empty-state">No keywords match these filters.</td></tr>'}
         </tbody>
       </table>
     </section>
@@ -675,6 +733,8 @@ async function renderKeywords(panel) {
   `;
   wireKeywordActions(panel, rows);
   wireKeywordToolbar(panel);
+  wireKeywordViews(panel);
+  wireKeywordBulkActions(panel, visibleIds);
   if (editingRow) wireKeywordEditForm(panel, editingRow, appKeywords);
   if (keywordFormOpen) wireKeywordForm(panel);
 }
@@ -841,6 +901,76 @@ function wireKeywordToolbar(panel) {
       });
     }
   });
+}
+
+function wireKeywordViews(panel) {
+  const viewSelect = panel.querySelector("#aso-keyword-view");
+  const deleteButton = panel.querySelector("[data-delete-keyword-view]");
+  viewSelect?.addEventListener("change", () => {
+    const value = viewSelect.value;
+    deleteButton.disabled = !value.startsWith("saved:");
+    if (!value) return;
+    let filters = null;
+    if (value.startsWith("preset:")) filters = KEYWORD_VIEW_PRESETS.find(([id]) => id === value.slice(7))?.[2];
+    if (value.startsWith("saved:")) filters = getSavedKeywordViews().find((view) => view.id === value.slice(6))?.filters;
+    if (!filters) return;
+    keywordFilters = { ...keywordFilters, ...filters };
+    selectedKeywordLinkIds.clear();
+    renderSubTab(panel);
+  });
+  panel.querySelector("[data-save-keyword-view]")?.addEventListener("click", () => {
+    const input = panel.querySelector("#aso-keyword-view-name");
+    const name = input.value.trim();
+    if (!name) {
+      input.focus();
+      return;
+    }
+    const views = getSavedKeywordViews();
+    views.push({ id: crypto.randomUUID(), name, filters: { ...keywordFilters } });
+    saveKeywordViews(views.slice(-12));
+    renderSubTab(panel);
+  });
+  deleteButton?.addEventListener("click", () => {
+    const value = viewSelect.value;
+    if (!value.startsWith("saved:")) return;
+    saveKeywordViews(getSavedKeywordViews().filter((view) => view.id !== value.slice(6)));
+    renderSubTab(panel);
+  });
+}
+
+function wireKeywordBulkActions(panel, visibleIds) {
+  panel.querySelectorAll("[data-select-keyword]").forEach((input) =>
+    input.addEventListener("change", () => {
+      if (input.checked) selectedKeywordLinkIds.add(input.dataset.selectKeyword);
+      else selectedKeywordLinkIds.delete(input.dataset.selectKeyword);
+      renderSubTab(panel);
+    }),
+  );
+  panel.querySelector("[data-select-visible]")?.addEventListener("change", (event) => {
+    if (event.target.checked) visibleIds.forEach((id) => selectedKeywordLinkIds.add(id));
+    else visibleIds.forEach((id) => selectedKeywordLinkIds.delete(id));
+    renderSubTab(panel);
+  });
+  const updateSelected = async (patch, label) => {
+    const ids = [...selectedKeywordLinkIds];
+    if (!ids.length) return;
+    const button = panel.querySelector(`[data-${label}]`);
+    if (label === "pause-keywords" && !confirm(`Pause ${ids.length} tracked keyword${ids.length === 1 ? "" : "s"}?`)) return;
+    button.disabled = true;
+    try {
+      await pgWrite("PATCH", "aso_app_keywords", { ...patch, updated_at: new Date().toISOString() }, `id=in.(${ids.join(",")})`);
+      selectedKeywordLinkIds.clear();
+      renderSubTab(panel);
+    } catch (error) {
+      button.disabled = false;
+      alert(error.message);
+    }
+  };
+  panel.querySelector("[data-apply-bulk-priority]")?.addEventListener("click", () => {
+    const priority = panel.querySelector("#aso-bulk-priority").value;
+    if (priority) updateSelected({ priority }, "apply-bulk-priority");
+  });
+  panel.querySelector("[data-pause-keywords]")?.addEventListener("click", () => updateSelected({ status: "paused" }, "pause-keywords"));
 }
 
 function wireKeywordEditForm(panel, row, appKeywords) {
