@@ -6,7 +6,7 @@ Kopa should feel like a weekly ASO operating system for a small studio: clear sc
 
 ## Priority 1: Working Context and Keyword Operations
 
-Status: in progress
+Status: complete
 
 - Add a compact shared app scope and collection-status context to the ASO shell.
 - Add persistent local saved Keyword views for repeated weekly cuts of the portfolio.
