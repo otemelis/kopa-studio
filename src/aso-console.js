@@ -481,8 +481,17 @@ async function renderKeywords(panel) {
     .filter(Boolean);
 
   const editingRow = editingKeywordLinkId ? rows.find((r) => r.link.id === editingKeywordLinkId) : null;
+  const gaining = rows.filter((r) => (r.latest?.change_7d ?? 0) > 0).length;
+  const declining = rows.filter((r) => (r.latest?.change_7d ?? 0) < 0).length;
+  const ranked = rows.filter((r) => r.latest?.rank != null).length;
 
   panel.innerHTML = `
+    <div class="mini-stat-grid aso-workflow-summary">
+      <article><span>Tracked terms</span><strong>${rows.length}</strong></article>
+      <article><span>Gaining, 7 days</span><strong class="up">${gaining}</strong></article>
+      <article><span>Declining, 7 days</span><strong class="down">${declining}</strong></article>
+      <article><span>Currently ranked</span><strong>${ranked}</strong></article>
+    </div>
     <section class="panel">
       <div class="panel-head"><h3>Keywords (${rows.length})</h3><span>gaining/declining vs 7 days ago</span></div>
       <table class="aso-table">
@@ -778,8 +787,15 @@ async function renderInsights(panel) {
 
   const order = { high: 0, medium: 1, low: 2 };
   const sorted = [...insights].sort((a, b) => order[a.priority] - order[b.priority]);
+  const highCount = insights.filter((insight) => insight.priority === "high").length;
+  const mediumCount = insights.filter((insight) => insight.priority === "medium").length;
 
-  panel.innerHTML = sorted
+  panel.innerHTML = `<div class="mini-stat-grid aso-workflow-summary">
+      <article><span>Active signals</span><strong>${insights.length}</strong></article>
+      <article><span>High priority</span><strong class="down">${highCount}</strong></article>
+      <article><span>Medium priority</span><strong>${mediumCount}</strong></article>
+      <article><span>Apps affected</span><strong>${new Set(insights.map((insight) => insight.app_id).filter(Boolean)).size}</strong></article>
+    </div>` + sorted
     .map((i) => {
       const app = apps.find((a) => a.id === i.app_id);
       const keyword = keywords.find((k) => k.id === i.keyword_id);
@@ -805,7 +821,7 @@ async function renderInsights(panel) {
           ${keyword ? `<span>"${escapeHtml(keyword.term)}"</span>` : ""}
         </div>
         <div class="aso-insight-actions">
-          <button type="button" data-create-experiment data-insight-id="${i.id}">Create experiment draft</button>
+          <button type="button" class="aso-action-primary" data-create-experiment data-insight-id="${i.id}">Create experiment draft</button>
           <button type="button" data-insight-action="completed" data-insight-id="${i.id}">Mark done</button>
           <button type="button" data-insight-action="snoozed" data-insight-id="${i.id}">Snooze 14d</button>
           <button type="button" data-insight-action="dismissed" data-insight-id="${i.id}">Dismiss</button>
@@ -904,8 +920,17 @@ async function renderExperiments(panel) {
   const sorted = [...experiments].sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9));
 
   const open = openExperimentId ? experiments.find((e) => e.id === openExperimentId) : null;
+  const liveCount = experiments.filter((experiment) => ["running", "monitoring"].includes(experiment.status)).length;
+  const plannedCount = experiments.filter((experiment) => experiment.status === "planned").length;
+  const readyCount = experiments.filter((experiment) => ["won", "lost", "inconclusive"].includes(experiment.decision_recommendation)).length;
 
   panel.innerHTML = `
+    <div class="mini-stat-grid aso-workflow-summary">
+      <article><span>Total experiments</span><strong>${experiments.length}</strong></article>
+      <article><span>Live or monitoring</span><strong class="up">${liveCount}</strong></article>
+      <article><span>Planned</span><strong>${plannedCount}</strong></article>
+      <article><span>Decision recorded</span><strong>${readyCount}</strong></article>
+    </div>
     <section class="panel">
       <div class="panel-head"><h3>Experiments (${experiments.length})</h3><span>tap a row for pre/post analysis</span></div>
       ${

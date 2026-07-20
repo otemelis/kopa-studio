@@ -28,6 +28,9 @@ footer{background:var(--moss);color:var(--paper);padding:80px 6vw 30px;display:g
 .aso-briefing-side{display:grid;gap:14px}
 .aso-briefing-summary .metric-grid{margin-bottom:14px}
 .aso-briefing-actions{min-height:100%}
+.aso-workflow-summary strong.up,.aso-workflow-summary strong.down{color:inherit}
+.aso-workflow-summary article:has(.up){background:#101912}
+.aso-workflow-summary article:has(.down){background:#1b1310}
 .aso-table{width:100%;border-collapse:collapse;font-size:12px}
 .aso-table th{text-align:left;font:9px DM Mono;text-transform:uppercase;color:#657168;letter-spacing:.06em;padding:0 12px 10px 0;white-space:nowrap}
 .aso-table td{padding:10px 12px 10px 0;border-top:1px solid #202620;white-space:nowrap;color:#c7cdc8}
@@ -52,6 +55,8 @@ footer{background:var(--moss);color:var(--paper);padding:80px 6vw 30px;display:g
 .aso-insight-actions{display:flex;gap:10px}
 .aso-insight-actions button{border:1px solid #354039;background:transparent;color:#839086;font:9px DM Mono;text-transform:uppercase;padding:8px 14px;border-radius:6px;cursor:pointer}
 .aso-insight-actions button:hover{color:#e8eee9;border-color:#55615a}
+.aso-insight-actions .aso-action-primary{border-color:#d8ff5f;color:#d8ff5f}
+.aso-insight-actions .aso-action-primary:hover{background:#d8ff5f;color:#0d100e}
 .aso-field{display:block;margin-bottom:18px;max-width:520px}
 .aso-field-narrow{max-width:120px}
 .aso-field span{display:block;font-size:9px;color:#839086;text-transform:uppercase;margin-bottom:8px}
