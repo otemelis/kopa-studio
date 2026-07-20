@@ -17,7 +17,7 @@ Success measure: a user can open a relevant app scope, load a saved view, and up
 
 ## Priority 2: Insight Triage
 
-Status: in progress
+Status: complete
 
 - Collapse evidence until requested and lead with signal, confidence, impact, and next action.
 - Route each rule type to the right destination: Sync, Keywords, Competitors, or an experiment draft.
@@ -33,7 +33,7 @@ Status: complete
 
 ## Priority 4: Evidence Workspaces
 
-Status: in progress
+Status: complete
 
 - Merge competitor change feeds into one filterable timeline with a concise landscape view.
 - Turn review topics into a trend and triage workflow.
