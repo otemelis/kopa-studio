@@ -449,27 +449,48 @@ const ALERT_KINDS = [
   ["operations", "Collection health"],
 ];
 
+function alertSettingsHtml(preferences) {
+  const preferenceMap = new Map(preferences.map((preference) => [preference.kind, preference.enabled]));
+  return `<div class="aso-alert-settings">${ALERT_KINDS.map(([kind, label]) => `<label><input type="checkbox" data-alert-kind="${kind}" ${preferenceMap.get(kind) !== false ? "checked" : ""} /><span>${label}</span></label>`).join("")}</div>`;
+}
+
+function wireAlertSettings(panel) {
+  panel.querySelectorAll("[data-alert-kind]").forEach((input) =>
+    input.addEventListener("change", async () => {
+      input.disabled = true;
+      try {
+        await pgUpsert("aso_alert_preferences", [{ kind: input.dataset.alertKind, enabled: input.checked }], "kind");
+      } catch (error) {
+        input.checked = !input.checked;
+        alert(error.message);
+      } finally {
+        input.disabled = false;
+      }
+    }),
+  );
+}
+
 async function renderBriefing(panel) {
   const today = toDateStr(new Date());
-  const [apps, metrics, rawInsights, changes, reviews, experiments, preferences, health] = await Promise.all([
+  const [apps, metrics, rawInsights, changes, reviews, experiments, health] = await Promise.all([
     pg("aso_apps", "select=id,name"),
     pg("aso_daily_metrics", `date=gte.${addDays(today, -14)}&select=*`),
     pg("aso_insights", "status=eq.active&select=*&order=created_at.desc"),
     pg("aso_metadata_change_events", `happened_at=gte.${addDays(today, -7)}&select=*&order=happened_at.desc`),
     pg("aso_reviews", `reviewed_at=gte.${addDays(today, -7)}&select=id,rating`),
     pg("aso_experiments", "status=in.(running,monitoring)&select=id,title,decision_recommendation"),
-    pg("aso_alert_preferences", "select=kind,enabled"),
     getCollectionHealth(),
   ]);
   const insights = rawInsights.filter((insight) => insight.rule_id !== "data_collection_failure" || !health.isFresh);
   const comparison = compareWindows(metrics, 7, today);
   const priorities = { high: 0, medium: 1, low: 2 };
-  const alerts = [...insights].sort((a, b) => priorities[a.priority] - priorities[b.priority]).slice(0, 5);
+  const alerts = [...insights].sort((a, b) => priorities[a.priority] - priorities[b.priority]);
+  const primaryAlerts = alerts.slice(0, 3);
+  const remainingAlerts = alerts.slice(3);
   const highCount = insights.filter((insight) => insight.priority === "high").length;
   const competitorChanges = changes.filter((change) => change.competitor_id != null).length;
   const lowReviews = reviews.filter((review) => review.rating <= 2).length;
   const recommendations = experiments.filter((experiment) => ["winner", "loser", "inconclusive"].includes(experiment.decision_recommendation)).length;
-  const preferenceMap = new Map(preferences.map((preference) => [preference.kind, preference.enabled]));
   const lastOk = health.lastOk;
   const lines = [
     `Kopa ASO weekly briefing - ${today}`,
@@ -477,7 +498,7 @@ async function renderBriefing(panel) {
     `Product-page views: ${formatNumber(comparison.current.page_views)} (${formatPct(comparison.page_views_pct)})`,
     `Impressions: ${formatNumber(comparison.current.impressions)} (${formatPct(comparison.impressions_pct)})`,
     `Active high-priority signals: ${highCount}`,
-    ...alerts.map((alert) => `- [${alert.priority}] ${alert.title}: ${alert.recommendation}`),
+    ...primaryAlerts.map((alert) => `- [${alert.priority}] ${alert.title}: ${alert.recommendation}`),
   ];
 
   panel.innerHTML = `
@@ -494,14 +515,15 @@ async function renderBriefing(panel) {
     </section>
     <div class="aso-briefing-grid">
     <section class="panel aso-briefing-actions">
-      <div class="panel-head"><h3>Act this week</h3><span>${alerts.length} active signal${alerts.length === 1 ? "" : "s"}</span></div>
+      <div class="panel-head"><h3>Act this week</h3><span>${primaryAlerts.length} decisive action${primaryAlerts.length === 1 ? "" : "s"}</span></div>
       ${
-        alerts.length
-          ? alerts
-              .map((alert) => { const tab = alert.rule_id.startsWith("competitor_") ? "competitors" : alert.rule_id.startsWith("experiment_") ? "experiments" : alert.rule_id.startsWith("review_") ? "reviews" : alert.rule_id.includes("keyword") ? "keywords" : "insights"; return `<div class="aso-briefing-action"><div><span class="priority-${alert.priority}">${alert.priority}</span><strong>${escapeHtml(alert.title)}</strong><p>${escapeHtml(alert.recommendation)}</p></div><div><button type="button" class="aso-link-button" data-briefing-open="${tab}">View evidence</button><button type="button" class="aso-link-button" data-briefing-action="completed" data-insight-id="${alert.id}">Done</button><button type="button" class="aso-link-button" data-briefing-action="snoozed" data-insight-id="${alert.id}">Snooze</button></div></div>`; })
+        primaryAlerts.length
+          ? primaryAlerts
+              .map((alert) => { const destination = insightDestination(alert); return `<div class="aso-briefing-action"><div><span class="priority-${alert.priority}">${alert.priority}</span><strong>${escapeHtml(alert.title)}</strong><p>${escapeHtml(alert.recommendation)}</p><small>Next outcome: ${escapeHtml(destination.label)}</small></div><div><button type="button" class="aso-link-button" data-briefing-open="${destination.tab}">${destination.label}</button><button type="button" class="aso-link-button" data-briefing-action="completed" data-insight-id="${alert.id}">Done</button><button type="button" class="aso-link-button" data-briefing-action="snoozed" data-insight-id="${alert.id}">Snooze</button></div></div>`; })
               .join("")
           : '<p class="empty-state">No active signals yet. Kopa will add a briefing item when there is enough evidence to act.</p>'
       }
+      ${remainingAlerts.length ? `<details class="aso-briefing-more"><summary>${remainingAlerts.length} more active signal${remainingAlerts.length === 1 ? "" : "s"}</summary><div>${remainingAlerts.map((alert) => { const destination = insightDestination(alert); return `<div class="aso-briefing-action"><div><span class="priority-${alert.priority}">${alert.priority}</span><strong>${escapeHtml(alert.title)}</strong></div><button type="button" class="aso-link-button" data-briefing-open="${destination.tab}">${destination.label}</button></div>`; }).join("")}</div></details>` : ""}
     </section>
     <div class="aso-briefing-side">
     <section class="panel">
@@ -511,12 +533,6 @@ async function renderBriefing(panel) {
         <div><dt>New low-star reviews</dt><dd>${lowReviews}</dd></div>
         <div><dt>Experiment recommendations</dt><dd>${recommendations}</dd></div>
         <div><dt>Tracked apps</dt><dd>${apps.length}</dd></div>
-      </div>
-    </section>
-    <section class="panel">
-      <div class="panel-head"><h3>In-console alerts</h3><span>controls future insight creation</span></div>
-      <div class="aso-alert-settings">
-        ${ALERT_KINDS.map(([kind, label]) => `<label><input type="checkbox" data-alert-kind="${kind}" ${preferenceMap.get(kind) !== false ? "checked" : ""} /><span>${label}</span></label>`).join("")}
       </div>
     </section>
     </div>
@@ -535,19 +551,6 @@ async function renderBriefing(panel) {
     }
   });
 
-  panel.querySelectorAll("[data-alert-kind]").forEach((input) =>
-    input.addEventListener("change", async () => {
-      input.disabled = true;
-      try {
-        await pgUpsert("aso_alert_preferences", [{ kind: input.dataset.alertKind, enabled: input.checked }], "kind");
-      } catch (error) {
-        input.checked = !input.checked;
-        alert(error.message);
-      } finally {
-        input.disabled = false;
-      }
-    }),
-  );
   panel.querySelectorAll("[data-briefing-open]").forEach((button) =>
     button.addEventListener("click", () => {
       activeSubTab = button.dataset.briefingOpen;
@@ -1878,7 +1881,7 @@ async function renderReviews(panel) {
 
 async function renderSync(panel) {
   const today = toDateStr(new Date());
-  const [runs, errors, apps, appKeywords, snapshots, connections, analyticsStatus, metrics] = await Promise.all([
+  const [runs, errors, apps, appKeywords, snapshots, connections, analyticsStatus, metrics, preferences] = await Promise.all([
     pg("aso_sync_runs", "select=*&order=started_at.desc&limit=20"),
     pg("aso_sync_errors", "select=*&order=created_at.desc&limit=20"),
     pg("aso_apps", "select=id,store_app_id,name"),
@@ -1887,6 +1890,7 @@ async function renderSync(panel) {
     pg("aso_platform_connections", "provider=eq.appstore_connect&select=*&limit=1"),
     callApi("/api/aso/appstore-connect", { action: "analytics_status" }).catch(() => null),
     pg("aso_daily_metrics", `date=gte.${addDays(today, -7)}&select=app_id,date,country,source`),
+    pg("aso_alert_preferences", "select=kind,enabled"),
   ]);
 
   const lastOk = runs.find((r) => r.status === "ok" || r.status === "partial");
@@ -1947,6 +1951,10 @@ async function renderSync(panel) {
       <p id="aso-analytics-status" class="empty-state">${escapeHtml(analyticsMessage)}</p>
     </section>
     <section class="panel">
+      <div class="panel-head"><h3>Insight alert settings</h3><span>controls future insight creation</span></div>
+      ${alertSettingsHtml(preferences)}
+    </section>
+    <section class="panel">
       <div class="panel-head"><h3>Collection coverage</h3><span>${activeLinks.length ? `${freshLinks.length}/${activeLinks.length} keyword-app pairs fresh` : "no active keywords"}</span></div>
       <p class="empty-state">${
         activeLinks.length === 0
@@ -1994,6 +2002,7 @@ async function renderSync(panel) {
     const target = panel.querySelector(event.target.dataset.recommendedAction);
     target?.click();
   });
+  wireAlertSettings(panel);
 
   panel.querySelector("[data-run-collection]").addEventListener("click", async (e) => {
     const btn = e.target;
