@@ -214,8 +214,9 @@ Status: complete
 
 ### Milestone 5: Validation
 
-Status: planned
+Status: in progress
 
 - Review each authenticated page with real data at desktop and mobile sizes.
 - Test add/edit/filter/sort flows with a portfolio of at least 100 keywords.
 - Remove controls that do not support a regular weekly ASO workflow.
+- Live validation finding: shared freshness now requires recent keyword coverage, not only a successful sync run.

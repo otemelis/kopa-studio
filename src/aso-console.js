@@ -234,16 +234,30 @@ async function renderSubTab(panel) {
 }
 
 async function addFreshnessContext(panel) {
-  const runs = await pg("aso_sync_runs", "select=status,started_at,trigger&order=started_at.desc&limit=5");
+  const today = toDateStr(new Date());
+  const [runs, apps, appKeywords, snapshots] = await Promise.all([
+    pg("aso_sync_runs", "select=status,started_at,trigger&order=started_at.desc&limit=5"),
+    pg("aso_apps", "select=id,store_app_id"),
+    pg("aso_app_keywords", "select=app_id,keyword_id,status"),
+    pg("aso_keyword_rank_snapshots", `app_kind=eq.owned&captured_on=gte.${addDays(today, -2)}&select=keyword_id,store_app_id`),
+  ]);
   const latestRun = runs[0] ?? null;
   const lastOk = runs.find((run) => run.status === "ok" || run.status === "partial");
   const lastOkAge = lastOk ? Date.now() - new Date(lastOk.started_at).getTime() : Infinity;
-  const isFresh = lastOkAge <= 3 * 86400000 && latestRun?.status !== "failed";
+  const activeLinks = appKeywords.filter((link) => link.status !== "paused");
+  const freshLinks = activeLinks.filter((link) => {
+    const app = apps.find((item) => item.id === link.app_id);
+    return app && snapshots.some((snapshot) => snapshot.keyword_id === link.keyword_id && snapshot.store_app_id === app.store_app_id);
+  });
+  const staleCount = activeLinks.length - freshLinks.length;
+  const isFresh = activeLinks.length > 0 && staleCount === 0 && lastOkAge <= 3 * 86400000 && latestRun?.status !== "failed";
   const title = isFresh ? "Collection is current" : "Collection needs attention";
   const detail = isFresh
     ? `Last successful collection ${timeSince(lastOk.started_at)}.`
     : latestRun?.status === "failed"
       ? "The latest collection failed. Check Sync before acting on rank movement."
+      : staleCount
+        ? `${staleCount} of ${activeLinks.length} tracked keyword observation${staleCount === 1 ? " is" : "s are"} stale. Refresh coverage before acting on rank movement.`
       : lastOk
         ? `Last successful collection was ${timeSince(lastOk.started_at)}. Rankings may be stale.`
         : "No successful collection yet. Collect rankings before acting on visibility data.";
