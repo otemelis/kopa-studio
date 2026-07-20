@@ -190,11 +190,11 @@ Status: implemented
 
 ### Milestone 2: Action-Oriented Core Views
 
-Status: next
+Status: in progress
 
-- Portfolio sorting and app scope.
-- Insight filters and lighter triage actions.
-- Experiment queue, focused creation flow, and source/result links.
+- Portfolio sorting and app scope: implemented.
+- Insight filters and lighter triage actions: implemented.
+- Experiment queue, focused creation flow, and source/result links: next in this milestone.
 
 ### Milestone 3: Evidence and Change Intelligence
 

@@ -28,7 +28,9 @@ let runtimeConfig = null;
 let activeSubTab = "briefing";
 let editingKeywordLinkId = null;
 let keywordFormOpen = false;
-let keywordFilters = { query: "", country: "all", priority: "all", movement: "all", sort: "priority" };
+let keywordFilters = { query: "", app: "all", country: "all", priority: "all", movement: "all", sort: "priority" };
+let portfolioSort = "insights";
+let insightFilters = { app: "all", priority: "important" };
 
 function getSession() {
   try {
@@ -260,6 +262,12 @@ async function renderPortfolio(panel) {
   const totalDownloads = rows.reduce((a, r) => a + r.cmp.current.downloads, 0);
   const totalPv = rows.reduce((a, r) => a + r.cmp.current.page_views, 0);
   const avgConv = totalPv > 0 ? totalDownloads / totalPv : null;
+  const sortedRows = [...rows].sort((a, b) => {
+    if (portfolioSort === "downloads") return b.cmp.current.downloads - a.cmp.current.downloads;
+    if (portfolioSort === "conversion") return (b.cmp.current.conversion ?? -1) - (a.cmp.current.conversion ?? -1);
+    if (portfolioSort === "risk") return b.declining - a.declining || b.highInsights - a.highInsights;
+    return b.highInsights - a.highInsights || b.declining - a.declining || b.cmp.current.downloads - a.cmp.current.downloads;
+  });
   const countries = new Map();
   for (const metric of metrics.filter((item) => item.country && item.country !== "all")) {
     const app = apps.find((item) => item.id === metric.app_id);
@@ -283,13 +291,13 @@ async function renderPortfolio(panel) {
     </div>
     <div class="aso-portfolio-grid">
       <section class="panel">
-        <div class="panel-head"><h3>Apps</h3><span>tap a row for keywords</span></div>
+        <div class="panel-head"><h3>Apps</h3><div class="aso-panel-actions"><span>select an app to open its keywords</span><select id="aso-portfolio-sort"><option value="insights" ${portfolioSort === "insights" ? "selected" : ""}>Sort: open insights</option><option value="risk" ${portfolioSort === "risk" ? "selected" : ""}>Sort: keyword risk</option><option value="downloads" ${portfolioSort === "downloads" ? "selected" : ""}>Sort: downloads</option><option value="conversion" ${portfolioSort === "conversion" ? "selected" : ""}>Sort: conversion</option></select></div></div>
       <table class="aso-table">
         <thead><tr><th>App</th><th>Version</th><th>Rating</th><th>Downloads 14d</th><th>Conv.</th><th>Keywords</th><th>▲/▼</th><th>Insights</th></tr></thead>
         <tbody>
-          ${rows
+          ${sortedRows
             .map(
-              (r) => `<tr>
+              (r) => `<tr class="aso-row-link" data-focus-app="${r.app.id}">
                 <td>${escapeHtml(r.app.name)}</td>
                 <td class="mono">${escapeHtml(r.app.current_version ?? "—")}</td>
                 <td class="mono">${r.app.rating != null ? `★ ${r.app.rating.toFixed(1)}` : "—"}</td>
@@ -329,6 +337,18 @@ async function renderPortfolio(panel) {
     </div>
     <p class="empty-state">Downloads/conversion: last 14 days. Ranks are a public storefront snapshot (iTunes Search), not the exact on-device position.</p>
   `;
+  panel.querySelector("#aso-portfolio-sort")?.addEventListener("change", (event) => {
+    portfolioSort = event.target.value;
+    renderSubTab(panel);
+  });
+  panel.querySelectorAll("[data-focus-app]").forEach((row) =>
+    row.addEventListener("click", () => {
+      keywordFilters.app = row.dataset.focusApp;
+      activeSubTab = "keywords";
+      document.querySelectorAll("[data-aso-tab]").forEach((button) => button.classList.toggle("active", button.dataset.asoTab === activeSubTab));
+      renderSubTab(panel);
+    }),
+  );
 }
 
 const ALERT_KINDS = [
@@ -465,6 +485,7 @@ function filteredKeywordRows(rows) {
     const movement = row.latest?.change_7d ?? 0;
     const priority = row.link.priority ?? row.keyword.priority;
     if (query && !`${row.keyword.term} ${row.app.name}`.toLowerCase().includes(query)) return false;
+    if (keywordFilters.app !== "all" && row.app.id !== keywordFilters.app) return false;
     if (keywordFilters.country !== "all" && row.keyword.country !== keywordFilters.country) return false;
     if (keywordFilters.priority !== "all" && priority !== keywordFilters.priority) return false;
     if (keywordFilters.movement === "gaining" && movement <= 0) return false;
@@ -482,9 +503,11 @@ function filteredKeywordRows(rows) {
 }
 
 function keywordToolbarHtml(rows) {
+  const apps = [...new Map(rows.map((row) => [row.app.id, row.app])).values()];
   const countries = [...new Set(rows.map((row) => row.keyword.country))].sort();
   return `<div class="aso-keyword-toolbar">
     <input type="search" id="aso-keyword-search" value="${escapeHtml(keywordFilters.query)}" placeholder="Search keyword or app" />
+    <select id="aso-keyword-app"><option value="all">All apps</option>${apps.map((app) => `<option value="${app.id}" ${keywordFilters.app === app.id ? "selected" : ""}>${escapeHtml(app.name)}</option>`).join("")}</select>
     <select id="aso-keyword-country"><option value="all">All countries</option>${countries.map((country) => `<option value="${escapeHtml(country)}" ${keywordFilters.country === country ? "selected" : ""}>${escapeHtml(country.toUpperCase())}</option>`).join("")}</select>
     <select id="aso-keyword-priority"><option value="all">All priorities</option>${["high", "medium", "low"].map((priority) => `<option value="${priority}" ${keywordFilters.priority === priority ? "selected" : ""}>${priority[0].toUpperCase()}${priority.slice(1)} priority</option>`).join("")}</select>
     <select id="aso-keyword-movement"><option value="all">All movement</option><option value="gaining" ${keywordFilters.movement === "gaining" ? "selected" : ""}>Gaining</option><option value="declining" ${keywordFilters.movement === "declining" ? "selected" : ""}>Declining</option><option value="stable" ${keywordFilters.movement === "stable" ? "selected" : ""}>Stable</option><option value="unranked" ${keywordFilters.movement === "unranked" ? "selected" : ""}>Unranked</option></select>
@@ -720,11 +743,12 @@ function wireKeywordToolbar(panel) {
     renderSubTab(panel);
   });
   panel.querySelector("[data-clear-keyword-filters]")?.addEventListener("click", () => {
-    keywordFilters = { query: "", country: "all", priority: "all", movement: "all", sort: "priority" };
+    keywordFilters = { query: "", app: "all", country: "all", priority: "all", movement: "all", sort: "priority" };
     renderSubTab(panel);
   });
   const fields = [
     ["#aso-keyword-search", "query"],
+    ["#aso-keyword-app", "app"],
     ["#aso-keyword-country", "country"],
     ["#aso-keyword-priority", "priority"],
     ["#aso-keyword-movement", "movement"],
@@ -886,6 +910,12 @@ async function renderInsights(panel) {
 
   const order = { high: 0, medium: 1, low: 2 };
   const sorted = [...insights].sort((a, b) => order[a.priority] - order[b.priority]);
+  const visibleInsights = sorted.filter((insight) => {
+    if (insightFilters.app !== "all" && insight.app_id !== insightFilters.app) return false;
+    if (insightFilters.priority === "important" && !["high", "medium"].includes(insight.priority)) return false;
+    if (insightFilters.priority !== "all" && insightFilters.priority !== "important" && insight.priority !== insightFilters.priority) return false;
+    return true;
+  });
   const highCount = insights.filter((insight) => insight.priority === "high").length;
   const mediumCount = insights.filter((insight) => insight.priority === "medium").length;
 
@@ -894,7 +924,12 @@ async function renderInsights(panel) {
       <article><span>High priority</span><strong class="down">${highCount}</strong></article>
       <article><span>Medium priority</span><strong>${mediumCount}</strong></article>
       <article><span>Apps affected</span><strong>${new Set(insights.map((insight) => insight.app_id).filter(Boolean)).size}</strong></article>
-    </div>` + sorted
+    </div>
+    <div class="aso-filter-toolbar">
+      <select id="aso-insight-app"><option value="all">All apps</option>${apps.map((app) => `<option value="${app.id}" ${insightFilters.app === app.id ? "selected" : ""}>${escapeHtml(app.name)}</option>`).join("")}</select>
+      <select id="aso-insight-priority"><option value="important" ${insightFilters.priority === "important" ? "selected" : ""}>High and medium priority</option><option value="high" ${insightFilters.priority === "high" ? "selected" : ""}>High priority only</option><option value="medium" ${insightFilters.priority === "medium" ? "selected" : ""}>Medium priority only</option><option value="low" ${insightFilters.priority === "low" ? "selected" : ""}>Low priority only</option><option value="all" ${insightFilters.priority === "all" ? "selected" : ""}>All priorities</option></select>
+      <span>${visibleInsights.length}/${insights.length} shown</span>
+    </div>` + (visibleInsights.length ? visibleInsights : [])
     .map((i) => {
       const app = apps.find((a) => a.id === i.app_id);
       const keyword = keywords.find((k) => k.id === i.keyword_id);
@@ -921,13 +956,21 @@ async function renderInsights(panel) {
         </div>
         <div class="aso-insight-actions">
           <button type="button" class="aso-action-primary" data-create-experiment data-insight-id="${i.id}">Create experiment draft</button>
-          <button type="button" data-insight-action="completed" data-insight-id="${i.id}">Mark done</button>
-          <button type="button" data-insight-action="snoozed" data-insight-id="${i.id}">Snooze 14d</button>
-          <button type="button" data-insight-action="dismissed" data-insight-id="${i.id}">Dismiss</button>
+          <details class="aso-secondary-actions"><summary>More</summary><div><button type="button" data-insight-action="completed" data-insight-id="${i.id}">Mark done</button><button type="button" data-insight-action="snoozed" data-insight-id="${i.id}">Snooze 14d</button><button type="button" data-insight-action="dismissed" data-insight-id="${i.id}">Dismiss</button></div></details>
         </div>
       </article>`;
     })
-    .join("");
+    .join("") || '<section class="panel"><h3>No insights match these filters</h3><p class="empty-state">Try broadening the app or priority filter.</p></section>';
+
+  [
+    ["#aso-insight-app", "app"],
+    ["#aso-insight-priority", "priority"],
+  ].forEach(([selector, key]) =>
+    panel.querySelector(selector)?.addEventListener("change", (event) => {
+      insightFilters[key] = event.target.value;
+      renderSubTab(panel);
+    }),
+  );
 
   panel.querySelectorAll("[data-insight-action]").forEach((btn) =>
     btn.addEventListener("click", async () => {
