@@ -41,7 +41,7 @@ Status: complete
 
 ## Priority 5: Operational Detail
 
-Status: planned
+Status: in progress
 
 - Keep one recommended action prominent in Sync.
 - Move raw run logs and technical errors into progressively disclosed operational detail.

@@ -1913,6 +1913,17 @@ async function renderSync(panel) {
   const appStoreConnect = connections[0] ?? null;
   const analyticsRequest = analyticsStatus?.requests?.[0] ?? null;
   const analyticsMessage = analyticsRequest?.last_error ?? (analyticsRequest ? `Report request ${analyticsRequest.status}. ${analyticsRequest.last_checked_at ? `Last checked ${analyticsRequest.last_checked_at.slice(0, 16).replace("T", " ")}.` : "Apple can take 1-2 days to generate the first report."}` : "Request the App Store Discovery and Engagement report to measure product-page visits, discovery impressions, sources, and countries.");
+  const recentErrors = errors.filter((error) => Date.now() - new Date(error.created_at).getTime() <= 7 * 86400000);
+  const recoveryGroups = [
+    { kind: "keyword", title: "Keyword checks need attention", tab: "keywords", label: "Review keywords", items: [] },
+    { kind: "competitor", title: "Competitor checks need attention", tab: "competitors", label: "Review competitors", items: [] },
+    { kind: "app", title: "Storefront metadata checks need attention", tab: "portfolio", label: "Review apps", items: [] },
+  ];
+  for (const error of recentErrors) {
+    const group = recoveryGroups.find((item) => error.item.startsWith(`${item.kind}:`));
+    if (group) group.items.push(error);
+  }
+  const activeRecoveries = recoveryGroups.filter((group) => group.items.length);
   const nextStep = appStoreConnect?.status !== "configured"
     ? { title: "Check App Store Connect", detail: "Confirm that Kopa can read your Apple account before relying on storefront data.", target: "[data-test-appstore-connect]", label: "Test connection" }
     : !analyticsRequest
@@ -1937,6 +1948,7 @@ async function renderSync(panel) {
       </div>
       ${appCoverage.length ? `<div class="aso-health-coverage">${appCoverage.map(({ app, links, fresh, storefront }) => `<div><span>${escapeHtml(app.name)}</span><span class="mono">${links ? `${fresh}/${links} keywords` : "no keywords"}</span><span class="${storefront ? "status-ok" : "muted"}">${storefront ? "storefront data" : "storefront pending"}</span></div>`).join("")}</div>` : ""}
     </section>
+    ${activeRecoveries.length ? `<section class="panel aso-recovery-queue"><div class="panel-head"><h3>Recovery queue</h3><span>${recentErrors.length} failed check${recentErrors.length === 1 ? "" : "s"} in 7 days</span></div>${activeRecoveries.map((group) => { const affected = group.items.slice(0, 4).map((error) => error.item.replace(`${group.kind}:`, "").replaceAll(":", " ")).join(" · "); return `<div class="aso-recovery-row"><div><strong>${group.title}</strong><small>${group.items.length} failed check${group.items.length === 1 ? "" : "s"}: ${escapeHtml(affected)}${group.items.length > 4 ? " …" : ""}</small></div><button type="button" class="aso-link-button" data-recovery-tab="${group.tab}">${group.label}</button></div>`; }).join("")}</section>` : ""}
     <section class="panel">
       <div class="panel-head"><h3>App Store Connect</h3><span class="status-${appStoreConnect?.status === "configured" ? "ok" : appStoreConnect?.status === "error" ? "failed" : "partial"}">${appStoreConnect?.status ?? "unconfigured"}</span></div>
       <button type="button" class="aso-run-collection" data-test-appstore-connect>Test connection</button>
@@ -1951,48 +1963,28 @@ async function renderSync(panel) {
       <div class="panel-head"><h3>Insight alert settings</h3><span>controls future insight creation</span></div>
       ${alertSettingsHtml(preferences)}
     </section>
-    <section class="panel">
-      <div class="panel-head"><h3>Collection coverage</h3><span>${activeLinks.length ? `${freshLinks.length}/${activeLinks.length} keyword-app pairs fresh` : "no active keywords"}</span></div>
-      <p class="empty-state">${
-        activeLinks.length === 0
-          ? "Add keywords to start measuring search visibility."
-          : staleCount === 0
-            ? "All active keyword observations were refreshed in the last three days."
-            : `${staleCount} active keyword-app pair${staleCount === 1 ? " is" : "s are"} missing a fresh observation. Rankings and related insights may be incomplete until the next collection succeeds.`
-      }</p>
-    </section>
-    <section class="panel">
-      <div class="panel-head">
-        <h3>Collection runs</h3>
-        <span>last successful: ${lastOk ? lastOk.started_at.slice(0, 16).replace("T", " ") : "never"}</span>
+    <details class="panel aso-operations-detail">
+      <summary><span>Operational detail</span><span>${runs.length} recent runs${errors.length ? ` · ${errors.length} logged errors` : ""}</span></summary>
+      <div>
+        <section>
+          <div class="panel-head"><h3>Collection coverage</h3><span>${activeLinks.length ? `${freshLinks.length}/${activeLinks.length} keyword-app pairs fresh` : "no active keywords"}</span></div>
+          <p class="empty-state">${
+            activeLinks.length === 0
+              ? "Add keywords to start measuring search visibility."
+              : staleCount === 0
+                ? "All active keyword observations were refreshed in the last three days."
+                : `${staleCount} active keyword-app pair${staleCount === 1 ? " is" : "s are"} missing a fresh observation. Rankings and related insights may be incomplete until the next collection succeeds.`
+          }</p>
+        </section>
+        <section>
+          <div class="panel-head"><h3>Collection runs</h3><span>last successful: ${lastOk ? lastOk.started_at.slice(0, 16).replace("T", " ") : "never"}</span></div>
+          <button type="button" class="aso-run-collection" data-run-collection>Run collection now</button>
+          <p id="aso-run-status" class="empty-state" hidden></p>
+          <table class="aso-table"><thead><tr><th>Started</th><th>Trigger</th><th>Status</th><th>Processed</th><th>OK</th><th>Failed</th></tr></thead><tbody>${runs.map((r) => `<tr><td class="mono">${r.started_at.slice(0, 16).replace("T", " ")}</td><td class="mono">${r.trigger}</td><td class="mono status-${r.status}">${r.status}</td><td class="mono">${r.processed}</td><td class="mono">${r.succeeded}</td><td class="mono">${r.failed || "—"}</td></tr>`).join("")}</tbody></table>
+        </section>
+        ${errors.length ? `<section><div class="panel-head"><h3>Technical messages</h3><span>latest ${errors.length}</span></div>${errors.map((error) => `<p class="empty-state"><span class="mono">${escapeHtml(error.item)}</span> — ${escapeHtml(error.message)}</p>`).join("")}</section>` : ""}
       </div>
-      <button type="button" class="aso-run-collection" data-run-collection>Run collection now</button>
-      <p id="aso-run-status" class="empty-state" hidden></p>
-      <table class="aso-table">
-        <thead><tr><th>Started</th><th>Trigger</th><th>Status</th><th>Processed</th><th>OK</th><th>Failed</th></tr></thead>
-        <tbody>
-          ${runs
-            .map(
-              (r) => `<tr>
-                <td class="mono">${r.started_at.slice(0, 16).replace("T", " ")}</td>
-                <td class="mono">${r.trigger}</td>
-                <td class="mono status-${r.status}">${r.status}</td>
-                <td class="mono">${r.processed}</td>
-                <td class="mono">${r.succeeded}</td>
-                <td class="mono">${r.failed || "—"}</td>
-              </tr>`,
-            )
-            .join("")}
-        </tbody>
-      </table>
-    </section>
-    ${
-      errors.length
-        ? `<section class="panel"><div class="panel-head"><h3>Recent errors</h3></div>${errors
-            .map((e) => `<p class="empty-state"><span class="mono">${e.item}</span> — ${escapeHtml(e.message)}</p>`)
-            .join("")}</section>`
-        : ""
-    }
+    </details>
   `;
 
   panel.querySelector("[data-recommended-action]")?.addEventListener("click", (event) => {
@@ -2000,6 +1992,13 @@ async function renderSync(panel) {
     target?.click();
   });
   wireAlertSettings(panel);
+  panel.querySelectorAll("[data-recovery-tab]").forEach((button) =>
+    button.addEventListener("click", () => {
+      activeSubTab = button.dataset.recoveryTab;
+      document.querySelectorAll("[data-aso-tab]").forEach((tab) => tab.classList.toggle("active", tab.dataset.asoTab === activeSubTab));
+      renderSubTab(panel);
+    }),
+  );
 
   panel.querySelector("[data-run-collection]").addEventListener("click", async (e) => {
     const btn = e.target;
