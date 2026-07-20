@@ -1033,12 +1033,13 @@ async function renderCompetitors(panel) {
 
 async function renderSync(panel) {
   const today = toDateStr(new Date());
-  const [runs, errors, apps, appKeywords, snapshots] = await Promise.all([
+  const [runs, errors, apps, appKeywords, snapshots, connections] = await Promise.all([
     pg("aso_sync_runs", "select=*&order=started_at.desc&limit=20"),
     pg("aso_sync_errors", "select=*&order=created_at.desc&limit=20"),
     pg("aso_apps", "select=id,store_app_id,name"),
     pg("aso_app_keywords", "select=app_id,keyword_id,status"),
     pg("aso_keyword_rank_snapshots", `app_kind=eq.owned&captured_on=gte.${addDays(today, -2)}&select=keyword_id,store_app_id,captured_on`),
+    pg("aso_platform_connections", "provider=eq.appstore_connect&select=*&limit=1"),
   ]);
 
   const lastOk = runs.find((r) => r.status === "ok" || r.status === "partial");
@@ -1048,8 +1049,14 @@ async function renderSync(panel) {
     return app && snapshots.some((snapshot) => snapshot.keyword_id === link.keyword_id && snapshot.store_app_id === app.store_app_id);
   });
   const staleCount = activeLinks.length - freshLinks.length;
+  const appStoreConnect = connections[0] ?? null;
 
   panel.innerHTML = `
+    <section class="panel">
+      <div class="panel-head"><h3>App Store Connect</h3><span class="status-${appStoreConnect?.status === "configured" ? "ok" : appStoreConnect?.status === "error" ? "failed" : "partial"}">${appStoreConnect?.status ?? "unconfigured"}</span></div>
+      <button type="button" class="aso-run-collection" data-test-appstore-connect>Test connection</button>
+      <p id="aso-appstore-connect-status" class="empty-state">${escapeHtml(appStoreConnect?.last_test_message ?? "No connection configured.")}</p>
+    </section>
     <section class="panel">
       <div class="panel-head"><h3>Data quality</h3><span>${activeLinks.length ? `${freshLinks.length}/${activeLinks.length} keyword-app pairs fresh` : "no active keywords"}</span></div>
       <p class="empty-state">${
@@ -1104,6 +1111,21 @@ async function renderSync(panel) {
       const result = await callApi("/api/aso/collect");
       status.textContent = result.message;
       setTimeout(() => renderSubTab(panel), 1500);
+    } catch (error) {
+      status.textContent = error.message;
+      btn.disabled = false;
+    }
+  });
+
+  panel.querySelector("[data-test-appstore-connect]").addEventListener("click", async (e) => {
+    const btn = e.target;
+    const status = panel.querySelector("#aso-appstore-connect-status");
+    btn.disabled = true;
+    status.textContent = "Testing connection…";
+    try {
+      const result = await callApi("/api/aso/appstore-connect", { action: "test" });
+      status.textContent = `Connected. ${result.visibleApps} App Store Connect app(s) visible; ${result.mappedApps} tracked app(s) matched.`;
+      setTimeout(() => renderSubTab(panel), 1200);
     } catch (error) {
       status.textContent = error.message;
       btn.disabled = false;
