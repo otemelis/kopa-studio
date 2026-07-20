@@ -25,7 +25,7 @@ import {
 
 const SESSION_KEY = "kopa-admin-session-v1";
 let runtimeConfig = null;
-let activeSubTab = "portfolio";
+let activeSubTab = "briefing";
 let editingKeywordLinkId = null;
 
 function getSession() {
@@ -367,7 +367,7 @@ async function renderBriefing(panel) {
   ];
 
   panel.innerHTML = `
-    <section class="panel">
+    <section class="panel aso-briefing-summary">
       <div class="panel-head"><h3>Weekly briefing</h3><span>week ending ${today}</span></div>
       <div class="metric-grid">
         <article><span>Downloads</span><strong>${formatNumber(comparison.current.downloads)}</strong><small class="${deltaClass(comparison.downloads_pct)}">${formatPct(comparison.downloads_pct)}</small></article>
@@ -378,7 +378,8 @@ async function renderBriefing(panel) {
       <button type="button" class="aso-link-button" id="aso-copy-briefing">Copy briefing</button>
       <p id="aso-briefing-status" class="empty-state" hidden></p>
     </section>
-    <section class="panel">
+    <div class="aso-briefing-grid">
+    <section class="panel aso-briefing-actions">
       <div class="panel-head"><h3>Act this week</h3><span>${alerts.length} active signal${alerts.length === 1 ? "" : "s"}</span></div>
       ${
         alerts.length
@@ -388,6 +389,7 @@ async function renderBriefing(panel) {
           : '<p class="empty-state">No active signals yet. Kopa will add a briefing item when there is enough evidence to act.</p>'
       }
     </section>
+    <div class="aso-briefing-side">
     <section class="panel">
       <div class="panel-head"><h3>Watchlist</h3><span>last 7 days</span></div>
       <div class="aso-evidence">
@@ -403,6 +405,8 @@ async function renderBriefing(panel) {
         ${ALERT_KINDS.map(([kind, label]) => `<label><input type="checkbox" data-alert-kind="${kind}" ${preferenceMap.get(kind) !== false ? "checked" : ""} /><span>${label}</span></label>`).join("")}
       </div>
     </section>
+    </div>
+    </div>
   `;
 
   panel.querySelector("#aso-copy-briefing").addEventListener("click", async (event) => {

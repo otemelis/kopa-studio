@@ -24,6 +24,10 @@ footer{background:var(--moss);color:var(--paper);padding:80px 6vw 30px;display:g
 .aso-subnav button.active{border-color:#8dff82;color:#8dff82}
 .aso-subnav .aso-add-app{margin-left:auto;border-color:#d8ff5f;color:#d8ff5f}
 .aso-panel{display:grid;gap:18px}
+.aso-briefing-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.85fr);gap:14px;align-items:start}
+.aso-briefing-side{display:grid;gap:14px}
+.aso-briefing-summary .metric-grid{margin-bottom:14px}
+.aso-briefing-actions{min-height:100%}
 .aso-table{width:100%;border-collapse:collapse;font-size:12px}
 .aso-table th{text-align:left;font:9px DM Mono;text-transform:uppercase;color:#657168;letter-spacing:.06em;padding:0 12px 10px 0;white-space:nowrap}
 .aso-table td{padding:10px 12px 10px 0;border-top:1px solid #202620;white-space:nowrap;color:#c7cdc8}
@@ -111,6 +115,7 @@ footer{background:var(--moss);color:var(--paper);padding:80px 6vw 30px;display:g
   .metric-grid strong{font-size:30px;margin:12px 0 8px}
   .panel{padding:16px}
   .panel-pair,.aso-portfolio-grid{grid-template-columns:1fr;gap:10px}
+  .aso-briefing-grid{grid-template-columns:1fr;gap:10px}
   .aso-subnav{top:58px;margin:0 -2px}
 }
 @media(max-width:480px){
