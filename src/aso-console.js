@@ -166,6 +166,7 @@ function escapeHtml(value) {
 
 const SUB_TABS = [
   ["portfolio", "Portfolio"],
+  ["briefing", "Briefing"],
   ["keywords", "Keywords"],
   ["insights", "Insights"],
   ["experiments", "Experiments"],
@@ -213,6 +214,7 @@ async function renderSubTab(panel) {
   panel.innerHTML = '<p class="loading-state">Loading…</p>';
   try {
     if (activeSubTab === "portfolio") await renderPortfolio(panel);
+    else if (activeSubTab === "briefing") await renderBriefing(panel);
     else if (activeSubTab === "keywords") await renderKeywords(panel);
     else if (activeSubTab === "insights") await renderInsights(panel);
     else if (activeSubTab === "experiments") await renderExperiments(panel);
@@ -323,6 +325,109 @@ async function renderPortfolio(panel) {
     </section>
     <p class="empty-state">Downloads/conversion: last 14 days. Ranks are a public storefront snapshot (iTunes Search), not the exact on-device position.</p>
   `;
+}
+
+const ALERT_KINDS = [
+  ["performance", "Visibility and conversion"],
+  ["keywords", "Keyword movement"],
+  ["competitors", "Competitor movement"],
+  ["reviews", "Review issues"],
+  ["experiments", "Experiment outcomes"],
+  ["operations", "Collection health"],
+];
+
+async function renderBriefing(panel) {
+  const today = toDateStr(new Date());
+  const [apps, metrics, insights, changes, reviews, experiments, preferences] = await Promise.all([
+    pg("aso_apps", "select=id,name"),
+    pg("aso_daily_metrics", `date=gte.${addDays(today, -14)}&select=*`),
+    pg("aso_insights", "status=eq.active&select=*&order=created_at.desc"),
+    pg("aso_metadata_change_events", `happened_at=gte.${addDays(today, -7)}&select=*&order=happened_at.desc`),
+    pg("aso_reviews", `reviewed_at=gte.${addDays(today, -7)}&select=id,rating`),
+    pg("aso_experiments", "status=in.(running,monitoring)&select=id,title,decision_recommendation"),
+    pg("aso_alert_preferences", "select=kind,enabled"),
+  ]);
+  const comparison = compareWindows(metrics, 7, today);
+  const priorities = { high: 0, medium: 1, low: 2 };
+  const alerts = [...insights].sort((a, b) => priorities[a.priority] - priorities[b.priority]).slice(0, 5);
+  const highCount = insights.filter((insight) => insight.priority === "high").length;
+  const competitorChanges = changes.filter((change) => change.competitor_id != null).length;
+  const lowReviews = reviews.filter((review) => review.rating <= 2).length;
+  const recommendations = experiments.filter((experiment) => ["winner", "loser", "inconclusive"].includes(experiment.decision_recommendation)).length;
+  const preferenceMap = new Map(preferences.map((preference) => [preference.kind, preference.enabled]));
+  const lines = [
+    `Kopa ASO weekly briefing - ${today}`,
+    `Downloads: ${formatNumber(comparison.current.downloads)} (${formatPct(comparison.downloads_pct)})`,
+    `Product-page views: ${formatNumber(comparison.current.page_views)} (${formatPct(comparison.page_views_pct)})`,
+    `Impressions: ${formatNumber(comparison.current.impressions)} (${formatPct(comparison.impressions_pct)})`,
+    `Active high-priority signals: ${highCount}`,
+    ...alerts.map((alert) => `- [${alert.priority}] ${alert.title}: ${alert.recommendation}`),
+  ];
+
+  panel.innerHTML = `
+    <section class="panel">
+      <div class="panel-head"><h3>Weekly briefing</h3><span>week ending ${today}</span></div>
+      <div class="metric-grid">
+        <article><span>Downloads</span><strong>${formatNumber(comparison.current.downloads)}</strong><small class="${deltaClass(comparison.downloads_pct)}">${formatPct(comparison.downloads_pct)}</small></article>
+        <article><span>Product-page views</span><strong>${formatNumber(comparison.current.page_views)}</strong><small class="${deltaClass(comparison.page_views_pct)}">${formatPct(comparison.page_views_pct)}</small></article>
+        <article><span>Impressions</span><strong>${formatNumber(comparison.current.impressions)}</strong><small class="${deltaClass(comparison.impressions_pct)}">${formatPct(comparison.impressions_pct)}</small></article>
+        <article><span>High-priority signals</span><strong>${highCount}</strong><small>${insights.length} active</small></article>
+      </div>
+      <button type="button" class="aso-link-button" id="aso-copy-briefing">Copy briefing</button>
+      <p id="aso-briefing-status" class="empty-state" hidden></p>
+    </section>
+    <section class="panel">
+      <div class="panel-head"><h3>Act this week</h3><span>${alerts.length} active signal${alerts.length === 1 ? "" : "s"}</span></div>
+      ${
+        alerts.length
+          ? alerts
+              .map((alert) => `<div class="aso-change-row"><span class="priority-${alert.priority}">${alert.priority}</span><span>${escapeHtml(alert.title)}</span><span class="muted">${escapeHtml(alert.recommendation)}</span></div>`)
+              .join("")
+          : '<p class="empty-state">No active signals yet. Kopa will add a briefing item when there is enough evidence to act.</p>'
+      }
+    </section>
+    <section class="panel">
+      <div class="panel-head"><h3>Watchlist</h3><span>last 7 days</span></div>
+      <div class="aso-evidence">
+        <div><dt>Competitor metadata changes</dt><dd>${competitorChanges}</dd></div>
+        <div><dt>New low-star reviews</dt><dd>${lowReviews}</dd></div>
+        <div><dt>Experiment recommendations</dt><dd>${recommendations}</dd></div>
+        <div><dt>Tracked apps</dt><dd>${apps.length}</dd></div>
+      </div>
+    </section>
+    <section class="panel">
+      <div class="panel-head"><h3>In-console alerts</h3><span>controls future insight creation</span></div>
+      <div class="aso-alert-settings">
+        ${ALERT_KINDS.map(([kind, label]) => `<label><input type="checkbox" data-alert-kind="${kind}" ${preferenceMap.get(kind) !== false ? "checked" : ""} /><span>${label}</span></label>`).join("")}
+      </div>
+    </section>
+  `;
+
+  panel.querySelector("#aso-copy-briefing").addEventListener("click", async (event) => {
+    const status = panel.querySelector("#aso-briefing-status");
+    status.hidden = false;
+    try {
+      await navigator.clipboard.writeText(lines.join("\n"));
+      status.textContent = "Briefing copied.";
+      event.target.disabled = true;
+    } catch {
+      status.textContent = "Could not copy the briefing in this browser.";
+    }
+  });
+
+  panel.querySelectorAll("[data-alert-kind]").forEach((input) =>
+    input.addEventListener("change", async () => {
+      input.disabled = true;
+      try {
+        await pgUpsert("aso_alert_preferences", [{ kind: input.dataset.alertKind, enabled: input.checked }], "kind");
+      } catch (error) {
+        input.checked = !input.checked;
+        alert(error.message);
+      } finally {
+        input.disabled = false;
+      }
+    }),
+  );
 }
 
 function deltaClass(v) {

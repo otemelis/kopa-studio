@@ -444,7 +444,7 @@ async function runCollection(trigger) {
 
 async function runInsightEngine(db) {
   const today = toDateStr(new Date());
-  const [apps, storefronts, metrics, storefrontMetrics, appKeywords, keywords, snapshots, competitorRankSnapshots, competitors, changeEvents, reviews, reviewClassifications, experiments, syncRuns, existingInsights] =
+  const [apps, storefronts, metrics, storefrontMetrics, appKeywords, keywords, snapshots, competitorRankSnapshots, competitors, changeEvents, reviews, reviewClassifications, experiments, syncRuns, existingInsights, alertPreferences] =
     await Promise.all([
       db.select("aso_apps", "select=*"),
       db.select("aso_app_storefronts", "select=*"),
@@ -461,6 +461,7 @@ async function runInsightEngine(db) {
       db.select("aso_experiments", "select=*"),
       db.select("aso_sync_runs", "order=started_at.desc&limit=20&select=*"),
       db.select("aso_insights", "select=dedupe_key,status,updated_at,snoozed_until"),
+      db.select("aso_alert_preferences", "select=kind,enabled"),
     ]);
 
   let pv = 0;
@@ -522,6 +523,16 @@ async function runInsightEngine(db) {
     drafts = drafts.concat(evaluateRulesForApp(ctx));
   }
 
+  const alertKindForRule = (ruleId) => {
+    if (ruleId.startsWith("review_")) return "reviews";
+    if (ruleId.startsWith("competitor_")) return "competitors";
+    if (ruleId.startsWith("experiment_")) return "experiments";
+    if (ruleId === "data_collection_failure") return "operations";
+    if (ruleId.includes("keyword") || ruleId === "metadata_mismatch") return "keywords";
+    return "performance";
+  };
+  const enabledAlerts = new Map(alertPreferences.map((preference) => [preference.kind, preference.enabled]));
+  drafts = drafts.filter((draft) => enabledAlerts.get(alertKindForRule(draft.rule_id)) !== false);
   drafts = filterAgainstExisting(drafts, existingInsights);
   if (drafts.length) await db.insert("aso_insights", drafts.map(draftToInsertRow));
   return drafts.length;
