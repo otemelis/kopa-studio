@@ -434,11 +434,12 @@ async function runCollection(trigger) {
 
 async function runInsightEngine(db) {
   const today = toDateStr(new Date());
-  const [apps, storefronts, metrics, appKeywords, keywords, snapshots, changeEvents, reviews, experiments, syncRuns, existingInsights] =
+  const [apps, storefronts, metrics, storefrontMetrics, appKeywords, keywords, snapshots, changeEvents, reviews, experiments, syncRuns, existingInsights] =
     await Promise.all([
       db.select("aso_apps", "select=*"),
       db.select("aso_app_storefronts", "select=*"),
       db.select("aso_daily_metrics", `date=gte.${addDays(today, -80)}&select=*`),
+      db.select("aso_storefront_metrics", `date=gte.${addDays(today, -40)}&select=app_id,date,country,event,page_type,source_type,count`),
       db.select("aso_app_keywords", "select=*"),
       db.select("aso_keywords", "select=*"),
       db.select("aso_keyword_rank_snapshots", `app_kind=eq.owned&captured_at=gte.${addDays(today, -60)}&select=*`),
@@ -469,10 +470,18 @@ async function runInsightEngine(db) {
     }
     for (const list of metricsByCountry.values()) list.sort((a, b) => (a.date < b.date ? -1 : 1));
 
+    const storefrontMetricsByCountry = new Map();
+    for (const metric of storefrontMetrics) {
+      if (metric.app_id !== app.id) continue;
+      if (!storefrontMetricsByCountry.has(metric.country)) storefrontMetricsByCountry.set(metric.country, []);
+      storefrontMetricsByCountry.get(metric.country).push(metric);
+    }
+
     const ctx = {
       app,
       storefronts: storefronts.filter((sf) => sf.app_id === app.id),
       metricsByCountry,
+      storefrontMetricsByCountry,
       keywords: appKeywords
         .filter((link) => link.app_id === app.id && link.status !== "paused")
         .map((link) => {

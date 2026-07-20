@@ -29,6 +29,107 @@ const metricSource = (metrics) => (metrics.some((m) => m.source === "demo") ? "d
 const MIN_WINDOW_IMPRESSIONS = 300;
 const MIN_WINDOW_DOWNLOADS = 20;
 
+function discoveryWindow(rows, today, event, sourceType, pageType = null) {
+  const matching = rows.filter(
+    (row) =>
+      row.event.toLowerCase() === event &&
+      row.source_type.toLowerCase() === sourceType &&
+      (pageType == null || row.page_type.toLowerCase() === pageType),
+  );
+  const byDate = new Map();
+  for (const row of matching) byDate.set(row.date, (byDate.get(row.date) ?? 0) + (row.count ?? 0));
+  return compareWindows(
+    [...byDate.entries()].map(([date, value]) => ({
+      date,
+      impressions: event === "impression" ? value : 0,
+      page_views: event === "page view" ? value : 0,
+      downloads: 0,
+    })),
+    14,
+    today,
+  );
+}
+
+function trackedRankMovement(keywords, country, today) {
+  const changes = keywords
+    .filter((entry) => entry.keyword.country === country)
+    .map(({ snapshots }) => {
+      const last = snapshots[snapshots.length - 1];
+      return last ? rankChange(last.rank, snapshotRankNearDaysAgo(snapshots, 7, today)) : null;
+    })
+    .filter((value) => value != null);
+  return changes.length ? changes.reduce((sum, value) => sum + value, 0) / changes.length : null;
+}
+
+function ruleSearchDiscoveryFallsDespiteRanks(ctx) {
+  const out = [];
+  for (const [country, rows] of ctx.storefrontMetricsByCountry ?? []) {
+    const cmp = discoveryWindow(rows, ctx.today, "impression", "app store search");
+    if (cmp.current.days_with_data < 8 || cmp.previous.days_with_data < 8) continue;
+    if (cmp.previous.impressions < 300 || cmp.impressions_pct == null || cmp.impressions_pct > -20) continue;
+    const movement = trackedRankMovement(ctx.keywords, country, ctx.today);
+    if (movement == null || movement < -1) continue;
+
+    out.push({
+      rule_id: "search_discovery_falls_despite_ranks",
+      app_id: ctx.app.id,
+      keyword_id: null,
+      experiment_id: null,
+      country,
+      title: `${country.toUpperCase()} App Store Search discovery is falling while tracked ranks are stable for ${ctx.app.name}`,
+      observation: `App Store Search impressions in ${country.toUpperCase()} fell ${formatPct(cmp.impressions_pct)} over the last 14 days, while tracked keyword ranks moved ${movement > 0 ? `+${movement.toFixed(1)} places on average` : "roughly flat"}.`,
+      interpretation: "The change is more consistent with lower search demand or a shift in broader search-result exposure than with a broad tracked-keyword ranking loss. Apple does not expose the exact searches behind this aggregate.",
+      recommendation: "Check the highest-priority terms for this market and competitor movement before changing metadata. Focus the next experiment on a closely related search theme or a stronger first screenshot, then compare search discovery again after two weeks.",
+      evidence: [
+        ev("App Store Search impressions (14d)", `${formatNumber(cmp.current.impressions)} (${formatPct(cmp.impressions_pct)})`, "appstore_connect_discovery"),
+        ev("Tracked rank movement (7d)", `${movement > 0 ? "+" : ""}${movement.toFixed(1)} average places`, "calculated"),
+        ev("Tracked keywords with rank history", String(ctx.keywords.filter((entry) => entry.keyword.country === country).length), "public_store"),
+      ],
+      comparison_window: "Last 14 days vs previous 14 days",
+      confidence: cmp.previous.impressions >= 1500 ? "medium_high" : "medium",
+      impact: "medium",
+      effort: "medium",
+      priority: "medium",
+      dedupe_key: `search_discovery_falls_despite_ranks:${ctx.app.id}:${country}`,
+    });
+  }
+  return out;
+}
+
+function ruleRankGainsNoSearchTrafficLift(ctx) {
+  const out = [];
+  for (const [country, rows] of ctx.storefrontMetricsByCountry ?? []) {
+    const cmp = discoveryWindow(rows, ctx.today, "page view", "app store search", "product page");
+    if (cmp.current.days_with_data < 8 || cmp.previous.days_with_data < 8 || cmp.previous.page_views < 50) continue;
+    const movement = trackedRankMovement(ctx.keywords, country, ctx.today);
+    if (movement == null || movement < 3 || cmp.page_views_pct == null || cmp.page_views_pct > 5) continue;
+
+    out.push({
+      rule_id: "rank_gains_no_search_traffic_lift",
+      app_id: ctx.app.id,
+      keyword_id: null,
+      experiment_id: null,
+      country,
+      title: `${country.toUpperCase()} rank gains have not lifted search-led product-page visits for ${ctx.app.name}`,
+      observation: `Tracked keyword ranks improved ${movement.toFixed(1)} places on average over 7 days, while App Store Search product-page views changed only ${formatPct(cmp.page_views_pct)} over the last 14 days.`,
+      interpretation: "The ranking improvement is real in Kopa's tracked set, but it has not yet translated into broader search-led store traffic. That can mean the gained terms are low-volume, the demand mix changed, or the effect is still too small to surface in aggregate.",
+      recommendation: "Treat this as a validation prompt, not a reason to chase rank alone. Log a focused keyword experiment for the strongest term cluster and measure search impressions, product-page views, and installs together for two weeks.",
+      evidence: [
+        ev("Tracked rank movement (7d)", `+${movement.toFixed(1)} average places`, "calculated"),
+        ev("Search product-page views (14d)", `${formatNumber(cmp.current.page_views)} (${formatPct(cmp.page_views_pct)})`, "appstore_connect_discovery"),
+        ev("Tracked keywords in market", String(ctx.keywords.filter((entry) => entry.keyword.country === country).length), "public_store"),
+      ],
+      comparison_window: "Last 14 days vs previous 14 days; ranks over 7 days",
+      confidence: cmp.previous.page_views >= 250 ? "medium_high" : "medium",
+      impact: "medium",
+      effort: "low",
+      priority: "medium",
+      dedupe_key: `rank_gains_no_search_traffic_lift:${ctx.app.id}:${country}`,
+    });
+  }
+  return out;
+}
+
 function ruleVisibilityUpConversionWeak(ctx) {
   const out = [];
   for (const [country, metrics] of ctx.metricsByCountry) {
@@ -502,6 +603,8 @@ function ruleDataCollectionFailure(ctx) {
 const RULE_FNS = [
   ruleVisibilityUpConversionWeak,
   ruleConversionStrongVisibilityWeak,
+  ruleSearchDiscoveryFallsDespiteRanks,
+  ruleRankGainsNoSearchTrafficLift,
   ruleKeywordRisingAfterChange,
   ruleKeywordDeclinedAfterRemoval,
   ruleKeywordOpportunity,

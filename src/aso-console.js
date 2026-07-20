@@ -691,6 +691,7 @@ async function renderInsights(panel) {
           ${keyword ? `<span>"${escapeHtml(keyword.term)}"</span>` : ""}
         </div>
         <div class="aso-insight-actions">
+          <button type="button" data-create-experiment data-insight-id="${i.id}">Create experiment draft</button>
           <button type="button" data-insight-action="completed" data-insight-id="${i.id}">Mark done</button>
           <button type="button" data-insight-action="snoozed" data-insight-id="${i.id}">Snooze 14d</button>
           <button type="button" data-insight-action="dismissed" data-insight-id="${i.id}">Dismiss</button>
@@ -709,6 +710,42 @@ async function renderInsights(panel) {
         if (status === "snoozed") patch.snoozed_until = new Date(Date.now() + 14 * 86400000).toISOString();
         await pgWrite("PATCH", "aso_insights", patch, `id=eq.${id}`);
         renderSubTab(panel);
+      } catch (error) {
+        btn.disabled = false;
+        alert(error.message);
+      }
+    }),
+  );
+
+  panel.querySelectorAll("[data-create-experiment]").forEach((btn) =>
+    btn.addEventListener("click", async () => {
+      const insight = insights.find((item) => item.id === btn.dataset.insightId);
+      if (!insight?.app_id) return;
+      btn.disabled = true;
+      try {
+        await pgWrite("POST", "aso_experiments", [
+          {
+            app_id: insight.app_id,
+            title: `Test: ${insight.title}`,
+            hypothesis: insight.recommendation,
+            change_type: "other",
+            country: insight.country ?? "all",
+            old_variant: null,
+            new_variant: null,
+            target_metric: "conversion",
+            secondary_metrics: null,
+            start_date: null,
+            end_date: null,
+            status: "planned",
+            result: null,
+            conclusion: null,
+            next_action: null,
+            asset_refs: null,
+            notes: `Created from insight: ${insight.rule_id}`,
+            updated_at: new Date().toISOString(),
+          },
+        ]);
+        btn.textContent = "Draft created";
       } catch (error) {
         btn.disabled = false;
         alert(error.message);
