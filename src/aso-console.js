@@ -27,6 +27,8 @@ const SESSION_KEY = "kopa-admin-session-v1";
 let runtimeConfig = null;
 let activeSubTab = "briefing";
 let editingKeywordLinkId = null;
+let keywordFormOpen = false;
+let keywordFilters = { query: "", country: "all", priority: "all", movement: "all", sort: "priority" };
 
 function getSession() {
   try {
@@ -456,6 +458,41 @@ function wireScrollActions(panel) {
   );
 }
 
+function filteredKeywordRows(rows) {
+  const priorityOrder = { high: 0, medium: 1, low: 2 };
+  const query = keywordFilters.query.trim().toLowerCase();
+  const filtered = rows.filter((row) => {
+    const movement = row.latest?.change_7d ?? 0;
+    const priority = row.link.priority ?? row.keyword.priority;
+    if (query && !`${row.keyword.term} ${row.app.name}`.toLowerCase().includes(query)) return false;
+    if (keywordFilters.country !== "all" && row.keyword.country !== keywordFilters.country) return false;
+    if (keywordFilters.priority !== "all" && priority !== keywordFilters.priority) return false;
+    if (keywordFilters.movement === "gaining" && movement <= 0) return false;
+    if (keywordFilters.movement === "declining" && movement >= 0) return false;
+    if (keywordFilters.movement === "stable" && movement !== 0) return false;
+    if (keywordFilters.movement === "unranked" && row.latest?.rank != null) return false;
+    return true;
+  });
+  return filtered.sort((a, b) => {
+    if (keywordFilters.sort === "rank") return (a.latest?.rank ?? Infinity) - (b.latest?.rank ?? Infinity) || a.keyword.term.localeCompare(b.keyword.term);
+    if (keywordFilters.sort === "movement") return Math.abs(b.latest?.change_7d ?? 0) - Math.abs(a.latest?.change_7d ?? 0) || a.keyword.term.localeCompare(b.keyword.term);
+    if (keywordFilters.sort === "term") return a.keyword.term.localeCompare(b.keyword.term);
+    return (priorityOrder[a.link.priority ?? a.keyword.priority] ?? 9) - (priorityOrder[b.link.priority ?? b.keyword.priority] ?? 9) || a.keyword.term.localeCompare(b.keyword.term);
+  });
+}
+
+function keywordToolbarHtml(rows) {
+  const countries = [...new Set(rows.map((row) => row.keyword.country))].sort();
+  return `<div class="aso-keyword-toolbar">
+    <input type="search" id="aso-keyword-search" value="${escapeHtml(keywordFilters.query)}" placeholder="Search keyword or app" />
+    <select id="aso-keyword-country"><option value="all">All countries</option>${countries.map((country) => `<option value="${escapeHtml(country)}" ${keywordFilters.country === country ? "selected" : ""}>${escapeHtml(country.toUpperCase())}</option>`).join("")}</select>
+    <select id="aso-keyword-priority"><option value="all">All priorities</option>${["high", "medium", "low"].map((priority) => `<option value="${priority}" ${keywordFilters.priority === priority ? "selected" : ""}>${priority[0].toUpperCase()}${priority.slice(1)} priority</option>`).join("")}</select>
+    <select id="aso-keyword-movement"><option value="all">All movement</option><option value="gaining" ${keywordFilters.movement === "gaining" ? "selected" : ""}>Gaining</option><option value="declining" ${keywordFilters.movement === "declining" ? "selected" : ""}>Declining</option><option value="stable" ${keywordFilters.movement === "stable" ? "selected" : ""}>Stable</option><option value="unranked" ${keywordFilters.movement === "unranked" ? "selected" : ""}>Unranked</option></select>
+    <select id="aso-keyword-sort"><option value="priority" ${keywordFilters.sort === "priority" ? "selected" : ""}>Sort: priority</option><option value="rank" ${keywordFilters.sort === "rank" ? "selected" : ""}>Sort: best rank</option><option value="movement" ${keywordFilters.sort === "movement" ? "selected" : ""}>Sort: biggest movement</option><option value="term" ${keywordFilters.sort === "term" ? "selected" : ""}>Sort: keyword A-Z</option></select>
+    <button type="button" class="aso-link-button" data-clear-keyword-filters>Clear</button>
+  </div>`;
+}
+
 // ── Keywords ─────────────────────────────────────────────────────────────
 
 async function renderKeywords(panel) {
@@ -474,10 +511,10 @@ async function renderKeywords(panel) {
     return;
   }
 
-  const formHtml = renderKeywordFormHtml(apps);
-
   if (keywords.length === 0) {
-    panel.innerHTML = `<section class="panel"><h3>No keywords tracked yet</h3><p class="empty-state">Add your first keyword below — each keyword/country pair is collected once per day.</p></section>${formHtml}`;
+    keywordFormOpen = true;
+    panel.innerHTML = `<section class="panel"><h3>No keywords tracked yet</h3><p class="empty-state">Add your first keyword to begin collecting search visibility.</p></section>${renderKeywordFormHtml(apps)}`;
+    wireKeywordToolbar(panel);
     wireKeywordForm(panel);
     return;
   }
@@ -499,6 +536,8 @@ async function renderKeywords(panel) {
   const gaining = rows.filter((r) => (r.latest?.change_7d ?? 0) > 0).length;
   const declining = rows.filter((r) => (r.latest?.change_7d ?? 0) < 0).length;
   const ranked = rows.filter((r) => r.latest?.rank != null).length;
+  const visibleRows = filteredKeywordRows(rows);
+  const editorHtml = editingRow ? renderKeywordEditHtml(editingRow, groups) : keywordFormOpen ? renderKeywordFormHtml(apps) : "";
 
   panel.innerHTML = `
     <div class="mini-stat-grid aso-workflow-summary">
@@ -507,12 +546,15 @@ async function renderKeywords(panel) {
       <article><span>Declining, 7 days</span><strong class="down">${declining}</strong></article>
       <article><span>Currently ranked</span><strong>${ranked}</strong></article>
     </div>
+    ${editorHtml}
     <section class="panel">
-      <div class="panel-head"><h3>Keywords (${rows.length})</h3><div class="aso-panel-actions"><span>gaining/declining vs 7 days ago</span><button type="button" class="aso-action-primary" data-scroll-to="aso-keyword-form">Add keywords</button></div></div>
+      <div class="panel-head"><h3>Keywords</h3><div class="aso-panel-actions"><span>${visibleRows.length}/${rows.length} shown</span><button type="button" class="aso-action-primary" data-open-keyword-form>${keywordFormOpen ? "Adding keywords" : "Add keywords"}</button></div></div>
+      ${keywordToolbarHtml(rows)}
       <table class="aso-table">
         <thead><tr><th>Keyword</th><th>App</th><th>Country</th><th>Rank</th><th>7d</th><th>30d</th><th>Best</th><th>Comp.</th><th>Priority</th><th>Actions</th></tr></thead>
         <tbody>
-          ${rows
+          ${visibleRows.length
+            ? visibleRows
             .map(
               (r) => `<tr>
                 <td>${escapeHtml(r.keyword.term)}</td>
@@ -530,18 +572,17 @@ async function renderKeywords(panel) {
                 </td>
               </tr>`,
             )
-            .join("")}
+            .join("")
+            : '<tr><td colspan="10" class="empty-state">No keywords match these filters.</td></tr>'}
         </tbody>
       </table>
     </section>
     <p class="empty-state">${competitors.length} competitor(s) tracked across the portfolio.</p>
-    ${editingRow ? renderKeywordEditHtml(editingRow, groups) : ""}
-    ${formHtml}
   `;
   wireKeywordActions(panel, rows);
-  wireScrollActions(panel);
+  wireKeywordToolbar(panel);
   if (editingRow) wireKeywordEditForm(panel, editingRow, appKeywords);
-  wireKeywordForm(panel);
+  if (keywordFormOpen) wireKeywordForm(panel);
 }
 
 function rankDelta(value) {
@@ -552,7 +593,7 @@ function rankDelta(value) {
 function renderKeywordFormHtml(apps) {
   return `
     <section class="panel" id="aso-keyword-form">
-      <div class="panel-head"><h3>Add keywords</h3><span>one per line, collected once per day per country</span></div>
+      <div class="panel-head"><h3>Add keywords</h3><div class="aso-panel-actions"><span>one per line, collected once per day per country</span><button type="button" class="aso-link-button" data-close-keyword-form>Close</button></div></div>
       <label class="aso-field">
         <span>App</span>
         <select id="aso-kw-app">
@@ -639,6 +680,7 @@ function wireKeywordActions(panel, rows) {
   panel.querySelectorAll("[data-edit-keyword]").forEach((btn) =>
     btn.addEventListener("click", () => {
       editingKeywordLinkId = btn.dataset.editKeyword;
+      keywordFormOpen = false;
       renderSubTab(panel);
     }),
   );
@@ -664,6 +706,46 @@ function wireKeywordActions(panel, rows) {
       }
     }),
   );
+}
+
+function wireKeywordToolbar(panel) {
+  panel.querySelector("[data-open-keyword-form]")?.addEventListener("click", () => {
+    if (keywordFormOpen) return;
+    editingKeywordLinkId = null;
+    keywordFormOpen = true;
+    renderSubTab(panel);
+  });
+  panel.querySelector("[data-close-keyword-form]")?.addEventListener("click", () => {
+    keywordFormOpen = false;
+    renderSubTab(panel);
+  });
+  panel.querySelector("[data-clear-keyword-filters]")?.addEventListener("click", () => {
+    keywordFilters = { query: "", country: "all", priority: "all", movement: "all", sort: "priority" };
+    renderSubTab(panel);
+  });
+  const fields = [
+    ["#aso-keyword-search", "query"],
+    ["#aso-keyword-country", "country"],
+    ["#aso-keyword-priority", "priority"],
+    ["#aso-keyword-movement", "movement"],
+    ["#aso-keyword-sort", "sort"],
+  ];
+  fields.forEach(([selector, key]) => {
+    const input = panel.querySelector(selector);
+    if (!input) return;
+    input.addEventListener("change", () => {
+      keywordFilters[key] = input.value;
+      renderSubTab(panel);
+    });
+    if (key === "query") {
+      input.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter") return;
+        event.preventDefault();
+        keywordFilters.query = input.value;
+        renderSubTab(panel);
+      });
+    }
+  });
 }
 
 function wireKeywordEditForm(panel, row, appKeywords) {
@@ -779,6 +861,7 @@ function wireKeywordForm(panel) {
       }
       const warning = countryInfo.warning ? `${countryInfo.warning} ` : "";
       status.textContent = `${warning}Tracking ${terms.length} keyword(s) in ${countryInfo.country.toUpperCase()}. Run a collection from the Sync tab to start ranking them.`;
+      keywordFormOpen = false;
       setTimeout(() => renderSubTab(panel), 1200);
     } catch (error) {
       status.textContent = error.message;
