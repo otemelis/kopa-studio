@@ -233,7 +233,7 @@ async function renderSubTab(panel) {
   }
 }
 
-async function addFreshnessContext(panel) {
+async function getCollectionHealth() {
   const today = toDateStr(new Date());
   const [runs, apps, appKeywords, snapshots] = await Promise.all([
     pg("aso_sync_runs", "select=status,started_at,trigger&order=started_at.desc&limit=5"),
@@ -251,6 +251,11 @@ async function addFreshnessContext(panel) {
   });
   const staleCount = activeLinks.length - freshLinks.length;
   const isFresh = activeLinks.length > 0 && staleCount === 0 && lastOkAge <= 3 * 86400000 && latestRun?.status !== "failed";
+  return { activeLinks, freshLinks, isFresh, lastOk, latestRun, staleCount };
+}
+
+async function addFreshnessContext(panel) {
+  const { activeLinks, isFresh, lastOk, latestRun, staleCount } = await getCollectionHealth();
   const title = isFresh ? "Collection is current" : "Collection needs attention";
   const detail = isFresh
     ? `Last successful collection ${timeSince(lastOk.started_at)}.`
@@ -404,7 +409,7 @@ const ALERT_KINDS = [
 
 async function renderBriefing(panel) {
   const today = toDateStr(new Date());
-  const [apps, metrics, insights, changes, reviews, experiments, preferences, runs] = await Promise.all([
+  const [apps, metrics, rawInsights, changes, reviews, experiments, preferences, health] = await Promise.all([
     pg("aso_apps", "select=id,name"),
     pg("aso_daily_metrics", `date=gte.${addDays(today, -14)}&select=*`),
     pg("aso_insights", "status=eq.active&select=*&order=created_at.desc"),
@@ -412,8 +417,9 @@ async function renderBriefing(panel) {
     pg("aso_reviews", `reviewed_at=gte.${addDays(today, -7)}&select=id,rating`),
     pg("aso_experiments", "status=in.(running,monitoring)&select=id,title,decision_recommendation"),
     pg("aso_alert_preferences", "select=kind,enabled"),
-    pg("aso_sync_runs", "select=status,started_at&order=started_at.desc&limit=5"),
+    getCollectionHealth(),
   ]);
+  const insights = rawInsights.filter((insight) => insight.rule_id !== "data_collection_failure" || !health.isFresh);
   const comparison = compareWindows(metrics, 7, today);
   const priorities = { high: 0, medium: 1, low: 2 };
   const alerts = [...insights].sort((a, b) => priorities[a.priority] - priorities[b.priority]).slice(0, 5);
@@ -422,7 +428,7 @@ async function renderBriefing(panel) {
   const lowReviews = reviews.filter((review) => review.rating <= 2).length;
   const recommendations = experiments.filter((experiment) => ["winner", "loser", "inconclusive"].includes(experiment.decision_recommendation)).length;
   const preferenceMap = new Map(preferences.map((preference) => [preference.kind, preference.enabled]));
-  const lastOk = runs.find((run) => run.status === "ok" || run.status === "partial");
+  const lastOk = health.lastOk;
   const lines = [
     `Kopa ASO weekly briefing - ${today}`,
     `Downloads: ${formatNumber(comparison.current.downloads)} (${formatPct(comparison.downloads_pct)})`,
@@ -962,11 +968,13 @@ function wireKeywordForm(panel) {
 // ── Insights ─────────────────────────────────────────────────────────────
 
 async function renderInsights(panel) {
-  const [insights, apps, keywords] = await Promise.all([
+  const [rawInsights, apps, keywords, health] = await Promise.all([
     pg("aso_insights", "status=eq.active&select=*&order=created_at.desc"),
     pg("aso_apps", "select=*"),
     pg("aso_keywords", "select=*"),
+    getCollectionHealth(),
   ]);
+  const insights = rawInsights.filter((insight) => insight.rule_id !== "data_collection_failure" || !health.isFresh);
 
   if (insights.length === 0) {
     panel.innerHTML = `<section class="panel"><h3>No active insights</h3><p class="empty-state">The rule engine only speaks when it has evidence — thin or stale data stays silent. Run a collection from the Sync tab once you have a few days of data.</p></section>`;

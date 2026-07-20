@@ -220,3 +220,4 @@ Status: in progress
 - Test add/edit/filter/sort flows with a portfolio of at least 100 keywords.
 - Remove controls that do not support a regular weekly ASO workflow.
 - Live validation finding: shared freshness now requires recent keyword coverage, not only a successful sync run.
+- Live validation finding: resolved collection-health alerts stay out of Briefing and Insights while the historical record remains available.
