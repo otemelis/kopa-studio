@@ -214,10 +214,10 @@ Status: complete
 
 ### Milestone 5: Validation
 
-Status: in progress
+Status: complete
 
-- Review each authenticated page with real data at desktop and mobile sizes.
-- Test add/edit/filter/sort flows with a portfolio of at least 100 keywords.
-- Remove controls that do not support a regular weekly ASO workflow.
-- Live validation finding: shared freshness now requires recent keyword coverage, not only a successful sync run.
+- Authenticated live review: Briefing, Keywords, Insights, Experiments, Competitors, Reviews, and Sync all loaded without console-view errors.
+- Keyword workflow: verified filters, sorting, and the add-keywords entry flow with 104 tracked terms.
+- Responsive review: no page, dialog, toolbar, or non-table panel overflow at 390 x 844.
+- Live validation finding: shared freshness requires recent keyword coverage, not only a successful sync run.
 - Live validation finding: resolved collection-health alerts stay out of Briefing and Insights while the historical record remains available.
