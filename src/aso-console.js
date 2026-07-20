@@ -227,9 +227,35 @@ async function renderSubTab(panel) {
     else if (activeSubTab === "competitors") await renderCompetitors(panel);
     else if (activeSubTab === "reviews") await renderReviews(panel);
     else if (activeSubTab === "sync") await renderSync(panel);
+    if (!["briefing", "sync"].includes(activeSubTab)) await addFreshnessContext(panel);
   } catch (error) {
     panel.innerHTML = `<section class="panel"><h3>Could not load this view</h3><p class="empty-state">${escapeHtml(error.message)}</p></section>`;
   }
+}
+
+async function addFreshnessContext(panel) {
+  const runs = await pg("aso_sync_runs", "select=status,started_at,trigger&order=started_at.desc&limit=5");
+  const latestRun = runs[0] ?? null;
+  const lastOk = runs.find((run) => run.status === "ok" || run.status === "partial");
+  const lastOkAge = lastOk ? Date.now() - new Date(lastOk.started_at).getTime() : Infinity;
+  const isFresh = lastOkAge <= 3 * 86400000 && latestRun?.status !== "failed";
+  const title = isFresh ? "Collection is current" : "Collection needs attention";
+  const detail = isFresh
+    ? `Last successful collection ${timeSince(lastOk.started_at)}.`
+    : latestRun?.status === "failed"
+      ? "The latest collection failed. Check Sync before acting on rank movement."
+      : lastOk
+        ? `Last successful collection was ${timeSince(lastOk.started_at)}. Rankings may be stale.`
+        : "No successful collection yet. Collect rankings before acting on visibility data.";
+  panel.insertAdjacentHTML(
+    "afterbegin",
+    `<section class="aso-freshness-banner ${isFresh ? "ready" : "attention"}"><div><span>Data freshness</span><strong>${title}</strong><p>${detail}</p></div>${isFresh ? '<span class="status-ok">Current</span>' : '<button type="button" class="aso-link-button" data-open-sync>Open Sync</button>'}</section>`,
+  );
+  panel.querySelector("[data-open-sync]")?.addEventListener("click", () => {
+    activeSubTab = "sync";
+    document.querySelectorAll("[data-aso-tab]").forEach((tab) => tab.classList.toggle("active", tab.dataset.asoTab === activeSubTab));
+    renderSubTab(panel);
+  });
 }
 
 // ── Portfolio ────────────────────────────────────────────────────────────
