@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#e8e4d8" />
+    <meta name="description" content="Kopa is an independent app studio shaping useful, playful digital products." />
+    <meta property="og:title" content="Kopa — Apps shaped with intent" />
+    <meta property="og:description" content="Independent apps, games and experiments shaped with intent." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://kopa.studio" />
+    <link rel="canonical" href="https://kopa.studio" />
+    <title>Kopa — Independent app studio</title>
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Kopa Studio",
+      "url": "https://kopa.studio",
+      "description": "Kopa is an independent app studio shaping useful, playful digital products, including the self-reflection apps InnerType and LoveType.",
+      "email": "hello@kopa.studio",
+      "owns": [
+        { "@type": "SoftwareApplication", "name": "InnerType", "applicationCategory": "LifestyleApplication", "operatingSystem": "iOS", "url": "https://innertype.app/" },
+        { "@type": "SoftwareApplication", "name": "LoveType", "applicationCategory": "LifestyleApplication", "operatingSystem": "iOS", "url": "https://love-type.app/" }
+      ]
+    }
+    </script>
+    <link rel="stylesheet" href="./src/styles.css" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Kopa home"><span class="brand-mark"></span>KOPA</a>
+      <nav aria-label="Primary navigation">
+        <a href="#work">Work</a><a href="#notes">Notes</a><a href="mailto:hello@kopa.studio">Contact</a>
+      </nav>
+      <span class="coordinates">Apps shaped with intent</span>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <canvas id="dune-canvas" aria-hidden="true"></canvas>
+        <div class="hero-copy">
+          <p class="kicker reveal">Independent app studio</p>
+          <h1 id="hero-title" class="reveal">Quiet surfaces.<br /><em>Deep systems.</em></h1>
+          <p class="hero-intro reveal">We shape apps and games with the patience of wind over sand — removing until only what matters remains.</p>
+        </div>
+        <div class="hero-foot reveal">
+          <span>Scroll to explore</span><span class="wind-line"></span><span>Form follows feeling</span>
+        </div>
+      </section>
+
+      <section class="manifesto section-pad" aria-label="Studio philosophy">
+        <p class="section-label">01 / Philosophy</p>
+        <div>
+          <h2>Soft in the hand.<br />Serious underneath.</h2>
+          <p>“Kopa” means dune. A dune looks effortless, but it is built by countless forces working in concert. That is how we make software: calm on the surface, engineered down to the grain.</p>
+        </div>
+        <aside><span>Our material</span><strong>Curiosity<br />Restraint<br />Craft</strong></aside>
+      </section>
+
+      <section class="work section-pad" id="work">
+        <div class="section-heading">
+          <p class="section-label">02 / Selected work</p>
+          <h2>Eight ideas,<br />made tangible.</h2>
+          <p>Products for self-discovery, shared culture and small moments of play.</p>
+        </div>
+        <div class="project-list" id="project-list"></div>
+      </section>
+
+      <section class="notes section-pad" id="notes">
+        <div class="section-heading compact">
+          <p class="section-label">03 / News</p>
+          <h2>What’s taking<br />shape.</h2>
+        </div>
+        <div class="note-grid">
+          <article><p>Jul 15, 2026 · Product design</p><h3>Designing two self-reflection apps without making the same product twice</h3><a href="./notes/designing-innertype-and-lovetype">Read note <span>↗</span></a></article>
+          <article><p>Jun 20, 2026 · Douze Draft</p><h3>Douze Draft opens a small closed beta</h3><a href="./news/douze-draft-closed-beta/">Read news <span>↗</span></a></article>
+          <article><p>May 14, 2026 · InnerType</p><h3>InnerType 2.0 is live</h3><a href="./news/innertype-2-0/">Read news <span>↗</span></a></article>
+          <article><p>Mar 02, 2026 · LoveType</p><h3>LoveType adds the Conflict Style test</h3><a href="./news/lovetype-conflict-style/">Read news <span>↗</span></a></article>
+        </div>
+        <a class="all-news" href="./news/">View all news <span>→</span></a>
+      </section>
+    </main>
+
+    <footer>
+      <div><a class="brand footer-brand" href="#top"><span class="brand-mark"></span>KOPA</a><p>Apps shaped with intent.</p></div>
+      <a class="hello" href="mailto:hello@kopa.studio">hello@kopa.studio <span>↗</span></a>
+      <div class="footer-meta"><span>© <span id="year"></span> Kopa Studio</span><span><a href="./news/">News</a> · <a href="./privacy/">Privacy</a></span></div>
+    </footer>
+
+    <dialog id="console-dialog" class="console-dialog">
+      <form method="dialog" class="console-shell">
+        <div class="console-top"><div><span class="live-dot"></span> KOPA / SIGNAL</div><button aria-label="Close console">Close</button></div>
+        <div id="console-lock" class="console-lock">
+          <p>Private studio access</p><h2>Sign in.</h2>
+          <label><span>Email</span><input id="admin-email" type="email" autocomplete="username" placeholder="you@kopa.studio" /></label>
+          <label><span>Password</span><input id="admin-password" type="password" autocomplete="current-password" placeholder="••••••••••••" /></label>
+          <button id="unlock-button" type="button">Continue <span>→</span></button><small id="lock-message">Access is limited to approved studio accounts.</small>
+        </div>
+        <div id="console-dashboard" class="console-dashboard" hidden>
+          <div class="dash-head"><div><p>Private studio analytics</p><h2>Studio pulse</h2></div><div class="dash-tools"><div class="dash-tabs"><button id="console-tab-analytics" type="button" class="active">Analytics</button><button id="console-tab-aso" type="button">ASO</button></div><label id="app-select-label">App <select id="app-select"></select></label><span id="data-status">Connecting</span><button id="sign-out" type="button">Sign out</button></div></div>
+          <div id="dashboard-content" class="dashboard-content" aria-live="polite"></div>
+          <div id="aso-root" class="aso-root" hidden></div>
+        </div>
+      </form>
+    </dialog>
+    <script src="./src/config.js"></script>
+    <script type="module" src="./src/main.js"></script>
+    <script type="module" src="./src/aso-console.js"></script>
+  </body>
+</html>

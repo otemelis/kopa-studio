@@ -1,0 +1,10 @@
+.git
+.vercel*
+.env*
+node_modules
+README.md
+scripts
+src/gameLogic.js
+src/levels.js
+src/renderer.js
+src/ui.js
