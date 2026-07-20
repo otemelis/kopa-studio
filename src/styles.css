@@ -67,3 +67,54 @@ footer{background:var(--moss);color:var(--paper);padding:80px 6vw 30px;display:g
 .aso-alert-settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px 18px}
 .aso-alert-settings label{display:flex;align-items:center;gap:8px;color:#c7cdc8;font:11px Manrope;cursor:pointer}
 .aso-alert-settings input{accent-color:#8dff82}
+
+/* Console density pass: operational information should fit in a working view. */
+.console-top{height:58px;padding:0 clamp(18px,3vw,48px)}
+.console-dashboard{max-width:1440px;padding:32px clamp(18px,4vw,64px) 64px}
+.dash-head{align-items:center;border-bottom:1px solid #29312c;padding-bottom:18px;margin-bottom:20px}
+.dash-head h2{font-size:clamp(30px,3.2vw,48px);line-height:1;margin:7px 0 0;letter-spacing:-.04em}
+.dash-tools{margin:0;gap:14px;flex-wrap:wrap;justify-content:flex-end}
+.dashboard-content{grid-template-columns:repeat(12,minmax(0,1fr));gap:14px}
+.dashboard-content>.metric-grid,.dashboard-content>.mini-stat-grid,.dashboard-content>.panel-pair{grid-column:1/-1}
+.dashboard-content>.panel{grid-column:span 6}
+.dashboard-content>.panel-daily{grid-column:1/-1}
+.metric-grid,.mini-stat-grid{border-radius:8px;overflow:hidden}
+.metric-grid{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.mini-stat-grid{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+.metric-grid article,.mini-stat-grid article{min-height:128px;padding:17px 18px}
+.metric-grid strong{font-size:clamp(28px,3vw,42px);line-height:1;margin:14px 0 10px}
+.mini-stat-grid strong{font-size:clamp(22px,2.3vw,30px);line-height:1;margin-top:13px}
+.panel{border-radius:8px;padding:20px}
+.panel-head{margin-bottom:18px}
+.panel h3{font-size:18px}
+.funnel-row{grid-template-columns:minmax(130px,.8fr) 1.6fr 60px;gap:12px;margin:12px 0}
+.daily-chart{height:140px}
+.panel-pair{gap:14px}
+.aso-root{gap:14px}
+.aso-subnav{position:sticky;top:58px;z-index:2;flex-wrap:nowrap;overflow-x:auto;padding:8px 0 10px;background:#0d100e;scrollbar-width:none}
+.aso-subnav::-webkit-scrollbar{display:none}
+.aso-subnav button{flex:0 0 auto;padding:8px 12px;border-radius:6px}
+.aso-subnav .aso-add-app{margin-left:4px}
+.aso-panel{gap:14px}
+.aso-portfolio-grid{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(280px,.85fr);gap:14px;align-items:start}
+.aso-portfolio-grid .panel{min-width:0;overflow-x:auto}
+.aso-table td{padding:9px 10px 9px 0}
+.empty-state{padding:12px 0;font-size:12px}
+@media(max-width:800px){
+  .console-dashboard{padding:22px 14px 48px}
+  .dash-head{align-items:flex-start;gap:16px;margin-bottom:14px}
+  .dash-tools{width:100%;justify-content:flex-start;gap:10px}
+  .dashboard-content{grid-template-columns:1fr;gap:10px}
+  .dashboard-content>.panel,.dashboard-content>.metric-grid,.dashboard-content>.mini-stat-grid,.dashboard-content>.panel-pair{grid-column:1}
+  .metric-grid,.mini-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .metric-grid article,.mini-stat-grid article{min-height:108px;padding:14px}
+  .metric-grid strong{font-size:30px;margin:12px 0 8px}
+  .panel{padding:16px}
+  .panel-pair,.aso-portfolio-grid{grid-template-columns:1fr;gap:10px}
+  .aso-subnav{top:58px;margin:0 -2px}
+}
+@media(max-width:480px){
+  .metric-grid{grid-template-columns:1fr}
+  .mini-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dash-tabs{margin-right:0}
+}

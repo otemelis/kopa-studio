@@ -279,8 +279,9 @@ async function renderPortfolio(panel) {
       <article><span>Avg conversion</span><strong>${avgConv != null ? formatPct(avgConv * 100, 1) : "—"}</strong></article>
       <article><span>Active insights</span><strong>${insights.length}</strong></article>
     </div>
-    <section class="panel">
-      <div class="panel-head"><h3>Apps</h3><span>tap a row for keywords</span></div>
+    <div class="aso-portfolio-grid">
+      <section class="panel">
+        <div class="panel-head"><h3>Apps</h3><span>tap a row for keywords</span></div>
       <table class="aso-table">
         <thead><tr><th>App</th><th>Version</th><th>Rating</th><th>Downloads 14d</th><th>Conv.</th><th>Keywords</th><th>▲/▼</th><th>Insights</th></tr></thead>
         <tbody>
@@ -300,9 +301,9 @@ async function renderPortfolio(panel) {
             .join("")}
         </tbody>
       </table>
-    </section>
-    <section class="panel">
-      <div class="panel-head"><h3>Storefront countries</h3><span>last 30 days</span></div>
+      </section>
+      <section class="panel">
+        <div class="panel-head"><h3>Storefront countries</h3><span>last 30 days</span></div>
       ${
         countryRows.length
           ? `<table class="aso-table">
@@ -322,7 +323,8 @@ async function renderPortfolio(panel) {
             </table>`
           : '<p class="empty-state">Country metrics will appear after App Store Connect Discovery and Engagement reports are available.</p>'
       }
-    </section>
+      </section>
+    </div>
     <p class="empty-state">Downloads/conversion: last 14 days. Ranks are a public storefront snapshot (iTunes Search), not the exact on-device position.</p>
   `;
 }
@@ -1632,6 +1634,8 @@ function initTabs() {
   const analyticsContent = document.querySelector("#dashboard-content");
   const asoRoot = document.querySelector("#aso-root");
   const appSelectLabel = document.querySelector("#app-select-label");
+  const sectionLabel = document.querySelector("#console-section-label");
+  const workspaceTitle = document.querySelector("#console-workspace-title");
   if (!analyticsBtn || !asoBtn || !analyticsContent || !asoRoot) return;
 
   let mounted = false;
@@ -1642,6 +1646,8 @@ function initTabs() {
     analyticsContent.hidden = true;
     asoRoot.hidden = false;
     if (appSelectLabel) appSelectLabel.hidden = true;
+    if (sectionLabel) sectionLabel.textContent = "App Store intelligence";
+    if (workspaceTitle) workspaceTitle.textContent = "Growth workspace";
     if (!mounted) {
       mounted = true;
       mountAsoTab(asoRoot);
@@ -1654,6 +1660,8 @@ function initTabs() {
     analyticsContent.hidden = false;
     asoRoot.hidden = true;
     if (appSelectLabel) appSelectLabel.hidden = false;
+    if (sectionLabel) sectionLabel.textContent = "Private studio analytics";
+    if (workspaceTitle) workspaceTitle.textContent = "Studio pulse";
   });
 }
 
