@@ -1,11 +1,11 @@
 # Deploying Kopa Tools
 
-1. Create a new Vercel project with root directory `apps/tools`; do not reuse the root project’s static `vercel.json`.
+1. The separate `kopa-tools` Vercel project is configured with root directory `apps/tools`; it does not reuse the root project’s static `vercel.json`.
 2. Set the variables in `apps/tools/.env.example`. `SUPABASE_SERVICE_ROLE_KEY` is server-only and must never use a `NEXT_PUBLIC_` name.
 3. In Supabase Auth, set the site URL and add `https://tools.kopa.studio/auth/callback` and the relevant preview callback URLs.
 4. Add the intended owner to `analytics_admins` using the existing SQL guidance in `supabase/security.sql`.
 5. Run `npm run build`, deploy a preview, sign in, and compare the read-only screens with the old console.
-6. Only after `MIGRATION_VERIFICATION.md` critical checks pass, add the DNS/CNAME mapping for `tools.kopa.studio`.
+6. `tools.kopa.studio` is attached and DNS-verified. Complete the remaining authenticated checks in `MIGRATION_VERIFICATION.md` before retiring the legacy console.
 
 For local parity work, create `apps/tools/.env.local` from the example using an authorized secret manager or local secure environment. Do not rely on a redacted environment export: validate `NEXT_PUBLIC_SUPABASE_URL` is a real HTTPS URL before running the authenticated screens.
 

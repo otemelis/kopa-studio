@@ -4,7 +4,7 @@ Last updated: 2026-07-21
 
 ## Current phase
 
-Phase 3 — shared domain and read-only data layer. Phases 1–2 are complete.
+Production cutover — the new Tools application is deployed at `tools.kopa.studio`; the legacy console remains available as the rollback path.
 
 ## Completed and verified locally
 
@@ -21,14 +21,15 @@ Phase 3 — shared domain and read-only data layer. Phases 1–2 are complete.
 - Migrated owner-only app creation (Apple public lookup), keyword creation/edit/delete, and competitor creation. Writes use Zod validation and server-only Supabase access; deleting a keyword assignment removes the shared keyword only when no assignments remain.
 - Migrated owner-only insight workflow actions: mark complete, dismiss, and snooze for 14 days. These update only insight status and never overwrite deterministic evidence or source data.
 - Migrated owner-only experiment management: create and edit experiment context, timing, status, result, conclusion, and next action. The existing before/after measurement logic remains the retained source of truth.
-- Added a durable `aso_jobs` migration and a queue-only collection control. The existing cron worker claims queued jobs and writes completion state after the migration is applied; it is not yet applied to production, so the control remains intentionally dormant.
+- Applied the additive `aso_jobs` migration to production, deployed the legacy collector update, and verified a queued collection job is claimed and completed by the Vercel cron worker with a linked sync run.
+- Deployed the separate `kopa-tools` Vercel project from `apps/tools` and attached the verified `tools.kopa.studio` domain. The production signed-out route redirects to `/login` without rendering ASO data.
 - `npm run typecheck`, `npm test`, and `npm run build` pass in `apps/tools`.
 
-## Not yet verified against production data
+## Remaining production verification
 
-- Real Supabase reads are now configured locally. Authenticated owner-session and visual screen testing are still required.
-- No database migration has been applied. No production data was modified. The next required database step is `supabase/migrations/20260721000000_aso_jobs.sql`.
-- Data-collection triggers/retries and App Store Connect sync controls remain legacy-only.
+- Add `https://tools.kopa.studio/auth/callback` to Supabase Auth redirect URLs if it is not already present.
+- Complete one signed-in owner-session check on the new domain, including logout and an unauthorized-account check.
+- Data-collection retries and App Store Connect sync controls remain on the retained legacy worker/integration.
 
 ## Commands
 
@@ -42,4 +43,4 @@ npm run dev
 
 ## Deployment and rollback
 
-Deployment is not configured yet. Deploy `apps/tools` as a separate Vercel project and attach `tools.kopa.studio` only after verification. Rollback is immediate: leave the existing root static-site/Vercel deployment in place and remove the tools subdomain mapping.
+The `kopa-tools` project is configured with root directory `apps/tools`, and `tools.kopa.studio` is attached. Rollback is immediate: unmap the tools subdomain while leaving the existing root static-site/Vercel deployment in place.

@@ -1,6 +1,6 @@
 # Migration verification checklist
 
-Status: not started against a configured production-equivalent Supabase environment.
+Status: production deployment and unauthenticated protection are verified; authenticated owner-session checks remain.
 
 Environment note (2026-07-21): the linked Vercel project was reachable, but its pulled secret values were redacted in this workspace. Use an authorized local environment with real values or a dedicated preview deployment before checking any live data.
 
@@ -25,6 +25,7 @@ This confirms the configured queries can read the current dataset within their l
 
 - [x] Unauthenticated request to `/` resolves to the `/login` redirect with no overview/card data in the response.
 - [x] Unauthenticated `POST /api/apps` resolves to `/login` before any write handler is reached.
+- [x] `tools.kopa.studio` is attached to the separate `kopa-tools` Vercel project and its DNS configuration is verified.
 - [ ] Authenticated owner session reaches each migrated screen.
 - [ ] Signed-in but non-member account resolves to `/unauthorized`.
 
@@ -37,7 +38,7 @@ This confirms the configured queries can read the current dataset within their l
 - [ ] Owner adds a competitor through Apple lookup; verify it appears in the catalogue.
 - [ ] Owner completes, dismisses, and snoozes an insight; verify it leaves the active list and preserves history.
 - [ ] Owner creates and edits an experiment; verify fields persist without affecting historical metrics.
-- [ ] Apply `20260721000000_aso_jobs.sql`; verify one queued collection job is claimed by the existing cron worker and records a linked sync run.
+- [x] Apply `20260721000000_aso_jobs.sql`; verify one queued collection job is claimed by the existing cron worker and records a linked sync run.
 
 - [ ] Owner authentication, session refresh, logout, and unauthorized-account handling
 - [ ] App list record count and app details match legacy console (new read-only view implemented)
