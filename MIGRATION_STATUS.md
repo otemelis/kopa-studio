@@ -15,13 +15,14 @@ Phase 3 — shared domain and read-only data layer. Phases 1–2 are complete.
 - Migrated read-only keyword strategy/rank snapshots and active insight views through server-side repositories. They have bounded queries and URL-persisted filters; legacy edit, dismissal, and collection actions remain unchanged.
 - Migrated read-only owned-app ranking history and competitor catalogue/latest snapshot views. Contested-term calculations and competitor mutations remain legacy-only pending production comparison.
 - Migrated read-only storefront localization coverage and App Store Connect connection/report-request status. Private credentials, report provisioning, and sync controls remain in the existing server-side integration.
+- Migrated read-only 28-day App Store Connect storefront-metric summaries and contested-term comparison. Both retain the legacy source data and use bounded server-side windows.
 - `npm run typecheck`, `npm test`, and `npm run build` pass in `apps/tools`.
 
 ## Not yet verified against production data
 
 - A configured local `apps/tools/.env.local` is required to verify real Supabase reads and authenticated owner access.
 - No database migration has been applied. No production data was modified.
-- Contested-term comparison and all write actions remain legacy-only.
+- All write actions remain legacy-only.
 
 ## Commands
 
