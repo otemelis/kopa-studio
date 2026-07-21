@@ -11,6 +11,9 @@ export const createKeywordSchema = z.object({ appId: uuidParam, terms: z.array(z
 export const updateKeywordSchema = z.object({ term: z.string().trim().min(2).max(100), country: countrySchema, priority: prioritySchema, status: z.enum(["active", "paused"]).default("active") });
 export const createCompetitorSchema = z.object({ appId: uuidParam, input: z.string().trim().min(3).max(500), country: countrySchema.default("us") });
 export const insightActionSchema = z.object({ action: z.enum(["completed", "dismissed", "snoozed"]) });
+const experimentStatusSchema = z.enum(["planned", "running", "monitoring", "won", "lost", "inconclusive", "reverted"]);
+const metricSchema = z.enum(["impressions", "page_views", "downloads", "conversion"]);
+export const experimentSchema = z.object({ appId: uuidParam, title: z.string().trim().min(3).max(160), hypothesis: z.string().trim().max(1000).nullable().optional(), changeType: z.string().trim().min(2).max(80), country: z.union([countrySchema, z.literal("all")]).default("all"), targetMetric: metricSchema.default("conversion"), startDate: z.string().date().nullable().optional(), status: experimentStatusSchema.default("planned"), result: z.string().trim().max(1000).nullable().optional(), conclusion: z.string().trim().max(2000).nullable().optional(), nextAction: z.string().trim().max(1000).nullable().optional() });
 
 const permittedTransitions: Record<z.infer<typeof jobStatusSchema>, z.infer<typeof jobStatusSchema>[]> = {
   queued: ["running", "cancelled"], running: ["completed", "failed", "cancelled"], completed: [], failed: ["queued"], cancelled: ["queued"],

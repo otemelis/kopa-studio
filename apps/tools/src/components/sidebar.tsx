@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 const items = [
-  ["Overview", "/"], ["Apps", "/apps"], ["Keywords", "/keywords"], ["Rankings", "/rankings"], ["Competitors", "/competitors"], ["Localizations", "/localizations"], ["App Store Connect", "/app-store-connect"], ["Insights", "/insights"], ["Data collection", "/collection"],
+  ["Overview", "/"], ["Apps", "/apps"], ["Keywords", "/keywords"], ["Rankings", "/rankings"], ["Competitors", "/competitors"], ["Localizations", "/localizations"], ["App Store Connect", "/app-store-connect"], ["Insights", "/insights"], ["Experiments", "/experiments"], ["Data collection", "/collection"],
 ] as const;
 
 export function Sidebar() {

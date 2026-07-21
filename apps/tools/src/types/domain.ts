@@ -101,3 +101,6 @@ export interface AppStoreConnectStatus {
   lastSyncAt: string | null;
   reportRequests: Array<{ appName: string; status: string; lastCheckedAt: string | null; lastError: string | null }>;
 }
+
+export type ExperimentStatus = "planned" | "running" | "monitoring" | "won" | "lost" | "inconclusive" | "reverted";
+export interface ExperimentRow { id: string; appId: string; appName: string; title: string; hypothesis: string | null; changeType: string; country: string; targetMetric: string; startDate: string | null; status: ExperimentStatus; result: string | null; conclusion: string | null; nextAction: string | null; }
