@@ -13,13 +13,14 @@ Phase 3 — shared domain and read-only data layer. Phases 1–2 are complete.
 - Added SSR Supabase session handling, server-side approved-account checks through `analytics_admins`, logout, protected server components, environment validation, repositories, services, Zod validators, and a read-only overview/apps/collection UI.
 - Added initial unit coverage for bounded pagination and job-state transitions.
 - Migrated read-only keyword strategy/rank snapshots and active insight views through server-side repositories. They have bounded queries and URL-persisted filters; legacy edit, dismissal, and collection actions remain unchanged.
+- Migrated read-only owned-app ranking history and competitor catalogue/latest snapshot views. Contested-term calculations and competitor mutations remain legacy-only pending production comparison.
 - `npm run typecheck`, `npm test`, and `npm run build` pass in `apps/tools`.
 
 ## Not yet verified against production data
 
 - A configured local `apps/tools/.env.local` is required to verify real Supabase reads and authenticated owner access.
 - No database migration has been applied. No production data was modified.
-- Detailed ranking history, competitors, localizations, App Store Connect views, and all write actions remain legacy-only.
+- Localizations, App Store Connect views, contested-term comparison, and all write actions remain legacy-only.
 
 ## Commands
 

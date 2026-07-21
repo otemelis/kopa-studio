@@ -64,3 +64,21 @@ export interface InsightRow {
   ruleId: string;
   createdAt: string;
 }
+
+export interface RankingHistoryRow {
+  keyword: string;
+  country: string;
+  capturedOn: string;
+  rank: number | null;
+  change7d: number | null;
+}
+
+export interface CompetitorRow {
+  id: string;
+  name: string;
+  appId: string;
+  appName: string;
+  rating: number | null;
+  version: string | null;
+  capturedAt: string | null;
+}
