@@ -19,13 +19,14 @@ Phase 3 — shared domain and read-only data layer. Phases 1–2 are complete.
 - Performed a live, service-role read-only baseline check on 2026-07-21: 1 app, 104 active keyword assignments, 220 owned rank snapshots in the 35-day screen window, 2 competitors, 4 active insights, 5 sync runs, 1 storefront, and 0 storefront-metric rows in the 28-day window. The keyword view cap was raised from 100 to 200 after this check found four assignments would otherwise be omitted.
 - Fixed and smoke-tested an authorization-order issue found during local verification: every protected page now checks the approved owner session before any repository query. An unauthenticated request exposes only a redirect to `/login`, with no ASO content rendered.
 - Migrated owner-only app creation (Apple public lookup), keyword creation/edit/delete, and competitor creation. Writes use Zod validation and server-only Supabase access; deleting a keyword assignment removes the shared keyword only when no assignments remain.
+- Migrated owner-only insight workflow actions: mark complete, dismiss, and snooze for 14 days. These update only insight status and never overwrite deterministic evidence or source data.
 - `npm run typecheck`, `npm test`, and `npm run build` pass in `apps/tools`.
 
 ## Not yet verified against production data
 
 - Real Supabase reads are now configured locally. Authenticated owner-session and visual screen testing are still required.
 - No database migration has been applied. No production data was modified.
-- Insight status changes, experiment management, data-collection triggers/retries, and App Store Connect sync controls remain legacy-only.
+- Experiment management, data-collection triggers/retries, and App Store Connect sync controls remain legacy-only.
 
 ## Commands
 

@@ -10,6 +10,7 @@ export const createAppSchema = z.object({ input: z.string().trim().min(3).max(50
 export const createKeywordSchema = z.object({ appId: uuidParam, terms: z.array(z.string().trim().min(2).max(100)).min(1).max(25), country: countrySchema, priority: prioritySchema.default("medium") });
 export const updateKeywordSchema = z.object({ term: z.string().trim().min(2).max(100), country: countrySchema, priority: prioritySchema, status: z.enum(["active", "paused"]).default("active") });
 export const createCompetitorSchema = z.object({ appId: uuidParam, input: z.string().trim().min(3).max(500), country: countrySchema.default("us") });
+export const insightActionSchema = z.object({ action: z.enum(["completed", "dismissed", "snoozed"]) });
 
 const permittedTransitions: Record<z.infer<typeof jobStatusSchema>, z.infer<typeof jobStatusSchema>[]> = {
   queued: ["running", "cancelled"], running: ["completed", "failed", "cancelled"], completed: [], failed: ["queued"], cancelled: ["queued"],
