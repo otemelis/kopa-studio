@@ -1,0 +1,7 @@
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+export function CompetitorCreateForm({ apps }: { apps: Array<{ id: string; name: string }> }) { const router = useRouter(); const [open, setOpen] = useState(false); const [message, setMessage] = useState(""); const [pending, setPending] = useState(false);
+  async function submit(form: FormData) { setPending(true); setMessage(""); const response = await fetch("/api/competitors", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ appId: form.get("appId"), input: form.get("input"), country: form.get("country") }) }); const body = await response.json(); setPending(false); if (!response.ok) return setMessage(body.error ?? "Could not add competitor."); setOpen(false); router.refresh(); }
+  return <><button className="primary compact" onClick={() => setOpen(!open)}>{open ? "Close" : "Add competitor"}</button>{open && <form action={submit} className="management-form"><label>Track against<select name="appId">{apps.map((app) => <option key={app.id} value={app.id}>{app.name}</option>)}</select></label><label>App Store URL or numeric id<input name="input" required /></label><label>Storefront<input name="country" defaultValue="us" maxLength={2} required /></label>{message && <p className="error">{message}</p>}<button className="primary" disabled={pending}>{pending ? "Looking up…" : "Add competitor"}</button></form>}</>; }

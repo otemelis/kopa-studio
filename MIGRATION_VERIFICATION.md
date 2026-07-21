@@ -24,8 +24,17 @@ This confirms the configured queries can read the current dataset within their l
 ## Security smoke check — 2026-07-21
 
 - [x] Unauthenticated request to `/` resolves to the `/login` redirect with no overview/card data in the response.
+- [x] Unauthenticated `POST /api/apps` resolves to `/login` before any write handler is reached.
 - [ ] Authenticated owner session reaches each migrated screen.
 - [ ] Signed-in but non-member account resolves to `/unauthorized`.
+
+## Migrated write workflows
+
+- [ ] Owner adds an app through Apple lookup; verify the app and primary storefront are created once.
+- [ ] Owner adds comma- or line-separated keywords; verify assignment creation and duplicate handling.
+- [ ] Owner edits a keyword assignment; verify text/country and per-app priority/status behavior.
+- [ ] Owner deletes a keyword assignment; verify shared keyword cleanup only when it has no remaining assignments.
+- [ ] Owner adds a competitor through Apple lookup; verify it appears in the catalogue.
 
 - [ ] Owner authentication, session refresh, logout, and unauthorized-account handling
 - [ ] App list record count and app details match legacy console (new read-only view implemented)
