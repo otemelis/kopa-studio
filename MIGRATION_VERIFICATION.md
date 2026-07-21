@@ -4,6 +4,29 @@ Status: not started against a configured production-equivalent Supabase environm
 
 Environment note (2026-07-21): the linked Vercel project was reachable, but its pulled secret values were redacted in this workspace. Use an authorized local environment with real values or a dedicated preview deployment before checking any live data.
 
+## Read-only baseline check — 2026-07-21
+
+Executed through the server-role REST API using the configured local environment; no rows or secrets were printed.
+
+| Surface | Live baseline | New-view bound | Result |
+| --- | ---: | ---: | --- |
+| Apps | 1 | 100 | covered |
+| Active keyword assignments | 104 | 200 | covered (cap raised from 100) |
+| Owned rank snapshots in 35-day window | 220 | 1,000 | covered |
+| Competitors | 2 | 100 | covered |
+| Active insights | 4 | 100 | covered |
+| Sync runs | 5 | 10 | covered |
+| App storefronts | 1 | 200 | covered |
+| Storefront metrics in 28-day window | 0 | 5,000 | empty state expected |
+
+This confirms the configured queries can read the current dataset within their limits. It is not a substitute for owner-session, screen-by-screen, filter, and metric-value comparison.
+
+## Security smoke check — 2026-07-21
+
+- [x] Unauthenticated request to `/` resolves to the `/login` redirect with no overview/card data in the response.
+- [ ] Authenticated owner session reaches each migrated screen.
+- [ ] Signed-in but non-member account resolves to `/unauthorized`.
+
 - [ ] Owner authentication, session refresh, logout, and unauthorized-account handling
 - [ ] App list record count and app details match legacy console (new read-only view implemented)
 - [ ] Keyword records, filters, groups, and status match legacy console (new read-only view implemented)

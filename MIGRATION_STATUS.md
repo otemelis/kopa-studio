@@ -16,11 +16,13 @@ Phase 3 — shared domain and read-only data layer. Phases 1–2 are complete.
 - Migrated read-only owned-app ranking history and competitor catalogue/latest snapshot views. Contested-term calculations and competitor mutations remain legacy-only pending production comparison.
 - Migrated read-only storefront localization coverage and App Store Connect connection/report-request status. Private credentials, report provisioning, and sync controls remain in the existing server-side integration.
 - Migrated read-only 28-day App Store Connect storefront-metric summaries and contested-term comparison. Both retain the legacy source data and use bounded server-side windows.
+- Performed a live, service-role read-only baseline check on 2026-07-21: 1 app, 104 active keyword assignments, 220 owned rank snapshots in the 35-day screen window, 2 competitors, 4 active insights, 5 sync runs, 1 storefront, and 0 storefront-metric rows in the 28-day window. The keyword view cap was raised from 100 to 200 after this check found four assignments would otherwise be omitted.
+- Fixed and smoke-tested an authorization-order issue found during local verification: every protected page now checks the approved owner session before any repository query. An unauthenticated request exposes only a redirect to `/login`, with no ASO content rendered.
 - `npm run typecheck`, `npm test`, and `npm run build` pass in `apps/tools`.
 
 ## Not yet verified against production data
 
-- A configured local `apps/tools/.env.local` with real values is required to verify real Supabase reads and authenticated owner access. On 2026-07-21, `vercel env pull` could access the linked project but this workspace received redacted placeholders, so no remote request or row-count comparison was possible.
+- Real Supabase reads are now configured locally. Authenticated owner-session and visual screen testing are still required.
 - No database migration has been applied. No production data was modified.
 - All write actions remain legacy-only.
 

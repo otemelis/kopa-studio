@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { KeywordRow } from "@/types/domain";
 
-export async function listKeywordRows({ appId, country, limit = 100 }: { appId?: string; country?: string; limit?: number } = {}): Promise<KeywordRow[]> {
+export async function listKeywordRows({ appId, country, limit = 200 }: { appId?: string; country?: string; limit?: number } = {}): Promise<KeywordRow[]> {
   const db = createAdminClient();
   let links = db.from("aso_app_keywords").select("id,app_id,keyword_id,priority,status").order("created_at", { ascending: false }).limit(limit);
   if (appId) links = links.eq("app_id", appId);
