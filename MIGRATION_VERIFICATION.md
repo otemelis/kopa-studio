@@ -2,6 +2,8 @@
 
 Status: not started against a configured production-equivalent Supabase environment.
 
+Environment note (2026-07-21): the linked Vercel project was reachable, but its pulled secret values were redacted in this workspace. Use an authorized local environment with real values or a dedicated preview deployment before checking any live data.
+
 - [ ] Owner authentication, session refresh, logout, and unauthorized-account handling
 - [ ] App list record count and app details match legacy console (new read-only view implemented)
 - [ ] Keyword records, filters, groups, and status match legacy console (new read-only view implemented)

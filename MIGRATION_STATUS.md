@@ -20,7 +20,7 @@ Phase 3 — shared domain and read-only data layer. Phases 1–2 are complete.
 
 ## Not yet verified against production data
 
-- A configured local `apps/tools/.env.local` is required to verify real Supabase reads and authenticated owner access.
+- A configured local `apps/tools/.env.local` with real values is required to verify real Supabase reads and authenticated owner access. On 2026-07-21, `vercel env pull` could access the linked project but this workspace received redacted placeholders, so no remote request or row-count comparison was possible.
 - No database migration has been applied. No production data was modified.
 - All write actions remain legacy-only.
 
