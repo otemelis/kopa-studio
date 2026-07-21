@@ -19,7 +19,7 @@ export function LoginForm() {
         email,
         options: { emailRedirectTo: `${window.location.origin}/auth/callback`, shouldCreateUser: false },
       });
-      if (linkError) { setError("We could not send a sign-in link for that email address."); setPending(false); return; }
+      if (linkError) { setError(`We could not send a sign-in link: ${linkError.message}`); setPending(false); return; }
       setMessage("Check your inbox for a secure sign-in link."); setPending(false); return;
     }
     const { error: signInError } = await supabase.auth.signInWithPassword({ email, password: String(form.get("password")) });
