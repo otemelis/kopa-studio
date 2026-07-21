@@ -1,4 +1,10 @@
-# Lot Escape MVP
+# Kopa Studio
+
+This repository currently hosts the public Kopa Studio website, its legacy hidden studio console, and a parking-escape prototype. The new, independent internal ASO migration application lives in [`apps/tools`](apps/tools).
+
+See [MIGRATION_STATUS.md](MIGRATION_STATUS.md) for the current ASO migration handover, and [DEPLOYMENT.md](DEPLOYMENT.md) for the separate `tools.kopa.studio` deployment procedure.
+
+## Parking escape prototype
 
 A small mobile-first parking escape puzzle prototype. It is dependency-free and runs in the browser, with gameplay split into level data, movement rules, rendering, and UI.
 
