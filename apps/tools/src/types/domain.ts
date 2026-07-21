@@ -35,3 +35,32 @@ export interface SyncRun {
   failed: number;
   error: string | null;
 }
+
+export interface KeywordRow {
+  linkId: string;
+  appId: string;
+  appName: string;
+  term: string;
+  country: string;
+  priority: "high" | "medium" | "low";
+  status: "active" | "paused";
+  rank: number | null;
+  change7d: number | null;
+  change30d: number | null;
+  bestRank: number | null;
+  capturedAt: string | null;
+}
+
+export interface InsightRow {
+  id: string;
+  appName: string | null;
+  title: string;
+  observation: string;
+  recommendation: string;
+  priority: "high" | "medium" | "low";
+  confidence: string;
+  impact: string;
+  effort: string;
+  ruleId: string;
+  createdAt: string;
+}
