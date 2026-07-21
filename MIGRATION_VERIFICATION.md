@@ -7,8 +7,8 @@ Status: not started against a configured production-equivalent Supabase environm
 - [ ] Keyword records, filters, groups, and status match legacy console (new read-only view implemented)
 - [ ] Rankings and ranking-history values match for selected app/country/date ranges (new read-only view implemented)
 - [ ] Competitor catalogue and snapshot data match (new read-only view implemented)
-- [ ] Localizations/metadata history match
-- [ ] App Store Connect sales and storefront metrics match date/country aggregations
+- [ ] Localizations/metadata history match (storefront coverage view implemented; metadata history remains legacy-only)
+- [ ] App Store Connect sales and storefront metrics match date/country aggregations (connection/report status view implemented; metric aggregation remains legacy-only)
 - [ ] Insight records and deterministic outputs match expected source windows (new read-only view implemented)
 - [ ] Collection actions, duplicate prevention, failure display, and retry behavior match
 - [ ] No sensitive environment value appears in HTML, client bundles, API responses, or logs

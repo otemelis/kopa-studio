@@ -82,3 +82,22 @@ export interface CompetitorRow {
   version: string | null;
   capturedAt: string | null;
 }
+
+export interface StorefrontRow {
+  id: string;
+  appName: string;
+  country: string;
+  isPrimary: boolean;
+  metadataLocalised: boolean;
+  screenshotsLocalised: boolean;
+  notes: string | null;
+}
+
+export interface AppStoreConnectStatus {
+  status: "unconfigured" | "configured" | "error";
+  lastTestAt: string | null;
+  lastTestOk: boolean | null;
+  lastTestMessage: string | null;
+  lastSyncAt: string | null;
+  reportRequests: Array<{ appName: string; status: string; lastCheckedAt: string | null; lastError: string | null }>;
+}
