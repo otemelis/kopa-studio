@@ -21,12 +21,13 @@ Phase 3 — shared domain and read-only data layer. Phases 1–2 are complete.
 - Migrated owner-only app creation (Apple public lookup), keyword creation/edit/delete, and competitor creation. Writes use Zod validation and server-only Supabase access; deleting a keyword assignment removes the shared keyword only when no assignments remain.
 - Migrated owner-only insight workflow actions: mark complete, dismiss, and snooze for 14 days. These update only insight status and never overwrite deterministic evidence or source data.
 - Migrated owner-only experiment management: create and edit experiment context, timing, status, result, conclusion, and next action. The existing before/after measurement logic remains the retained source of truth.
+- Added a durable `aso_jobs` migration and a queue-only collection control. The existing cron worker claims queued jobs and writes completion state after the migration is applied; it is not yet applied to production, so the control remains intentionally dormant.
 - `npm run typecheck`, `npm test`, and `npm run build` pass in `apps/tools`.
 
 ## Not yet verified against production data
 
 - Real Supabase reads are now configured locally. Authenticated owner-session and visual screen testing are still required.
-- No database migration has been applied. No production data was modified.
+- No database migration has been applied. No production data was modified. The next required database step is `supabase/migrations/20260721000000_aso_jobs.sql`.
 - Data-collection triggers/retries and App Store Connect sync controls remain legacy-only.
 
 ## Commands

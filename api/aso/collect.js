@@ -33,7 +33,13 @@ export default async function handler(request, response) {
       response.status(401).json({ ok: false, error: "Unauthorized." });
       return;
     }
+    const db = serviceClient();
+    const claimed = await db.rpc("aso_claim_next_job").catch(() => []);
+    const job = claimed?.[0] ?? null;
     const result = await runCollection("cron");
+    if (job) {
+      await db.update("aso_jobs", { status: result.ok ? "completed" : "failed", progress: 100, completed_at: new Date().toISOString(), error_message: result.ok ? null : result.message, sync_run_id: result.runId ?? null }, `id=eq.${job.id}`).catch(() => undefined);
+    }
     response.status(result.ok ? 200 : 500).json(result);
     return;
   }

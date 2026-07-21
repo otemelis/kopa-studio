@@ -37,6 +37,7 @@ This confirms the configured queries can read the current dataset within their l
 - [ ] Owner adds a competitor through Apple lookup; verify it appears in the catalogue.
 - [ ] Owner completes, dismisses, and snoozes an insight; verify it leaves the active list and preserves history.
 - [ ] Owner creates and edits an experiment; verify fields persist without affecting historical metrics.
+- [ ] Apply `20260721000000_aso_jobs.sql`; verify one queued collection job is claimed by the existing cron worker and records a linked sync run.
 
 - [ ] Owner authentication, session refresh, logout, and unauthorized-account handling
 - [ ] App list record count and app details match legacy console (new read-only view implemented)

@@ -1,0 +1,5 @@
+import { NextResponse } from "next/server";
+import { requireOwner } from "@/lib/auth";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { jobRequestSchema } from "@/validators/api";
+export async function POST(request: Request) { await requireOwner(); const parsed = jobRequestSchema.safeParse(await request.json().catch(() => null)); if (!parsed.success || parsed.data.type !== "collection") return NextResponse.json({ error: "Invalid job request." }, { status: 400 }); const { data, error } = await createAdminClient().from("aso_jobs").insert({ job_type: "collection", app_id: parsed.data.appId ?? null, country: parsed.data.country ?? null, trigger_source: "tools" }).select("id").single(); if (error?.code === "23505") return NextResponse.json({ error: "An equivalent collection job is already queued or running." }, { status: 409 }); if (error) return NextResponse.json({ error: "Could not queue collection." }, { status: 500 }); return NextResponse.json({ data }, { status: 201 }); }
