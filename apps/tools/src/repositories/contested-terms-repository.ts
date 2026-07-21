@@ -1,6 +1,8 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export async function listContestedTerms(appId?: string) {
+export type ContestedTermRow = { key: string; appName: string; competitorName: string; term: string; country: string; priority: string; ownedRank: number | null; competitorRank: number | null };
+
+export async function listContestedTerms(appId?: string): Promise<ContestedTermRow[]> {
   const db = createAdminClient();
   const { data: apps, error: appsError } = await db.from("aso_apps").select("id,name,store_app_id").limit(100);
   if (appsError) throw new Error("Could not read apps for rank comparison.");

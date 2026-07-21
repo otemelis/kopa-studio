@@ -1,12 +1,15 @@
 import { PageShell } from "@/components/page-shell";
 import { listApps } from "@/repositories/apps-repository";
+import { listContestedTerms } from "@/repositories/contested-terms-repository";
+import { listActiveInsights } from "@/repositories/insight-repository";
 import { loadKeywords } from "@/services/keyword-service";
 import { requireUser } from "@/lib/auth";
 import { KeywordManager } from "@/components/keyword-manager";
+import { loadExperiments } from "@/services/experiment-service";
 
 export const dynamic = "force-dynamic";
 export default async function KeywordsPage({ searchParams }: { searchParams: Promise<{ app?: string; country?: string }> }) {
-  await requireUser(); const filters = await searchParams; const [apps, rows] = await Promise.all([listApps(), loadKeywords({ appId: filters.app, country: filters.country, limit: 200 })]);
+  await requireUser(); const filters = await searchParams; const [apps, rows, contestedTerms, insights, changes] = await Promise.all([listApps(), loadKeywords({ appId: filters.app, country: filters.country, limit: 200 }), listContestedTerms(filters.app), listActiveInsights({ appId: filters.app, limit: 100 }), loadExperiments({ appId: filters.app })]);
   const countries = [...new Set(rows.map((row) => row.country))].sort();
-  return <PageShell title="Keywords"><form className="filter-form"><select name="app" defaultValue={filters.app ?? ""}><option value="">All apps</option>{apps.map((app) => <option key={app.id} value={app.id}>{app.name}</option>)}</select><select name="country" defaultValue={filters.country ?? ""}><option value="">All storefronts</option>{countries.map((country) => <option key={country} value={country}>{country.toUpperCase()}</option>)}</select><button type="submit">Apply filters</button></form><KeywordManager apps={apps.map((app) => ({ id: app.id, name: app.name }))} rows={rows} /><p className="data-note">Source: public App Store collection. The current view fetches at most 200 records.</p></PageShell>;
+  return <PageShell title="Keyword Intelligence"><form className="filter-form"><select name="app" defaultValue={filters.app ?? ""}><option value="">All apps</option>{apps.map((app) => <option key={app.id} value={app.id}>{app.name}</option>)}</select><select name="country" defaultValue={filters.country ?? ""}><option value="">All storefronts</option>{countries.map((country) => <option key={country} value={country}>{country.toUpperCase()}</option>)}</select><button type="submit">Apply filters</button></form><KeywordManager apps={apps.map((app) => ({ id: app.id, name: app.name }))} rows={rows} contestedTerms={contestedTerms.filter((term) => !filters.country || term.country === filters.country)} insights={insights} changes={changes.filter((change) => !filters.country || change.country === filters.country || change.country === "all")} /><p className="data-note">Source: public App Store collection. The current view fetches at most 200 records.</p></PageShell>;
 }

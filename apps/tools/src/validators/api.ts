@@ -14,6 +14,8 @@ export const insightActionSchema = z.object({ action: z.enum(["completed", "dism
 const experimentStatusSchema = z.enum(["planned", "running", "monitoring", "won", "lost", "inconclusive", "reverted"]);
 const metricSchema = z.enum(["impressions", "page_views", "downloads", "conversion"]);
 export const experimentSchema = z.object({ appId: uuidParam, title: z.string().trim().min(3).max(160), hypothesis: z.string().trim().max(1000).nullable().optional(), changeType: z.string().trim().min(2).max(80), country: z.union([countrySchema, z.literal("all")]).default("all"), targetMetric: metricSchema.default("conversion"), startDate: z.string().date().nullable().optional(), status: experimentStatusSchema.default("planned"), result: z.string().trim().max(1000).nullable().optional(), conclusion: z.string().trim().max(2000).nullable().optional(), nextAction: z.string().trim().max(1000).nullable().optional() });
+export const appleAdsConnectionSchema = z.object({ appleAdsOrgId: z.string().trim().min(1).max(64), appleAdsOrgName: z.string().trim().min(1).max(200), currency: z.string().trim().length(3).toUpperCase().optional(), timezone: z.string().trim().min(1).max(100).optional() });
+export const appleAdsAppMappingSchema = z.object({ connectionId: uuidParam, appId: uuidParam, adamId: z.string().trim().regex(/^\d+$/, "Adam ID must contain digits only.").max(32), appleAppName: z.string().trim().min(1).max(200).optional() });
 
 const permittedTransitions: Record<z.infer<typeof jobStatusSchema>, z.infer<typeof jobStatusSchema>[]> = {
   queued: ["running", "cancelled"], running: ["completed", "failed", "cancelled"], completed: [], failed: ["queued"], cancelled: ["queued"],

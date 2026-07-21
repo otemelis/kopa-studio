@@ -1,0 +1,1 @@
+import {expect,it,vi} from "vitest";import {appleAdsLog} from "./observability";it("redacts tokens in structured logs",()=>{const spy=vi.spyOn(console,"info").mockImplementation(()=>{});appleAdsLog("api_request",{message:"Bearer abc.def"});expect(spy.mock.calls[0][0]).not.toContain("abc.def");spy.mockRestore();});

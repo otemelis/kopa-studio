@@ -48,6 +48,8 @@ export interface KeywordRow {
   change7d: number | null;
   change30d: number | null;
   bestRank: number | null;
+  metadataPresence: "title" | "subtitle" | "missing" | "unknown";
+  adsStatus: "exact" | "broad" | "both" | "negative" | "inactive" | "none";
   capturedAt: string | null;
 }
 
@@ -85,11 +87,18 @@ export interface CompetitorRow {
 
 export interface StorefrontRow {
   id: string;
+  appId: string;
   appName: string;
   country: string;
   isPrimary: boolean;
   metadataLocalised: boolean;
   screenshotsLocalised: boolean;
+  screenshotUiState: "localized" | "english" | "unknown";
+  appLanguageState: "localized" | "english" | "unknown";
+  keywordsTracked: number;
+  hasAscData: boolean;
+  appleAdsActive: boolean;
+  readiness: string;
   notes: string | null;
 }
 

@@ -1,0 +1,1 @@
+import {expect,it} from "vitest";import {freshness,writesEligible} from "./freshness";it("blocks stale data",()=>{expect(freshness("2026-07-20T00:00:00Z","2026-07-21T12:00:00Z")).toBe("stale");expect(writesEligible({freshness:"stale",partial:false,currencyKnown:true})).toBe(false);});

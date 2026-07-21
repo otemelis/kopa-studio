@@ -1,0 +1,6 @@
+import { PageShell } from "@/components/page-shell";
+import { requireUser } from "@/lib/auth";
+import { listAppleAdsRecommendations } from "@/repositories/apple-ads-recommendation-repository";
+import Link from "next/link";
+export const dynamic="force-dynamic";
+export default async function RecommendationsPage(){const user=await requireUser();const rows=await listAppleAdsRecommendations(user.id);return <PageShell title="Apple Ads recommendations"><section className="notice"><h2>Moved to Actions</h2><p>Apple Ads recommendations now appear in the unified <Link href="/insights?source=Apple+Ads">Actions recommendation feed</Link>. This read-only table remains during migration for comparison.</p></section><div className="table-wrap"><table><thead><tr><th>Recommendation</th><th>App</th><th>Confidence</th><th>Financial risk</th><th>Evidence</th></tr></thead><tbody>{rows.length?rows.map(row=><tr key={row.id}><td>{row.title}<br/><small>{row.type}</small></td><td>{row.appName??"—"}</td><td>{row.confidence}/100</td><td>{row.risk}/100</td><td>{row.evidence}</td></tr>):<tr><td colSpan={5}>No recommendations yet. They will appear after complete, fresh campaign data is available.</td></tr>}</tbody></table></div></PageShell>;}
