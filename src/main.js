@@ -4,6 +4,7 @@ const projects=[
   {name:'Douze',kind:'Eurovision ranking',state:'In production',color:'#8ea5ff'},
   {name:'Douze Draft',kind:'Fantasy Eurovision',state:'In production',color:'#e1b5ff'},
   {name:'2048 Run Merge',kind:'Casual game',state:'Coming soon',color:'#ffcc62',page:'/games/2048-run-merge'},
+  {name:'Pocket Panic',kind:'Rescue puzzle',state:'Coming soon',color:'#d8ff6d',page:'/games/pocket-panic'},
   {name:'Bolt Away',kind:'Puzzle game',state:'In production',color:'#9fd4c0'},
   {name:'UNPARK',kind:'Puzzle game',state:'In production',color:'#f06c4f'},
   {name:'2034',kind:'Strategy game',state:'In production',color:'#c8d0c3'}

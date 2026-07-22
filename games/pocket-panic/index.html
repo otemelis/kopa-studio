@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#100d2b" />
+    <meta name="description" content="Pocket Panic is a tactile one-thumb rescue puzzle. Draw the line, save everyone." />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Pocket Panic — Draw the line. Save everyone." />
+    <meta property="og:description" content="A fast one-thumb rescue puzzle from Kopa Studio." />
+    <meta property="og:url" content="https://kopa.studio/games/pocket-panic" />
+    <link rel="canonical" href="https://kopa.studio/games/pocket-panic" />
+    <link rel="stylesheet" href="../../src/pocket-panic.css" />
+    <title>Pocket Panic — Kopa Studio</title>
+  </head>
+  <body>
+    <div class="starfield" aria-hidden="true"></div>
+    <header class="topbar">
+      <a class="brand" href="../../" aria-label="Kopa Studio home">KOPA<span>°</span></a>
+      <a href="#download" class="top-download">Get the signal <span>↘</span></a>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="signal"><i></i> KOPA GAMES / INCOMING SIGNAL</p>
+          <h1 id="hero-title">DRAW<br />THE LINE.<br /><em>SAVE</em> <b>THEM<br />ALL.</b></h1>
+          <p class="intro">Pocket Panic is a one-thumb rescue puzzle. Thread a safe route, gather every starlet, and get Pip home before the Void Maw wakes up.</p>
+          <div class="hero-actions">
+            <a href="mailto:hello@kopa.studio?subject=Pocket%20Panic%20launch%20interest" class="store-cta"><span class="apple">●</span><span><small>Coming soon to the</small><strong>App Store</strong></span><i>↗</i></a>
+            <a href="#rescue" class="under-link">Try the rescue <span>↓</span></a>
+          </div>
+          <p class="languages">AVAILABLE IN EN · DE · ES · PT · FR · PL · JP · KO · 繁中</p>
+        </div>
+
+        <div class="hero-art" aria-label="Interactive Pocket Panic rescue route">
+          <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div>
+          <div class="void-maw"><span></span><span></span><span></span><b>VOID<br />MAW</b></div>
+          <div class="phone-shell">
+            <div class="phone-notch"></div>
+            <div class="phone-screen" id="rescue">
+              <div class="hud"><span>RESCUE 08</span><b>★ ★ ★</b></div>
+              <div class="level-tag">DRAW A SAFE ROUTE</div>
+              <svg class="rescue-map" viewBox="0 0 320 530" role="img" aria-label="A route through asteroids to a portal">
+                <defs><filter id="glow"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+                <path class="guide-path" d="M48 431 C83 371 43 324 104 272 S160 197 205 215 S221 142 274 104" />
+                <path id="drawn-route" class="drawn-route" d="M48 431 C83 371 43 324 104 272 S160 197 205 215 S221 142 274 104" />
+                <g class="rocks"><circle cx="102" cy="402" r="21"/><circle cx="197" cy="365" r="13"/><circle cx="72" cy="285" r="17"/><circle cx="226" cy="270" r="25"/><circle cx="136" cy="155" r="16"/><circle cx="268" cy="185" r="10"/></g>
+                <g class="starlets" filter="url(#glow)"><text x="66" y="350">✦</text><text x="173" y="242">✦</text><text x="243" y="129">✦</text></g>
+                <g class="portal"><circle cx="274" cy="104" r="24"/><circle cx="274" cy="104" r="14"/></g>
+                <g class="pip" id="pip"><circle cx="48" cy="431" r="18"/><circle cx="42" cy="427" r="3"/><circle cx="54" cy="427" r="3"/><path d="M41 438 Q48 444 55 438"/></g>
+              </svg>
+              <div class="touch-prompt"><span></span> drag to draw</div>
+            </div>
+          </div>
+          <div class="hero-card"><span>ONE THUMB</span><strong>∞</strong><p>ways to<br />keep calm</p></div>
+          <p class="art-note">PATH UNSTABLE <b>●</b> <span>SWIPE TO STEADY</span></p>
+        </div>
+        <div class="hero-index"><span>01 / 05</span><span>SHORT RUNS. LONG NERVES.</span></div>
+      </section>
+
+      <section class="ticker" aria-label="Game promises"><div>DRAW THE LINE <i>✦</i> DODGE THE DANGER <i>✦</i> SAVE EVERYONE <i>✦</i> DRAW THE LINE <i>✦</i> DODGE THE DANGER <i>✦</i> SAVE EVERYONE <i>✦</i></div></section>
+
+      <section class="how" aria-labelledby="how-title">
+        <div class="section-meta"><span>02 / HOW IT FEELS</span><span>ONE BRAVE STROKE</span></div>
+        <div class="how-heading"><h2 id="how-title">The rules are<br /><em>beautifully</em> simple.</h2><p>Every rescue fits in a spare moment. But when the screen gets crowded, one little line can feel like everything.</p></div>
+        <div class="moves">
+          <article><span>01</span><div class="move-icon route-icon">⌇</div><h3>Draw a route</h3><p>Use one thumb to guide Pip around every chunk of space rock.</p></article>
+          <article><span>02</span><div class="move-icon star-icon">✦</div><h3>Catch every starlet</h3><p>Three glowing stars make a rescue perfect. No pressure.</p></article>
+          <article><span>03</span><div class="move-icon portal-icon">◉</div><h3>Reach the portal</h3><p>Get everyone through before the route runs out—or the Void Maw finds you.</p></article>
+        </div>
+      </section>
+
+      <section class="maw-section" aria-labelledby="maw-title">
+        <div class="maw-copy"><p class="signal"><i></i> EVERY FIFTH RESCUE</p><h2 id="maw-title">Meet the<br /><em>Void Maw.</em></h2><p>It waits at the edge of the map, growing hungrier with every second. Big rescues demand a steady hand.</p><span class="warning">WARNING: DO NOT FEED THE VOID</span></div>
+        <div class="maw-visual" aria-hidden="true"><div class="big-maw"><i></i><i></i><i></i><b></b></div><div class="maw-ring"></div><div class="maw-ring two"></div><p>05<br /><span>BOSS<br />RESCUE</span></p></div>
+      </section>
+
+      <section class="crew" aria-labelledby="crew-title">
+        <div class="section-meta"><span>04 / BUILD THE CREW</span><span>NEW SIGNALS AHEAD</span></div>
+        <div class="crew-heading"><h2 id="crew-title">Tiny crew.<br /><em>Big courage.</em></h2><p>Unlock colorful rescue drones, spend your stars on permanent upgrades, and keep the signal alive when things get crowded.</p></div>
+        <div class="crew-grid">
+          <article class="drone lime"><div class="drone-body"><i></i><i></i><b></b></div><span>SCOUT / 01</span><h3>Pip</h3><p>Small. bright. stubborn.</p></article>
+          <article class="drone pink"><div class="drone-body"><i></i><i></i><b></b></div><span>GUARD / 02</span><h3>Nova</h3><p>Never leaves a starlet behind.</p></article>
+          <article class="drone blue"><div class="drone-body"><i></i><i></i><b></b></div><span>GUIDE / 03</span><h3>Orbit</h3><p>Knows every shortcut.</p></article>
+        </div>
+      </section>
+
+      <section class="final-cta" id="download">
+        <div class="cta-orbit"></div><div class="cta-orbit two"></div><div class="mini-pip"><i></i><i></i><b></b></div>
+        <p class="signal"><i></i> RESCUE SIGNAL OPEN</p>
+        <h2>Keep your<br /><em>nerve.</em></h2>
+        <p>Get ready for a pocket-sized rescue mission made for one brave thumb.</p>
+        <a href="mailto:hello@kopa.studio?subject=Pocket%20Panic%20launch%20interest" class="store-cta"><span class="apple">●</span><span><small>Coming soon to the</small><strong>App Store</strong></span><i>↗</i></a>
+      </section>
+    </main>
+
+    <footer><a class="brand" href="../../">KOPA<span>°</span></a><div><a href="../../privacy/pocket-panic/">Privacy</a><a href="mailto:hello@kopa.studio?subject=Pocket%20Panic%20support">Support</a></div><span>© 2026 KOPA STUDIO</span></footer>
+    <script src="../../src/pocket-panic.js"></script>
+  </body>
+</html>
