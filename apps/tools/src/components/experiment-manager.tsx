@@ -32,10 +32,11 @@ const metrics = [
   ["page_views", "Product page views"],
   ["impressions", "Impressions"],
 ];
+export type ChangeLogDraft = Partial<Pick<ExperimentRow, "appId" | "title" | "hypothesis" | "changeType" | "country" | "targetMetric" | "nextAction">>;
 
-export function ExperimentManager({ apps, experiments }: { apps: Array<{ id: string; name: string }>; experiments: ExperimentRow[] }) {
+export function ExperimentManager({ apps, experiments, draft }: { apps: Array<{ id: string; name: string }>; experiments: ExperimentRow[]; draft?: ChangeLogDraft }) {
   const router = useRouter();
-  const [mode, setMode] = useState<"create" | string | null>(null);
+  const [mode, setMode] = useState<"create" | string | null>(draft ? "create" : null);
   const [message, setMessage] = useState("");
   const [pending, setPending] = useState(false);
 
@@ -69,7 +70,7 @@ export function ExperimentManager({ apps, experiments }: { apps: Array<{ id: str
   return <>
     <div className="section-head"><h2>Logged changes</h2><button className="primary compact" onClick={() => setMode(mode === "create" ? null : "create")}>{mode === "create" ? "Close" : "Log change"}</button></div>
     {message && <p className="error">{message}</p>}
-    {mode === "create" && <ChangeLogForm apps={apps} pending={pending} onSubmit={(form) => save("/api/experiments", "POST", form)} />}
+    {mode === "create" && <ChangeLogForm apps={apps} draft={draft} pending={pending} onSubmit={(form) => save("/api/experiments", "POST", form)} />}
     {experiments.length ? <section className="experiment-list">{experiments.map((change) => <article className="experiment-card" key={change.id}>
       <div><span className="badge neutral">{statusLabels[change.status]}</span><span className="insight-app">{change.appName} · {change.country.toUpperCase()}</span></div>
       <h2>{change.title}</h2>
@@ -97,20 +98,21 @@ function label(value: string) {
   return value.replaceAll("_", " ");
 }
 
-function ChangeLogForm({ apps, experiment, pending, onSubmit }: { apps: Array<{ id: string; name: string }>; experiment?: ExperimentRow; pending: boolean; onSubmit: (form: FormData) => void }) {
+function ChangeLogForm({ apps, experiment, draft, pending, onSubmit }: { apps: Array<{ id: string; name: string }>; experiment?: ExperimentRow; draft?: ChangeLogDraft; pending: boolean; onSubmit: (form: FormData) => void }) {
+  const values = experiment ?? draft;
   return <form action={onSubmit} className="management-form">
-    <label>App<select name="appId" defaultValue={experiment?.appId}>{apps.map((app) => <option key={app.id} value={app.id}>{app.name}</option>)}</select></label>
-    <label>Title<input name="title" defaultValue={experiment?.title} required /></label>
-    <label>Description<textarea name="hypothesis" defaultValue={experiment?.hypothesis ?? ""} placeholder="What changed, and what was the before state?" /></label>
-    <label>Change type<input name="changeType" list="change-types" defaultValue={experiment?.changeType ?? "metadata"} required /></label>
+    <label>App<select name="appId" defaultValue={values?.appId}>{apps.map((app) => <option key={app.id} value={app.id}>{app.name}</option>)}</select></label>
+    <label>Title<input name="title" defaultValue={values?.title} required /></label>
+    <label>Description<textarea name="hypothesis" defaultValue={values?.hypothesis ?? ""} placeholder="What changed, and what was the before state?" /></label>
+    <label>Change type<input name="changeType" list="change-types" defaultValue={values?.changeType ?? "metadata"} required /></label>
     <datalist id="change-types">{changeTypes.map((type) => <option key={type} value={type}>{label(type)}</option>)}</datalist>
-    <label>Market<input name="country" defaultValue={experiment?.country ?? "all"} required /></label>
-    <label>Metric to watch<select name="targetMetric" defaultValue={experiment?.targetMetric ?? "conversion"}>{metrics.map(([value, text]) => <option key={value} value={value}>{text}</option>)}</select></label>
+    <label>Market<input name="country" defaultValue={values?.country ?? "all"} required /></label>
+    <label>Metric to watch<select name="targetMetric" defaultValue={values?.targetMetric ?? "conversion"}>{metrics.map(([value, text]) => <option key={value} value={value}>{text}</option>)}</select></label>
     <label>Date<input name="startDate" type="date" defaultValue={experiment?.startDate ?? ""} /></label>
     <label>Status<select name="status" defaultValue={experiment?.status ?? "planned"}>{statuses.map((status) => <option key={status} value={status}>{statusLabels[status]}</option>)}</select></label>
     <label>Expected effect<input name="result" defaultValue={experiment?.result ?? ""} /></label>
     <label>Outcome notes<input name="conclusion" defaultValue={experiment?.conclusion ?? ""} /></label>
-    <label>Next action<input name="nextAction" defaultValue={experiment?.nextAction ?? ""} /></label>
+    <label>Next action<input name="nextAction" defaultValue={values?.nextAction ?? ""} /></label>
     <button className="primary" disabled={pending}>{pending ? "Saving..." : experiment ? "Save change" : "Create change"}</button>
   </form>;
 }

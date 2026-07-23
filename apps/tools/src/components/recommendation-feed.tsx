@@ -6,7 +6,7 @@ import { StatusBadge } from "@/components/status-badge";
 
 export type RecommendationFeedItem = {
   id: string;
-  source: "ASO" | "Apple Ads";
+  source: "ASO" | "Apple Ads" | "Discovery";
   appName: string | null;
   title: string;
   whatHappened: string;
@@ -20,6 +20,8 @@ export type RecommendationFeedItem = {
   status: string;
   createdAt: string;
   actionable: boolean;
+  followUpHref?: string;
+  followUpLabel?: string;
 };
 
 export function RecommendationFeed({ items }: { items: RecommendationFeedItem[] }) {
@@ -38,5 +40,5 @@ export function RecommendationFeed({ items }: { items: RecommendationFeedItem[] 
     router.refresh();
   }
 
-  return <><div className="section-head"><h2>Recommendation feed</h2><span>{items.length} shown</span></div>{message ? <p className="error">{message}</p> : null}<section className="insight-list">{items.length ? items.map((item) => <article className="insight-card recommendation-card" key={`${item.source}:${item.id}`}><div className="recommendation-meta"><StatusBadge status={item.priority} /><span>{item.source}</span><span>{item.appName ?? "Portfolio"}</span><span>{item.status}</span></div><h2>{item.title}</h2><p>{item.whatHappened}</p><p><strong>Suggested action:</strong> {item.suggestedAction}</p><p><strong>Evidence:</strong> {item.evidence}</p>{!item.actionable ? <p className="data-note">This recommendation needs a constrained review before it should be treated as executable.</p> : null}<footer>Confidence: {item.confidence} · Impact: {item.impact} · Effort: {item.effort} · Risk: {item.risk}</footer>{item.actionable ? <div className="insight-actions"><button disabled={pending === item.id} onClick={() => action(item.id, "completed")}>Mark done</button><button disabled={pending === item.id} onClick={() => action(item.id, "snoozed")}>Snooze 14d</button><button disabled={pending === item.id} onClick={() => action(item.id, "dismissed")}>Dismiss</button></div> : null}</article>) : <div className="notice"><h2>No active recommendations</h2><p>No ASO or Apple Ads recommendations match this filter.</p></div>}</section></>;
+  return <><div className="section-head"><h2>Recommendation feed</h2><span>{items.length} shown</span></div>{message ? <p className="error">{message}</p> : null}<section className="insight-list">{items.length ? items.map((item) => <article className="insight-card recommendation-card" key={`${item.source}:${item.id}`}><div className="recommendation-meta"><StatusBadge status={item.priority} /><span>{item.source}</span><span>{item.appName ?? "Portfolio"}</span><span>{item.status}</span></div><h2>{item.title}</h2><p>{item.whatHappened}</p><p><strong>Suggested action:</strong> {item.suggestedAction}</p><p><strong>Evidence:</strong> {item.evidence}</p>{!item.actionable ? <p className="data-note">This recommendation is advisory. Review the evidence before treating it as executable.</p> : null}<footer>Confidence: {item.confidence} · Impact: {item.impact} · Effort: {item.effort} · Risk: {item.risk}</footer>{item.followUpHref ? <div className="insight-actions"><a className="secondary compact" href={item.followUpHref}>{item.followUpLabel ?? "Open follow-up"}</a></div> : null}{item.actionable ? <div className="insight-actions"><button disabled={pending === item.id} onClick={() => action(item.id, "completed")}>Mark done</button><button disabled={pending === item.id} onClick={() => action(item.id, "snoozed")}>Snooze 14d</button><button disabled={pending === item.id} onClick={() => action(item.id, "dismissed")}>Dismiss</button></div> : null}</article>) : <div className="notice"><h2>No active recommendations</h2><p>No ASO, Discovery, or Apple Ads recommendations match this filter.</p></div>}</section></>;
 }

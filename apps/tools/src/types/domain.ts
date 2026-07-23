@@ -36,6 +36,19 @@ export interface SyncRun {
   error: string | null;
 }
 
+export interface AsoJob {
+  id: string;
+  jobType: "collection";
+  status: "queued" | "running" | "completed" | "failed" | "cancelled";
+  triggerSource: "tools" | "cron" | "retry";
+  progress: number;
+  errorMessage: string | null;
+  createdAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  syncRunId: string | null;
+}
+
 export interface KeywordRow {
   linkId: string;
   appId: string;

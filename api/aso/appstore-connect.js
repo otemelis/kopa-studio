@@ -10,14 +10,21 @@ export default async function handler(request, response) {
     return;
   }
 
-  try {
-    await requireAdmin(request.headers.authorization);
-  } catch (error) {
-    response.status(error.status ?? 401).json({ error: error.message });
+  const action = request.body?.action ?? "status";
+  const cronSecret = process.env.CRON_SECRET;
+  const isServerToServer = Boolean(cronSecret && request.headers.authorization === `Bearer ${cronSecret}`);
+  if (!isServerToServer) {
+    try {
+      await requireAdmin(request.headers.authorization);
+    } catch (error) {
+      response.status(error.status ?? 401).json({ error: error.message });
+      return;
+    }
+  } else if (!["status", "analytics_status", "sync_sales", "sync_analytics"].includes(action)) {
+    response.status(403).json({ error: "This App Store Connect action requires an owner session." });
     return;
   }
 
-  const action = request.body?.action ?? "status";
   const db = serviceClient();
 
   if (action === "status") {
@@ -81,7 +88,7 @@ export default async function handler(request, response) {
       return;
     }
     try {
-      const apps = await db.select("aso_apps", "platform=eq.ios&select=id,store_app_id");
+      const apps = await db.select("aso_apps", "platform=eq.ios&select=id,name,store_app_id");
       const result = await syncDailySalesMetrics(db, apps);
       await db.upsert(
         "aso_platform_connections",

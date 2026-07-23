@@ -67,6 +67,8 @@ Store `app_id`, ISO country/storefront, and a normalized calendar date on every 
 
 The Vercel cron invokes `GET /api/aso/collect` on the legacy deployment once per day. Vercel authenticates it with `CRON_SECRET`.
 
+For an operator-focused list of exactly what the scraper collects and which tables it updates, see `ASO_COLLECTOR_REFERENCE.md`. Tools does not duplicate App Store Connect private keys; owner-only Tools actions call the retained root integration server-to-server with `CRON_SECRET`.
+
 The collector is intentionally idempotent:
 
 1. Acquires the database collection lock.

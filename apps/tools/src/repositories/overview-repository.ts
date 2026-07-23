@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { OverviewMetrics, SyncRun } from "@/types/domain";
+import type { AsoJob, OverviewMetrics, SyncRun } from "@/types/domain";
 
 export async function getOverview(): Promise<OverviewMetrics> {
   const db = createAdminClient();
@@ -17,4 +17,21 @@ export async function listRecentRuns(): Promise<SyncRun[]> {
   const { data, error } = await createAdminClient().from("aso_sync_runs").select("id,provider,trigger,status,started_at,finished_at,processed,succeeded,failed,error").order("started_at", { ascending: false }).limit(10);
   if (error) throw new Error("Could not load collection history.");
   return (data ?? []).map((row) => ({ id: row.id, provider: row.provider, trigger: row.trigger, status: row.status, startedAt: row.started_at, finishedAt: row.finished_at, processed: row.processed, succeeded: row.succeeded, failed: row.failed, error: row.error }));
+}
+
+export async function listRecentCollectionJobs(): Promise<AsoJob[]> {
+  const { data, error } = await createAdminClient().from("aso_jobs").select("id,job_type,status,trigger_source,progress,error_message,created_at,started_at,completed_at,sync_run_id").order("created_at", { ascending: false }).limit(20);
+  if (error) throw new Error("Could not load collection queue.");
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    jobType: row.job_type,
+    status: row.status,
+    triggerSource: row.trigger_source,
+    progress: row.progress,
+    errorMessage: row.error_message,
+    createdAt: row.created_at,
+    startedAt: row.started_at,
+    completedAt: row.completed_at,
+    syncRunId: row.sync_run_id,
+  }));
 }

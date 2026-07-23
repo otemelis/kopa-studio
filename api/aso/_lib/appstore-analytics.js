@@ -53,7 +53,15 @@ export async function provisionDiscoveryRequests(db, apps) {
   return { created, existing, tracked: apps.filter((item) => item.appstore_connect_id).length };
 }
 
-function csvRows(text) {
+function detectDelimiter(text) {
+  const firstLine = String(text ?? "").split(/\r?\n/, 1)[0] ?? "";
+  const tabs = (firstLine.match(/\t/g) ?? []).length;
+  const commas = (firstLine.match(/,/g) ?? []).length;
+  return tabs > commas ? "\t" : ",";
+}
+
+function delimitedRows(text) {
+  const delimiter = detectDelimiter(text);
   const rows = [];
   let row = [];
   let value = "";
@@ -65,7 +73,7 @@ function csvRows(text) {
         value += '"';
         i++;
       } else quoted = !quoted;
-    } else if (char === "," && !quoted) {
+    } else if (char === delimiter && !quoted) {
       row.push(value);
       value = "";
     } else if ((char === "\n" || char === "\r") && !quoted) {
@@ -91,7 +99,7 @@ function count(value) {
 }
 
 export function parseDiscoveryReport(csv) {
-  const rows = csvRows(csv);
+  const rows = delimitedRows(csv);
   if (rows.length < 2) return [];
   const headers = rows[0].map((header) => clean(header).replace(/^\uFEFF/, ""));
   const required = ["Date", "Event", "Page Type", "Source Type", "Territory", "Counts"];

@@ -1,14 +1,28 @@
 import { PageShell } from "@/components/page-shell";
-import { ExperimentManager } from "@/components/experiment-manager";
+import { ExperimentManager, type ChangeLogDraft } from "@/components/experiment-manager";
 import { requireUser } from "@/lib/auth";
 import { listApps } from "@/repositories/apps-repository";
 import { loadExperiments } from "@/services/experiment-service";
 
 export const dynamic = "force-dynamic";
-export default async function ExperimentsPage({ searchParams }: { searchParams: Promise<{ app?: string; market?: string; status?: string }> }) {
+const changeTypes = new Set(["metadata", "screenshots", "app_icon", "price", "campaign_activated", "campaign_paused", "bid_changed", "localization_added", "app_version_released", "paywall", "onboarding"]);
+const targetMetrics = new Set(["conversion", "downloads", "page_views", "impressions"]);
+const short = (value: string | undefined, limit: number) => value?.trim().slice(0, limit) || undefined;
+
+export default async function ExperimentsPage({ searchParams }: { searchParams: Promise<{ app?: string; market?: string; status?: string; title?: string; description?: string; changeType?: string; targetMetric?: string; nextAction?: string }> }) {
   await requireUser();
-  const { app, market, status } = await searchParams;
+  const { app, market, status, title, description, changeType, targetMetric, nextAction } = await searchParams;
   const [apps, changes] = await Promise.all([listApps(), loadExperiments({ appId: app })]);
+  const appExists = Boolean(app && apps.some((item) => item.id === app));
+  const draft: ChangeLogDraft | undefined = appExists && title ? {
+    appId: app,
+    title: short(title, 160),
+    hypothesis: short(description, 1000),
+    changeType: changeType && changeTypes.has(changeType) ? changeType : "metadata",
+    country: market?.match(/^[a-z]{2}$|^all$/) ? market : "all",
+    targetMetric: targetMetric && targetMetrics.has(targetMetric) ? targetMetric : "conversion",
+    nextAction: short(nextAction, 1000),
+  } : undefined;
   const filteredChanges = changes.filter((change) => {
     const marketMatches = !market || change.country === market;
     const statusMatches = !status || change.status === status;
@@ -28,6 +42,6 @@ export default async function ExperimentsPage({ searchParams }: { searchParams: 
       <select name="status" defaultValue={status ?? ""}><option value="">All statuses</option>{statuses.map((item) => <option key={item} value={item}>{item.replaceAll("_", " ")}</option>)}</select>
       <button>Apply filters</button>
     </form>
-    <ExperimentManager apps={apps.map((item) => ({ id: item.id, name: item.name }))} experiments={filteredChanges} />
+    <ExperimentManager apps={apps.map((item) => ({ id: item.id, name: item.name }))} experiments={filteredChanges} draft={draft} />
   </PageShell>;
 }

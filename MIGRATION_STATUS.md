@@ -23,13 +23,27 @@ Production cutover — the new Tools application is deployed at `tools.kopa.stud
 - Migrated owner-only experiment management: create and edit experiment context, timing, status, result, conclusion, and next action. The existing before/after measurement logic remains the retained source of truth.
 - Applied the additive `aso_jobs` migration to production, deployed the legacy collector update, and verified a queued collection job is claimed and completed by the Vercel cron worker with a linked sync run.
 - Deployed the separate `kopa-tools` Vercel project from `apps/tools` and attached the verified `tools.kopa.studio` domain. The production signed-out route redirects to `/login` without rendering ASO data.
+- Clarified the Jobs page as an ordered sync runbook: keyword ranking scrape first, App Store Connect Discovery/sales report retries second, Apple Ads structure third, and Apple Ads performance fourth. App Store Connect report retries now run through an owner-only Tools route that reuses the retained server-side integration.
+- Fixed App Store Connect Discovery report parsing for Apple's tab-delimited analytics files while preserving legacy comma-delimited fixture support.
+- Deployed the parser fix to the root `kopa.studio` project and deployed the Jobs runbook/App Store Connect retry route to `kopa-tools`; smoke checks returned HTTP 200 for `https://www.kopa.studio` and `https://tools.kopa.studio/collection`.
+- Updated Jobs to show active `aso_jobs` queue rows as well as completed `aso_sync_runs`, format Jobs timestamps in Europe/Berlin time, and nudge the retained collector when a keyword scrape is queued or already waiting. Added `CRON_SECRET` to the production `kopa-tools` environment and redeployed so the worker wake path is configured.
+- Hotfixed the Jobs timestamp formatter after Vercel rejected `dateStyle`/`timeStyle` combined with `timeZoneName`; Jobs now uses explicit Europe/Berlin date/time fields and the production `/collection` route redirects cleanly for signed-out users.
+- Rotated `CRON_SECRET` across both production Vercel projects after a masked placeholder value caused Tools worker wakes to receive `401 Unauthorized`; redeployed both projects and verified queued job `9c379a5f-d95d-4467-b1c4-3df273b6a9f6` completed with sync run `6b56d44c-cfa1-4f6d-ae65-08be5582fb27`.
+- Added `ASO_COLLECTOR_REFERENCE.md` to document what the public ASO scraper collects, which tables it writes, current limits, and what is explicitly out of scope.
+- Kept App Store Connect private keys only on the root `kopa.studio` project: Tools now proxies owner-approved App Store Connect sync retries to the retained root integration over server-to-server `CRON_SECRET` auth.
+- Improved App Store Connect sales mismatch diagnostics: when Apple returns sales rows for app IDs that do not match tracked Kopa apps, the sync response now includes sample Apple report app IDs/titles and the currently tracked Kopa App Store IDs.
+- Fixed App Store Connect sales import date handling: Summary Sales rows with Apple slash-formatted `End Date` values are normalized before matching/import, and tracked rows with invalid date/country fields now return sample raw values instead of looking like an app-ID mismatch.
+- Started the Discovery & Engagement decision layer in Tools: App Store Connect now separates Discovery report rows from daily download metrics, shows 28-day visibility/page-view/download totals, daily storefront trend, source-type mix, storefront conversion rates, and a non-error "waiting for delivery" state while Apple Ads has no served impressions.
+- Added tested Discovery decision brief rules: Tools now compares the latest half of the storefront window against the previous half and surfaces operator cards for weak impression-to-page-view pull, weak download conversion, strongest discovery source, page-view trend changes, and waiting states when Discovery or download imports are not ready.
+- Added Discovery & Engagement cards to the unified Recommendations feed. The feed now supports ASO, Discovery, and Apple Ads sources, applies the existing app/priority filters to Discovery cards, and keeps Discovery signals advisory while the system is still pre-ad-delivery.
+- Linked Discovery recommendations to the Change Log: app/storefront-specific Discovery cards can open a prefilled investigation draft with the relevant app, market, metric, evidence, and next action while preserving the existing owner-only experiment creation flow.
 - `npm run typecheck`, `npm test`, and `npm run build` pass in `apps/tools`.
 
 ## Remaining production verification
 
 - Add `https://tools.kopa.studio/auth/callback` to Supabase Auth redirect URLs if it is not already present.
 - Complete one signed-in owner-session check on the new domain, including logout and an unauthorized-account check.
-- Data-collection retries and App Store Connect sync controls remain on the retained legacy worker/integration.
+- Verify one signed-in run of each Jobs runbook action against production data after deployment.
 
 ## Commands
 
