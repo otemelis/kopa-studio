@@ -5,10 +5,12 @@ import { QueueCollectionButton } from "@/components/queue-collection-button";
 import { RunAppleAdsStructureSync } from "@/components/run-apple-ads-structure-sync";
 import { StatusBadge } from "@/components/status-badge";
 import { SyncAppleAdsReports } from "@/components/sync-apple-ads-reports";
+import { ExportReviewPack } from "@/components/export-review-pack";
 import { requireUser } from "@/lib/auth";
 import { listAppleAdsConnections } from "@/repositories/apple-ads-repository";
 import { getAppleAdsDataQuality } from "@/repositories/apple-ads-sync-repository";
 import { listRecentCollectionJobs, listRecentRuns } from "@/repositories/overview-repository";
+import { listApps } from "@/repositories/apps-repository";
 import type { ReactNode } from "react";
 
 export const dynamic = "force-dynamic";
@@ -42,7 +44,7 @@ const duration = (start: string, end: string | null) => {
 
 export default async function CollectionPage() {
   const user = await requireUser();
-  const [runs, queuedJobs, appleAds, connections] = await Promise.all([listRecentRuns(), listRecentCollectionJobs(), getAppleAdsDataQuality(user.id), listAppleAdsConnections(user.id)]);
+  const [runs, queuedJobs, appleAds, connections, apps] = await Promise.all([listRecentRuns(), listRecentCollectionJobs(), getAppleAdsDataQuality(user.id), listAppleAdsConnections(user.id), listApps()]);
   const primaryConnection = connections[0] ?? null;
   const activeCollectionJobs = queuedJobs.filter((job) => job.status === "queued" || job.status === "running");
   const jobs = [
@@ -120,6 +122,8 @@ export default async function CollectionPage() {
       <h2>Sync runbook</h2>
       <p>Run source updates from top to bottom when several things look stale. Keyword scraping is the first button; App Store Connect report retries are separate from Apple Ads imports. Times are shown in Central European time, currently Europe/Berlin.</p>
     </section>
+
+    <section className="notice"><h2>Export review pack</h2><p>Owner-only ZIP with a scoped source snapshot, deterministic decision summary, and manifest. No missing values are invented.</p><ExportReviewPack apps={apps.map((app) => ({ id: app.id, name: app.name, primaryCountry: app.primaryCountry }))} /></section>
 
     {activeCollectionJobs.length ? <section className="queue-alert">
       <div><h2>Keyword scrape already in the queue</h2><p>A new keyword scrape cannot be queued until this active job finishes or fails. Use the first runbook button to nudge a queued job.</p></div>

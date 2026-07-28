@@ -2,6 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 export type AppleAdsSearchTermRow = {
   id: string;
+  campaignId: string;
   searchTerm: string;
   campaignName: string;
   adGroupName: string | null;
@@ -14,6 +15,7 @@ export type AppleAdsSearchTermRow = {
   installs: number;
   spend: number;
   currency: string | null;
+  sourceSyncedAt: string | null;
   intentCluster: string | null;
   productFit: string | null;
   suggestedAction: string | null;
@@ -26,7 +28,7 @@ export async function listAppleAdsSearchTerms(ownerUserId: string): Promise<Appl
   const connectionIds = (connections ?? []).map((connection) => connection.id);
   if (!connectionIds.length) return [];
 
-  const { data: rows, error } = await db.from("apple_ads_search_terms").select("id,campaign_id,ad_group_id,keyword_id,search_term,source_keyword_text,match_source,country,metric_date,impressions,taps,installs,spend,currency,intent_cluster,product_fit,suggested_action").in("connection_id", connectionIds).order("metric_date", { ascending: false }).limit(500);
+  const { data: rows, error } = await db.from("apple_ads_search_terms").select("id,campaign_id,ad_group_id,keyword_id,search_term,source_keyword_text,match_source,country,metric_date,impressions,taps,installs,spend,currency,source_synced_at,intent_cluster,product_fit,suggested_action").in("connection_id", connectionIds).order("metric_date", { ascending: false }).limit(500);
   if (error) throw new Error("Could not read Apple Ads search terms.");
   if (!rows?.length) return [];
 
@@ -48,6 +50,7 @@ export async function listAppleAdsSearchTerms(ownerUserId: string): Promise<Appl
 
   return rows.map((row) => ({
     id: row.id,
+    campaignId: row.campaign_id,
     searchTerm: row.search_term,
     campaignName: campaignNames.get(row.campaign_id) ?? "Campaign",
     adGroupName: row.ad_group_id ? adGroupNames.get(row.ad_group_id) ?? "Ad group" : null,
@@ -60,6 +63,7 @@ export async function listAppleAdsSearchTerms(ownerUserId: string): Promise<Appl
     installs: Number(row.installs ?? 0),
     spend: Number(row.spend ?? 0),
     currency: row.currency,
+    sourceSyncedAt: row.source_synced_at ?? null,
     intentCluster: row.intent_cluster,
     productFit: row.product_fit,
     suggestedAction: row.suggested_action,

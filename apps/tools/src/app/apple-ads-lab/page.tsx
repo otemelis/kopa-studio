@@ -16,6 +16,7 @@ import { listAppleAdsAppMappings, listAppleAdsConnections } from "@/repositories
 import { getAppleAdsDataQuality, listAppleAdsSyncRuns } from "@/repositories/apple-ads-sync-repository";
 import { getAppleAdsStructure } from "@/repositories/apple-ads-structure-repository";
 import { listApps } from "@/repositories/apps-repository";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -73,7 +74,7 @@ export default async function AppleAdsLabPage() {
       <p>{latestRun ? `${latestRun.rowsInserted} records on ${formatDate(latestRun.createdAt)}${latestRun.errorMessage ? `: ${latestRun.errorMessage}` : "."}` : "Run campaign, structure, or reporting sync after connecting an organization."}</p>
     </section>
 
-    <div className="section-head"><h2>What was learned</h2><span>{reporting.rows.length ? `${reporting.rows.length} performance rows` : "Pre-delivery evidence only"}</span></div>
+    <div className="section-head"><h2>What was learned</h2><span>{reporting.rows.length ? `${reporting.rows.length} performance rows · ` : "Pre-delivery evidence only · "}<Link href="/apple-ads-lab/reporting">Open reporting</Link></span></div>
     <section className="metric-grid">
       <article className="metric-card"><p>Impressions</p><strong>{formatNumber(reporting.summary.impressions)}</strong><small>Imported campaign-level rows</small></article>
       <article className="metric-card"><p>Taps</p><strong>{formatNumber(reporting.summary.taps)}</strong><small>{formatPercent(summaryRates.tapThroughRate)} tap-through rate</small></article>

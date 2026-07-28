@@ -1,4 +1,11 @@
 export function StatusBadge({ status }: { status: string }) {
-  const tone = ["ok", "completed", "active", "configured"].includes(status) ? "good" : ["failed", "error"].includes(status) ? "bad" : "neutral";
+  const normalized = status.trim().toLowerCase();
+  const tone = ["ok", "completed", "active", "configured", "ready", "enabled", "receiving"].includes(normalized)
+    ? "good"
+    : ["failed", "error", "attention", "blocked", "stale"].includes(normalized)
+      ? "bad"
+      : ["partial", "waiting", "pending", "warning", "incomplete", "not installed"].includes(normalized)
+        ? "warning"
+        : "neutral";
   return <span className={`badge ${tone}`}>{status}</span>;
 }

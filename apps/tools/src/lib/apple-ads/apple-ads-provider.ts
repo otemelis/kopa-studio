@@ -7,9 +7,35 @@ const TOKEN_URL = "https://appleid.apple.com/auth/oauth2/token";
 type TokenPayload = { access_token?: string; expires_in?: number; error?: string; error_description?: string };
 let cachedToken: { value: string; expiresAt: number } | null = null;
 
-function safeMessage(status: number, payload: unknown) {
-  const data = payload as { error?: string; error_description?: string; message?: string } | null;
-  return data?.error_description || data?.message || data?.error || `Apple Ads returned HTTP ${status}.`;
+function errorDetail(value: unknown): string | null {
+  if (typeof value === "string" && value.trim()) return value.trim();
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+
+  const data = value as Record<string, unknown>;
+  const message = [data.error_description, data.message, data.detail, data.description]
+    .find((candidate): candidate is string => typeof candidate === "string" && candidate.trim().length > 0);
+  const code = typeof data.code === "string" || typeof data.code === "number" ? String(data.code) : null;
+  if (message && code) return `${code}: ${message}`;
+  if (message) return message;
+  if (code) return code;
+  return null;
+}
+
+export function safeMessage(status: number, payload: unknown) {
+  if (!payload || typeof payload !== "object") return `Apple Ads returned HTTP ${status}.`;
+  const data = payload as Record<string, unknown>;
+  const direct = errorDetail(data) ?? errorDetail(data.error);
+  if (direct) return direct;
+
+  const nestedError = data.error && typeof data.error === "object" && !Array.isArray(data.error)
+    ? data.error as Record<string, unknown>
+    : null;
+  const errors = [
+    ...(Array.isArray(data.errors) ? data.errors : []),
+    ...(Array.isArray(nestedError?.errors) ? nestedError.errors : []),
+  ];
+  const details = errors.map(errorDetail).filter((detail): detail is string => Boolean(detail));
+  return details.length ? details.join("; ") : `Apple Ads returned HTTP ${status}.`;
 }
 
 function booleanField(value: unknown): boolean | null {
@@ -79,7 +105,7 @@ export class AppleAdsApiV5Provider implements AppleAdsProvider {
   async listAdGroups(organizationId: string, campaignId: string): Promise<AppleAdsAdGroup[]> { const rows = await this.list(organizationId, `/campaigns/${campaignId}/adgroups`); return rows.map((row) => mapAppleAdsAdGroup(row, campaignId)); }
   async listKeywords(organizationId: string, campaignId: string, adGroupId: string): Promise<AppleAdsKeyword[]> { return this.listKeywordLike(organizationId, `/campaigns/${campaignId}/adgroups/${adGroupId}/targetingkeywords`, adGroupId); }
   async listNegativeKeywords(organizationId: string, campaignId: string, adGroupId: string): Promise<AppleAdsKeyword[]> { return this.listKeywordLike(organizationId, `/campaigns/${campaignId}/adgroups/${adGroupId}/negativekeywords`, adGroupId); }
-  async fetchCampaignReport(organizationId:string,campaignId:string,startDate:string,endDate:string):Promise<AppleAdsCampaignReport>{const token=await this.accessToken(),config=getAppleAdsConfiguration();const response=await fetch(`${config.apiBaseUrl}/reports/campaigns`,{method:"POST",headers:{Authorization:`Bearer ${token}`,"X-AP-Context":`orgId=${organizationId}`,"Content-Type":"application/json"},body:JSON.stringify({startTime:startDate,endTime:endDate,granularity:"DAILY",timeZone:"UTC",returnRowTotals:false,returnGrandTotals:false,returnRecordsWithNoMetrics:false,selector:{conditions:[{field:"campaignId",operator:"EQUALS",values:[campaignId]}],pagination:{offset:0,limit:1}}}),cache:"no-store"});const raw=await response.json().catch(()=>null) as Record<string,unknown>|null;if(!response.ok)throw new Error(safeMessage(response.status,raw));return {raw:raw??{}};}
+  async fetchCampaignReport(organizationId:string,campaignId:string,startDate:string,endDate:string):Promise<AppleAdsCampaignReport>{const token=await this.accessToken(),config=getAppleAdsConfiguration();const response=await fetch(`${config.apiBaseUrl}/reports/campaigns`,{method:"POST",headers:{Authorization:`Bearer ${token}`,"X-AP-Context":`orgId=${organizationId}`,"Content-Type":"application/json"},body:JSON.stringify({startTime:startDate,endTime:endDate,granularity:"DAILY",timeZone:"UTC",returnRowTotals:false,returnGrandTotals:false,returnRecordsWithNoMetrics:false,selector:{conditions:[{field:"campaignId",operator:"EQUALS",values:[campaignId]}],orderBy:[{field:"impressions",sortOrder:"DESCENDING"}],pagination:{offset:0,limit:1}}}),cache:"no-store"});const raw=await response.json().catch(()=>null) as Record<string,unknown>|null;if(!response.ok)throw new Error(safeMessage(response.status,raw));return {raw:raw??{}};}
   async fetchSearchTermReport(organizationId:string,campaignId:string,startDate:string,endDate:string):Promise<AppleAdsSearchTermReport>{const token=await this.accessToken(),config=getAppleAdsConfiguration();const response=await fetch(`${config.apiBaseUrl}/reports/campaigns/${campaignId}/searchterms`,{method:"POST",headers:{Authorization:`Bearer ${token}`,"X-AP-Context":`orgId=${organizationId}`,"Content-Type":"application/json"},body:JSON.stringify({startTime:startDate,endTime:endDate,timeZone:"ORTZ",returnRowTotals:true,returnGrandTotals:false,returnRecordsWithNoMetrics:false,selector:{orderBy:[{field:"impressions",sortOrder:"DESCENDING"}],pagination:{offset:0,limit:1000}},groupBy:["countryOrRegion"]}),cache:"no-store"});const raw=await response.json().catch(()=>null) as Record<string,unknown>|null;if(!response.ok)throw new Error(safeMessage(response.status,raw));return {raw:raw??{}};}
   private async listKeywordLike(orgId: string, path: string, adGroupId: string): Promise<AppleAdsKeyword[]> { const rows = await this.list(orgId, path); return rows.map((row) => ({ id: String(row.id), adGroupId: String(row.adGroupId ?? adGroupId), text: String(row.text ?? ""), matchType: typeof row.matchType === "string" ? row.matchType : null, status: typeof row.status === "string" ? row.status : null, servingStatus: typeof row.servingStatus === "string" ? row.servingStatus : null, bidAmount: typeof (row.bidAmount as { amount?: unknown } | null)?.amount === "string" ? (row.bidAmount as { amount: string }).amount : null, currency: typeof (row.bidAmount as { currency?: unknown } | null)?.currency === "string" ? (row.bidAmount as { currency: string }).currency : null, modificationTime: typeof row.modificationTime === "string" ? row.modificationTime : null, deleted: row.deleted === true, rawPayload: row })); }
   private async list(organizationId: string, path: string): Promise<Array<Record<string, unknown>>> { const token = await this.accessToken(); const config = getAppleAdsConfiguration(); const all: Array<Record<string, unknown>> = []; for (let offset = 0; ; offset += 1000) { const response = await fetch(`${config.apiBaseUrl}${path}?limit=1000&offset=${offset}`, { headers: { Authorization: `Bearer ${token}`, "X-AP-Context": `orgId=${organizationId}` }, cache: "no-store" }); const payload = await response.json().catch(() => null) as { data?: Array<Record<string, unknown>>; pagination?: { totalResults?: number } } | null; if (!response.ok) throw new Error(safeMessage(response.status, payload)); const page = payload?.data ?? []; all.push(...page); if (page.length < 1000 || all.length >= (payload?.pagination?.totalResults ?? 0)) return all; } }

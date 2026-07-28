@@ -57,6 +57,11 @@ export type BuiltSearchTermRecommendation = {
   deterministicRationale: string;
 };
 
+export type SearchTermRecommendationAssessment = {
+  recommendation: BuiltSearchTermRecommendation | null;
+  reason: string;
+};
+
 export function estimateSearchTermRelevance(input: Pick<SearchTermRecommendationInput, "term" | "appName" | "campaignName" | "sourceKeywordText" | "taps" | "installs">) {
   let score = 35;
   if (hasSharedToken(input.term, input.sourceKeywordText)) score += 30;
@@ -122,6 +127,34 @@ export function buildSearchTermRecommendation(input: SearchTermRecommendationInp
   return { type: result.type, priority, confidence: result.confidence, financialRisk: result.financialRisk, opportunity: result.opportunity, title, evidenceSummary, deterministicRationale };
 }
 
+export function assessSearchTermRecommendation(input: SearchTermRecommendationInput): SearchTermRecommendationAssessment {
+  if (input.isControlledExact) return { recommendation: null, reason: "Already covered by an imported exact keyword." };
+  if (input.isNegative) return { recommendation: null, reason: "Already covered by an imported exact negative." };
+  if (!input.fresh) return { recommendation: null, reason: "Search-term evidence is older than 48 hours." };
+
+  const recommendation = buildSearchTermRecommendation(input);
+  if (recommendation) return { recommendation, reason: recommendation.type === "ADD_EXACT_KEYWORD" ? "Eligible for an exact-keyword recommendation." : "Eligible for an exact-negative recommendation." };
+
+  const result = buildKeywordRecommendation({
+    term: input.term,
+    relevance: estimateSearchTermRelevance(input),
+    demand: Math.min(100, Math.round(Math.log1p(input.impressions) * 18)),
+    organicGap: 50,
+    impressions: input.impressions,
+    taps: input.taps,
+    installs: input.installs,
+    spend: input.spend,
+    learningCap: LEARNING_CAP,
+    fresh: input.fresh,
+    partialSync: input.partialSync,
+    isControlledExact: input.isControlledExact,
+    isNegative: input.isNegative,
+  });
+  if (result.type === "INSUFFICIENT_EVIDENCE") return { recommendation: null, reason: "Not enough recent delivery evidence yet." };
+  if (result.type === "KEEP_LEARNING") return { recommendation: null, reason: "Evidence is present, but the rule is still learning." };
+  return { recommendation: null, reason: `${result.type.replace(/_/g, " ").toLowerCase()} is not enabled as a Kopa recommendation yet.` };
+}
+
 export async function generateSearchTermRecommendations(input: { connectionId: string; campaignRowId: string }) {
   const db = createAdminClient();
   const { data: campaign, error: campaignError } = await db.from("apple_ads_campaigns").select("id,app_id,name").eq("id", input.campaignRowId).maybeSingle();
@@ -158,7 +191,7 @@ export async function generateSearchTermRecommendations(input: { connectionId: s
   let generated = 0;
   for (const aggregate of grouped.values()) {
     const normalizedTerm = normalize(aggregate.term);
-    const built = buildSearchTermRecommendation({
+    const assessment = assessSearchTermRecommendation({
       term: aggregate.term,
       appName,
       campaignName: campaign.name,
@@ -172,6 +205,7 @@ export async function generateSearchTermRecommendations(input: { connectionId: s
       isControlledExact: exactKeywords.has(normalizedTerm),
       isNegative: exactNegatives.has(normalizedTerm),
     });
+    const built = assessment.recommendation;
     if (!built) continue;
     const { data: snapshot, error: snapshotError } = await db.from("apple_ads_decision_snapshots").insert({
       connection_id: input.connectionId,
