@@ -133,7 +133,7 @@ export default async function AppleAdsStructurePage() {
                 </article>
                 <article>
                   <h3>Recommendations</h3>
-                  <div className="quality-list">{campaignRecommendations.length ? campaignRecommendations.map((recommendation) => <div className="quality-card" key={recommendation.id}><div><h2>{recommendation.title}</h2><p>{recommendation.evidence}</p></div><span className="badge neutral">{recommendation.priority}</span></div>) : <div className="quality-card"><div><h2>No linked recommendations</h2><p>No active Apple Ads recommendation is currently linked to this campaign app.</p></div><span className="badge neutral">None</span></div>}</div>
+                  <div className="quality-list">{campaignRecommendations.length ? campaignRecommendations.map((recommendation) => <div className="quality-card" key={recommendation.id}><div><h2>{recommendation.title}</h2><p>{recommendation.observation}</p></div><span className="badge neutral">{recommendation.priority}</span></div>) : <div className="quality-card"><div><h2>No linked recommendations</h2><p>No active Apple Ads recommendation is currently linked to this campaign app.</p></div><span className="badge neutral">None</span></div>}</div>
                 </article>
               </section>
             </div>

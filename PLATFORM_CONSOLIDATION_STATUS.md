@@ -1,5 +1,7 @@
 # Platform consolidation status
 
+> **Superseded. Do not use as the active implementation sequence.** See [`KOPA_CURRENT_STATE.md`](KOPA_CURRENT_STATE.md) and [`KOPA_ACTIVE_ROADMAP.md`](KOPA_ACTIVE_ROADMAP.md).
+
 ## Current phase
 
 Phase 6 final cleanup and handoff.

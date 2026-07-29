@@ -1,5 +1,7 @@
 # Platform information architecture
 
+> **Historical consolidation target.** The active product navigation direction is defined in [`KOPA_ACTIVE_ROADMAP.md`](KOPA_ACTIVE_ROADMAP.md).
+
 ## Target model
 
 Kopa Tools is organized around six primary workspaces:

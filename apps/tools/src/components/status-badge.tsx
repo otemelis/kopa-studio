@@ -1,6 +1,6 @@
 export function StatusBadge({ status }: { status: string }) {
   const normalized = status.trim().toLowerCase();
-  const tone = ["ok", "completed", "active", "configured", "ready", "enabled", "receiving"].includes(normalized)
+  const tone = ["ok", "success", "completed", "active", "configured", "ready", "enabled", "receiving"].includes(normalized)
     ? "good"
     : ["failed", "error", "attention", "blocked", "stale"].includes(normalized)
       ? "bad"

@@ -1,5 +1,7 @@
 # Apple Ads Lab status
 
+> **Historical milestone status.** The authoritative handover is [`KOPA_CURRENT_STATE.md`](KOPA_CURRENT_STATE.md); attribution is deferred and the active sequence is in [`KOPA_ACTIVE_ROADMAP.md`](KOPA_ACTIVE_ROADMAP.md).
+
 ## Current milestone
 
 Milestone 13 search-term recommendation evidence is ready. The Lab now imports Apple Ads search-term reports, stores real query-level delivery evidence, and refreshes read-only recommendation records from that evidence after report sync.

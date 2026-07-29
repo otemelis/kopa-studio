@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireOwner } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { generateSearchTermRecommendations } from "@/services/apple-ads-recommendation-service";
+import { generateAppleAdsEvidenceAssessment } from "@/services/apple-ads-evidence-assessment-service";
 import { syncCampaignReport, syncSearchTermReport } from "@/services/apple-ads-report-sync-service";
 
 export const maxDuration = 300;
@@ -29,9 +29,10 @@ export async function POST() {
 
   for (const campaign of campaigns) {
     const input = { connectionId: connection.id, organizationId: connection.apple_ads_org_id, campaignId: campaign.apple_campaign_id, campaignRowId: campaign.id, startDate: date(start), endDate: date(end) };
-    try { rows += (await syncCampaignReport(input)).rows; } catch (cause) { failures.push(`${campaign.name ?? campaign.apple_campaign_id}: campaign report - ${messageOf(cause)}`); continue; }
-    try { searchTerms += (await syncSearchTermReport(input)).rows; } catch (cause) { failures.push(`${campaign.name ?? campaign.apple_campaign_id}: search terms - ${messageOf(cause)}`); }
-    try { recommendations += (await generateSearchTermRecommendations({ connectionId: connection.id, campaignRowId: campaign.id })).generated; } catch (cause) { failures.push(`${campaign.name ?? campaign.apple_campaign_id}: recommendations - ${messageOf(cause)}`); }
+    let complete = true;
+    try { rows += (await syncCampaignReport(input)).rows; } catch (cause) { complete = false; failures.push(`${campaign.name ?? campaign.apple_campaign_id}: campaign report - ${messageOf(cause)}`); }
+    try { searchTerms += (await syncSearchTermReport(input)).rows; } catch (cause) { complete = false; failures.push(`${campaign.name ?? campaign.apple_campaign_id}: search terms - ${messageOf(cause)}`); }
+    try { recommendations += (await generateAppleAdsEvidenceAssessment({ connectionId: connection.id, campaignRowId: campaign.id, completeness: complete ? "complete" : "partial" })).activeRecommendations; } catch (cause) { failures.push(`${campaign.name ?? campaign.apple_campaign_id}: evidence assessment - ${messageOf(cause)}`); }
   }
 
   const status = failures.length ? "partial" : "completed";

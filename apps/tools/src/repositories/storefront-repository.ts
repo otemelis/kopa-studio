@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { assessStorefrontLocalization } from "@/lib/storefront-readiness";
 import type { StorefrontRow } from "@/types/domain";
 
 type MarketRecord = {
@@ -12,59 +13,25 @@ type MarketRecord = {
   notes: string | null;
 };
 
-const countryLanguages: Record<string, string[]> = {
-  de: ["de"],
-  fr: ["fr"],
-  gb: ["en"],
-  jp: ["ja"],
-  us: ["en"],
-};
-
 const normalizeCountry = (value: string | null | undefined) => (value ?? "").trim().toLowerCase();
 const keyFor = (appId: string, country: string) => `${appId}:${normalizeCountry(country)}`;
 
-function noteState(notes: string | null, phrases: string[]): "localized" | "english" | "unknown" {
-  const text = (notes ?? "").toLowerCase();
-  if (!text) return "unknown";
-  if (phrases.some((phrase) => text.includes(`${phrase} localized`) || text.includes(`${phrase} localised`))) return "localized";
-  if (phrases.some((phrase) => text.includes(`${phrase} english`) || text.includes(`${phrase} remains english`))) return "english";
-  return "unknown";
-}
-
-function appLanguageState(country: string, languages: string[] | null): "localized" | "english" | "unknown" {
-  if (!languages?.length) return "unknown";
-  const normalized = new Set(languages.map((language) => language.toLowerCase()));
-  const expected = countryLanguages[normalizeCountry(country)];
-  if (expected?.some((language) => normalized.has(language))) return "localized";
-  if (normalized.has("en")) return "english";
-  return "unknown";
-}
-
-function readiness(row: { metadataLocalised: boolean; screenshotsLocalised: boolean; screenshotUiState: string; appLanguageState: string; keywordsTracked: number; hasAscData: boolean; appleAdsActive: boolean }) {
-  if (row.metadataLocalised && row.screenshotsLocalised && row.screenshotUiState === "localized" && row.appLanguageState === "localized") return "Fully localized";
-  if (row.metadataLocalised && row.screenshotsLocalised && (row.screenshotUiState === "english" || row.appLanguageState === "english")) return "Needs review";
-  if (row.metadataLocalised && row.screenshotsLocalised) return "Headlines localized";
-  if (row.metadataLocalised) return "Metadata localized";
-  if (row.keywordsTracked) return "Tracking only";
-  if (row.appleAdsActive) return "Apple Ads active";
-  if (row.hasAscData) return "ASC data only";
-  return "Not optimized";
-}
-
 export async function listStorefronts(appId?: string): Promise<StorefrontRow[]> {
   const db = createAdminClient();
-  const [{ data: apps, error: appsError }, { data: storefronts, error: storefrontError }, { data: appKeywords, error: appKeywordError }, { data: metrics, error: metricsError }, { data: campaigns, error: campaignError }] = await Promise.all([
+  const [{ data: apps, error: appsError }, { data: storefronts, error: storefrontError }, { data: appKeywords, error: appKeywordError }, { data: metrics, error: metricsError }, { data: campaigns, error: campaignError }, { data: metadataSnapshots, error: metadataSnapshotError }] = await Promise.all([
     appId ? db.from("aso_apps").select("id,name,primary_country,languages").eq("id", appId) : db.from("aso_apps").select("id,name,primary_country,languages").order("name").limit(100),
     appId ? db.from("aso_app_storefronts").select("id,app_id,country,is_primary,metadata_localised,screenshots_localised,notes").eq("app_id", appId).order("country").limit(200) : db.from("aso_app_storefronts").select("id,app_id,country,is_primary,metadata_localised,screenshots_localised,notes").order("country").limit(200),
     appId ? db.from("aso_app_keywords").select("app_id,keyword_id").eq("app_id", appId).limit(5000) : db.from("aso_app_keywords").select("app_id,keyword_id").limit(5000),
     appId ? db.from("aso_storefront_metrics").select("app_id,country").eq("app_id", appId).limit(5000) : db.from("aso_storefront_metrics").select("app_id,country").limit(5000),
     appId ? db.from("apple_ads_campaigns").select("app_id,countries_or_regions,status,serving_status").eq("app_id", appId).eq("is_deleted", false).limit(1000) : db.from("apple_ads_campaigns").select("app_id,countries_or_regions,status,serving_status").eq("is_deleted", false).limit(1000),
+    appId ? db.from("aso_metadata_snapshots").select("app_id,country,captured_at,name,description,screenshot_urls,source").eq("app_id", appId).order("captured_at", { ascending: false }).limit(1000) : db.from("aso_metadata_snapshots").select("app_id,country,captured_at,name,description,screenshot_urls,source").order("captured_at", { ascending: false }).limit(5000),
   ]);
   if (appsError) throw new Error("Could not resolve storefront apps.");
   if (storefrontError) throw new Error("Could not read storefront coverage.");
   if (appKeywordError) throw new Error("Could not read tracked keyword markets.");
   if (metricsError) throw new Error("Could not read storefront analytics coverage.");
   if (campaignError) throw new Error("Could not read Apple Ads market coverage.");
+  if (metadataSnapshotError) throw new Error("Could not read storefront metadata evidence.");
 
   const appRows = apps ?? [];
   const appIds = appRows.map((app) => app.id);
@@ -93,6 +60,12 @@ export async function listStorefronts(appId?: string): Promise<StorefrontRow[]> 
     const active = /enabled|active|running/i.test(`${campaign.status ?? ""} ${campaign.serving_status ?? ""}`);
     if (!active) continue;
     for (const country of campaign.countries_or_regions) if (typeof country === "string") hasAppleAds.add(keyFor(campaign.app_id, country));
+  }
+
+  const latestMetadataSnapshot = new Map<string, (typeof metadataSnapshots)[number]>();
+  for (const snapshot of metadataSnapshots ?? []) {
+    const key = keyFor(snapshot.app_id, snapshot.country);
+    if (!latestMetadataSnapshot.has(key)) latestMetadataSnapshot.set(key, snapshot);
   }
 
   const markets = new Map<string, MarketRecord>();
@@ -134,18 +107,35 @@ export async function listStorefronts(appId?: string): Promise<StorefrontRow[]> 
   return [...markets.values()].sort((a, b) => a.appName.localeCompare(b.appName) || a.country.localeCompare(b.country)).map((market) => {
     const app = appById.get(market.appId);
     const languages = Array.isArray(app?.languages) ? app.languages.filter((language): language is string => typeof language === "string") : null;
-    const screenshotUiState = noteState(market.notes, ["screenshot ui", "in-screenshot ui", "ui"]);
-    const languageState = noteState(market.notes, ["app content", "app language"]);
-    const appContentState = languageState === "unknown" ? appLanguageState(market.country, languages) : languageState;
     const key = keyFor(market.appId, market.country);
+    const snapshot = latestMetadataSnapshot.get(key);
+    const localization = assessStorefrontLocalization({
+      country: market.country,
+      appWideLanguages: languages,
+      legacyMetadataLocalised: market.metadataLocalised,
+      legacyScreenshotsLocalised: market.screenshotsLocalised,
+      legacyNotes: market.notes,
+      metadataSnapshot: snapshot ? {
+        country: snapshot.country,
+        capturedAt: snapshot.captured_at,
+        name: snapshot.name,
+        description: snapshot.description,
+        screenshotUrls: snapshot.screenshot_urls,
+        source: snapshot.source,
+      } : null,
+    });
     const result = {
-      ...market,
-      screenshotUiState,
-      appLanguageState: appContentState,
+      id: market.id,
+      appId: market.appId,
+      appName: market.appName,
+      country: market.country,
+      isPrimary: market.isPrimary,
+      notes: market.notes,
+      ...localization,
       keywordsTracked: keywordCounts.get(key) ?? 0,
       hasAscData: hasAscData.has(key),
       appleAdsActive: hasAppleAds.has(key),
     };
-    return { ...result, readiness: readiness(result) };
+    return result;
   });
 }

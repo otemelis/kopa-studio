@@ -1,5 +1,7 @@
 # Apple Ads Keyword Lab audit
 
+> **Historical audit and phased plan.** Do not use its milestone order as the active sequence. See [`KOPA_CURRENT_STATE.md`](KOPA_CURRENT_STATE.md) and [`KOPA_ACTIVE_ROADMAP.md`](KOPA_ACTIVE_ROADMAP.md).
+
 Status: Milestone 0 complete on 2026-07-21. No Apple Ads account credentials have been supplied, no schema migration has been applied, and no Apple campaign has been read or changed.
 
 ## Existing platform to reuse

@@ -712,7 +712,8 @@ const RULE_FNS = [
   ruleKeywordDeclinedAfterRemoval,
   ruleKeywordOpportunity,
   ruleMetadataMismatch,
-  ruleStorefrontUnderperformance,
+  // Disabled until storefront-specific localization evidence has a verified
+  // source and observation time. Legacy booleans cannot support this diagnosis.
   ruleRatingDeterioration,
   ruleReviewTopicSurge,
   ruleExperimentReady,

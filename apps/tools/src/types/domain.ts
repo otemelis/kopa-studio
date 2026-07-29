@@ -68,7 +68,9 @@ export interface KeywordRow {
 
 export interface InsightRow {
   id: string;
+  appId: string | null;
   appName: string | null;
+  country: string | null;
   title: string;
   observation: string;
   recommendation: string;
@@ -104,14 +106,13 @@ export interface StorefrontRow {
   appName: string;
   country: string;
   isPrimary: boolean;
-  metadataLocalised: boolean;
-  screenshotsLocalised: boolean;
-  screenshotUiState: "localized" | "english" | "unknown";
-  appLanguageState: "localized" | "english" | "unknown";
+  metadataEvidence: import("@/lib/storefront-readiness").LocalizationEvidence;
+  screenshotEvidence: import("@/lib/storefront-readiness").LocalizationEvidence;
+  appLanguageEvidence: import("@/lib/storefront-readiness").LocalizationEvidence;
   keywordsTracked: number;
   hasAscData: boolean;
   appleAdsActive: boolean;
-  readiness: string;
+  readiness: import("@/lib/storefront-readiness").StorefrontLocalizationAssessment["readiness"];
   notes: string | null;
 }
 
@@ -121,7 +122,22 @@ export interface AppStoreConnectStatus {
   lastTestOk: boolean | null;
   lastTestMessage: string | null;
   lastSyncAt: string | null;
-  reportRequests: Array<{ appName: string; status: string; lastCheckedAt: string | null; lastError: string | null }>;
+  reportRequests: Array<{
+    appName: string;
+    status: string;
+    lastCheckedAt: string | null;
+    lastError: string | null;
+    lastResultState: "success" | "zero" | "partial" | "error" | null;
+    lastResultDetail: string | null;
+    parserVersion: string | null;
+    segmentCount: number | null;
+    sourceRowCount: number | null;
+    importedRowCount: number | null;
+    rejectedRowCount: number | null;
+    reportHeaders: string[];
+    evidenceStart: string | null;
+    evidenceEnd: string | null;
+  }>;
 }
 
 export type ExperimentStatus = "planned" | "running" | "monitoring" | "won" | "lost" | "inconclusive" | "reverted";

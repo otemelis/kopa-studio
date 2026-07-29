@@ -29,7 +29,6 @@ const workspaces = [
       ["Reporting", "/apple-ads-lab/reporting"],
       ["Keywords & Search Terms", "/apple-ads-lab/keyword-intelligence"],
       ["Planner", "/apple-ads-lab/research-planner"],
-      ["Attribution", "/apple-ads-lab/attribution"],
     ],
   },
   {

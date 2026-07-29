@@ -26,6 +26,7 @@ const number = new Intl.NumberFormat("en-US");
 const percent = (value: number | null) => value === null ? "-" : `${(value * 100).toFixed(1)}%`;
 const compactDate = (value: string) => new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(`${value}T00:00:00Z`));
 const signedPercent = (value: number | null) => value === null ? "-" : `${value > 0 ? "+" : ""}${(value * 100).toFixed(1)}%`;
+const evidenceWindow = (start: string | null, end: string | null) => start && end ? `${compactDate(start)}–${compactDate(end)}` : "-";
 
 export default async function AppStoreConnectPage() {
   const user = await requireUser();
@@ -39,7 +40,10 @@ export default async function AppStoreConnectPage() {
   const attributionReady = attribution.endpointConfigured && attribution.secretConfigured && attribution.mappedAppCount > 0;
   const latestPublicRun = recentRuns[0] ?? null;
   const failedPublicRun = recentRuns.find((run) => run.status === "failed" || run.status === "partial");
-  const failedAscRequest = connection.reportRequests.find((request) => request.lastError || /failed|error/i.test(request.status));
+  const failedAscRequest = connection.reportRequests.find((request) => request.lastError || request.lastResultState === "error" || /failed|error/i.test(request.status));
+  const partialAscRequest = connection.reportRequests.find((request) => request.lastResultState === "partial");
+  const zeroAscRequest = connection.reportRequests.find((request) => request.lastResultState === "zero");
+  const latestAscRequest = connection.reportRequests[0] ?? null;
   const appleAdsAttention = appleAds.checks.some((check) => check.status === "attention");
   const appleAdsWaiting = appleAds.checks.some((check) => check.status === "waiting");
   const failedAppleAdsRun = appleAds.runs.find((run) => run.status === "failed" || run.status === "partial");
@@ -60,7 +64,7 @@ export default async function AppStoreConnectPage() {
     },
     {
       name: "App Store Connect",
-      status: connection.status === "error" || failedAscRequest ? "error" : connection.status === "configured" ? "configured" : "waiting",
+      status: connection.status === "error" || failedAscRequest ? "error" : partialAscRequest ? "waiting" : connection.status === "configured" && !zeroAscRequest ? "configured" : "waiting",
       configuration: connection.status === "configured" ? "Connection configured" : "Connection incomplete",
       freshness: latestDiscoveryDate ? `Discovery through ${compactDate(latestDiscoveryDate)}` : connection.lastSyncAt ? date(connection.lastSyncAt) : "Waiting for sync",
       lastFailure: failedAscRequest?.lastError ?? connection.lastTestMessage ?? "-",
@@ -127,6 +131,17 @@ export default async function AppStoreConnectPage() {
       <p>{connection.lastTestMessage ?? "Connection details will appear after the existing integration is tested."} Credentials and private keys remain server-side only.</p>
     </section>
 
+    <div className="section-head"><h2>Discovery evidence quality</h2><span>Parser provenance and latest import outcome</span></div>
+    <section className="metric-grid">
+      <article className="metric-card"><p>Import result</p><strong>{latestAscRequest?.lastResultState ?? "Not recorded"}</strong><small>{latestAscRequest?.lastResultDetail ?? "Run the Discovery import once to record an explicit result."}</small></article>
+      <article className="metric-card"><p>Parser version</p><strong>{latestAscRequest?.parserVersion ?? "Unknown"}</strong><small>{latestAscRequest?.reportHeaders.length ? `${latestAscRequest.reportHeaders.length} source columns verified` : "Source columns not recorded yet"}</small></article>
+      <article className="metric-card"><p>Rows</p><strong>{latestAscRequest?.importedRowCount ?? "-"}</strong><small>{latestAscRequest ? `${latestAscRequest.sourceRowCount ?? 0} source · ${latestAscRequest.rejectedRowCount ?? 0} rejected` : "No import result"}</small></article>
+      <article className="metric-card"><p>Evidence window</p><strong>{latestAscRequest ? evidenceWindow(latestAscRequest.evidenceStart, latestAscRequest.evidenceEnd) : "-"}</strong><small>{latestAscRequest?.segmentCount ?? 0} Apple segment(s)</small></article>
+    </section>
+    {latestAscRequest?.lastResultState === "partial" ? <section className="notice"><h2>Partial Discovery evidence</h2><p>Valid rows were imported, but invalid source rows were excluded. Treat trends and recommendations as incomplete until the next clean import.</p></section> : null}
+    {latestAscRequest?.lastResultState === "zero" ? <section className="notice"><h2>Valid report, no evidence rows</h2><p>Apple returned a readable report with no data rows. Zero evidence is not the same as zero impressions or failed conversion.</p></section> : null}
+    {latestAscRequest?.lastResultState === "error" ? <section className="notice"><h2>Discovery report could not be parsed</h2><p>{latestAscRequest.lastError ?? latestAscRequest.lastResultDetail ?? "The report format or download failed. Existing facts remain historical and should not be treated as a fresh successful import."}</p></section> : null}
+
     <div className="section-head"><h2>Discovery &amp; Engagement overview</h2><span>{metrics.days} days · organic visibility and conversion layer</span></div>
     <section className="metric-grid">
       <article className="metric-card"><p>Impressions</p><strong>{number.format(metrics.totals.impressions)}</strong><small>{metrics.hasDiscoveryRows ? "App Store discovery exposure" : "Waiting for Discovery report rows"}</small></article>
@@ -164,8 +179,8 @@ export default async function AppStoreConnectPage() {
 
     <div className="section-head"><h2>Discovery &amp; Engagement requests</h2><span>Existing App Store Connect records</span></div>
     <div className="table-wrap"><table>
-      <thead><tr><th>App</th><th>Status</th><th>Last checked</th><th>Last error</th></tr></thead>
-      <tbody>{connection.reportRequests.length ? connection.reportRequests.map((request, index) => <tr key={`${request.appName}:${index}`}><td>{request.appName}</td><td><StatusBadge status={request.status} /></td><td>{date(request.lastCheckedAt)}</td><td>{request.lastError ?? "-"}</td></tr>) : <tr><td colSpan={4}>No report requests recorded.</td></tr>}</tbody>
+      <thead><tr><th>App</th><th>Request</th><th>Result</th><th>Parser</th><th>Evidence</th><th>Rows</th><th>Last checked</th><th>Detail</th></tr></thead>
+      <tbody>{connection.reportRequests.length ? connection.reportRequests.map((request, index) => <tr key={`${request.appName}:${index}`}><td>{request.appName}</td><td><StatusBadge status={request.status} /></td><td><StatusBadge status={request.lastResultState ?? "not recorded"} /></td><td>{request.parserVersion ?? "-"}</td><td>{evidenceWindow(request.evidenceStart, request.evidenceEnd)}</td><td>{request.importedRowCount ?? "-"} / {request.sourceRowCount ?? "-"}</td><td>{date(request.lastCheckedAt)}</td><td>{request.lastError ?? request.lastResultDetail ?? "-"}</td></tr>) : <tr><td colSpan={8}>No report requests recorded.</td></tr>}</tbody>
     </table></div>
 
     <div className="section-head"><h2>Storefront activity</h2><span>Last 28 days · discovery reports</span></div>

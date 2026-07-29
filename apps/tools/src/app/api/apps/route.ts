@@ -25,6 +25,6 @@ export async function POST(request: Request) {
   const db = createAdminClient(); const now = new Date().toISOString();
   const { data, error } = await db.from("aso_apps").upsert({ platform: "ios", store_app_id: app.storeAppId, bundle_id: app.bundleId, name: app.name, developer: app.developer, description: app.description, icon_url: app.iconUrl, category: app.category, primary_country: parsed.data.country, current_version: app.currentVersion, release_notes: app.releaseNotes, rating: app.rating, rating_count: app.ratingCount, price: app.price, currency: app.currency, store_url: app.storeUrl, languages: app.languages, screenshot_urls: app.screenshotUrls, last_store_update_at: app.lastStoreUpdateAt, source: "public_store", updated_at: now }, { onConflict: "platform,store_app_id" }).select("id,name").single();
   if (error) return NextResponse.json({ error: "Could not save the app." }, { status: 500 });
-  await db.from("aso_app_storefronts").upsert({ app_id: data.id, country: parsed.data.country, is_primary: true, metadata_localised: true, screenshots_localised: true }, { onConflict: "app_id,country" });
+  await db.from("aso_app_storefronts").upsert({ app_id: data.id, country: parsed.data.country, is_primary: true, metadata_localised: false, screenshots_localised: false }, { onConflict: "app_id,country" });
   return NextResponse.json({ data }, { status: 201 });
 }

@@ -1,5 +1,7 @@
 # ASO migration plan
 
+> **Superseded. Do not use as the active implementation sequence.** See [`KOPA_CURRENT_STATE.md`](KOPA_CURRENT_STATE.md) and [`KOPA_ACTIVE_ROADMAP.md`](KOPA_ACTIVE_ROADMAP.md).
+
 1. **Discovery and audit — complete.** Document existing architecture and preserve it.
 2. **Foundation — complete.** The independent `apps/tools` Next.js application has App Router, TypeScript, Tailwind, cookie-based Supabase Auth, server authorization, repositories, services, validation, tests, and a protected shell.
 3. **Read-only parity — in progress.** App list/detail, keyword strategy/latest ranks, ranking history, competitor catalogue/contested terms, localization coverage, App Store Connect status/metrics, active insights, and collection history have server-rendered read-only views. Compare them with the legacy console before enabling writes.

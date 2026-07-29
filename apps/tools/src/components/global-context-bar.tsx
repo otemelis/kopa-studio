@@ -17,7 +17,7 @@ export function GlobalContextBar({ apps, dataFreshness }: { apps: ContextApp[]; 
   const selectedApp = searchParams.get("app") ?? "";
   const selectedCountry = searchParams.get("country") ?? "";
   const selectedPeriod = searchParams.get("period") ?? "28d";
-  const markets = [...new Set(apps.map((app) => app.primaryCountry).filter(Boolean))].sort();
+  const markets = [...new Set([...apps.map((app) => app.primaryCountry), selectedCountry].filter(Boolean))].sort();
 
   function updateContext(key: string, value: string) {
     const next = new URLSearchParams(searchParams);

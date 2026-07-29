@@ -30,7 +30,7 @@ function addSource(map: Map<string, StorefrontSourceMetric>, sourceType: string,
   map.set(key, existing);
 }
 
-export async function listStorefrontMetricSummaries(days = 28, appId?: string) {
+export async function listStorefrontMetricSummaries(days = 28, appId?: string, country?: string) {
   const since = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
   const db = createAdminClient();
   let storefrontQuery = db.from("aso_storefront_metrics").select("app_id,country,date,event,page_type,source_type,count").gte("date", since).order("date", { ascending: false }).limit(5000);
@@ -38,6 +38,10 @@ export async function listStorefrontMetricSummaries(days = 28, appId?: string) {
   if (appId) {
     storefrontQuery = storefrontQuery.eq("app_id", appId);
     dailyQuery = dailyQuery.eq("app_id", appId);
+  }
+  if (country && country.toLowerCase() !== "all") {
+    storefrontQuery = storefrontQuery.eq("country", country.toLowerCase());
+    dailyQuery = dailyQuery.eq("country", country.toLowerCase());
   }
   const [{ data, error }, { data: dailyData, error: dailyError }] = await Promise.all([
     storefrontQuery,

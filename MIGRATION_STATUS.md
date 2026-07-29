@@ -1,5 +1,7 @@
 # ASO migration status
 
+> **Historical status.** The authoritative handover is [`KOPA_CURRENT_STATE.md`](KOPA_CURRENT_STATE.md).
+
 Last updated: 2026-07-21
 
 ## Current phase

@@ -75,7 +75,14 @@ export default async function handler(request, response) {
     try {
       const apps = await db.select("aso_apps", "platform=eq.ios&appstore_connect_id=not.is.null&select=id,name,appstore_connect_id");
       const result = await syncDiscoveryAnalytics(db, apps);
-      response.status(200).json({ ok: true, message: result.segments ? `Imported ${result.dailyRows} country-day storefront metric row(s) from ${result.segments} Apple report segment(s).` : "Apple has not generated a Discovery and Engagement report yet. The first ongoing report can take 1-2 days.", ...result });
+      const message = result.state === "partial"
+        ? `Partially imported ${result.rawRows} storefront metric row(s) from ${result.segments} Apple report segment(s); ${result.rejectedRows} invalid source row(s) were excluded.`
+        : result.state === "success"
+          ? `Imported ${result.dailyRows} country-day storefront metric row(s) from ${result.segments} Apple report segment(s).`
+          : result.segments
+            ? "Apple generated a valid Discovery and Engagement report with zero data rows."
+            : "Apple has not generated a Discovery and Engagement report yet. The first ongoing report can take 1-2 days.";
+      response.status(200).json({ ok: true, message, ...result });
     } catch (error) {
       response.status(502).json({ error: error instanceof Error ? error.message : "Storefront analytics sync failed." });
     }
