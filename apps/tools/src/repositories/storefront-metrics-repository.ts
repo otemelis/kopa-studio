@@ -1,4 +1,5 @@
-import { compareStorefrontWindows, discoveryOpportunities, isImpressionEvent, isPageViewEvent, summarizeStorefrontMetrics, type StorefrontDailyMetric, type StorefrontSourceMetric } from "@/lib/metrics";
+import { compareStorefrontWindows, discoveryOpportunities, isImpressionEvent, isPageViewEvent, summarizeStorefrontMetrics, type StorefrontDailyMetric, type StorefrontSourceMetric } from "../lib/metrics";
+import { discoveryQueryStart, normalizeDiscoveryDays } from "../lib/discovery-period";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type StorefrontMetricRow = { app_id: string; country: string; date: string; event: string; page_type: string | null; source_type: string | null; count: number | null };
@@ -30,8 +31,9 @@ function addSource(map: Map<string, StorefrontSourceMetric>, sourceType: string,
   map.set(key, existing);
 }
 
-export async function listStorefrontMetricSummaries(days = 28, appId?: string, country?: string) {
-  const since = new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
+export async function listStorefrontMetricSummaries(days = 28, appId?: string, country?: string, now = new Date()) {
+  const selectedDays = normalizeDiscoveryDays(days);
+  const since = discoveryQueryStart(selectedDays, now);
   const db = createAdminClient();
   let storefrontQuery = db.from("aso_storefront_metrics").select("app_id,country,date,event,page_type,source_type,count").gte("date", since).order("date", { ascending: false }).limit(5000);
   let dailyQuery = db.from("aso_daily_metrics").select("app_id,country,date,impressions,page_views,downloads,source").gte("date", since).order("date", { ascending: false }).limit(5000);
@@ -100,9 +102,14 @@ export async function listStorefrontMetricSummaries(days = 28, appId?: string, c
   const hasDiscoveryRows = rawRows.length > 0;
   const hasDailyRows = dailyRows.length > 0;
   const trend = compareStorefrontWindows(orderedDaily);
+  const evidenceDates = [...new Set([...rawRows.map((row) => row.date), ...dailyRows.map((row) => row.date)])].sort();
 
   return {
-    days,
+    days: selectedDays,
+    evidenceWindow: {
+      start: evidenceDates[0] ?? null,
+      end: evidenceDates.at(-1) ?? null,
+    },
     countries,
     totals: {
       ...totals,

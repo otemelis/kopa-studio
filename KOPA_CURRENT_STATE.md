@@ -2217,3 +2217,160 @@ Vertical slice: resolved-condition lifecycle for `competitor_wins_high_priority_
 #### Next exact task
 
 Make the Discovery assessment honor the selected 7-day, 28-day, or 90-day period end to end: use that period for evidence queries and comparisons, display the same evidence window in the stored/read model, preserve app-and-market scope, and prove period isolation with regression tests.
+
+### Checkpoint 31 — Period-aware Discovery assessment implementation
+
+Status: locally complete and verified on 2026-07-31.
+
+#### Current milestone
+
+Milestone 1 — Trust and Data Correctness
+Vertical slice: Discovery evidence-period integrity
+
+#### Completed
+
+- Added one validated Discovery period contract for `7d`, `28d`, and `90d`, with invalid or missing values defaulting to `28d`.
+- Changed storefront evidence queries to use the selected inclusive calendar window instead of a fixed 28-day query.
+- Kept exact app and normalized market filters on both storefront-event and daily-metric queries.
+- Added actual available evidence start and end dates to the Discovery read model.
+- Updated Recommendation Discovery cards to identify both the selected period and actual evidence dates.
+- Included the selected period in dynamic Discovery card identity so different evidence windows cannot be confused in the view.
+- Updated the App Store Connect Discovery overview and decision brief to honor the same global app, market, and period context.
+- Normalized invalid period values in the global context control and preserved the validated period through recommendation filters.
+
+#### Verified
+
+- Kopa Tools tests: 23 files and 79/79 tests pass.
+- Kopa Tools typecheck passes.
+- `7d`, `28d`, and `90d` resolve to distinct inclusive query boundaries.
+- Missing and invalid periods resolve to `28d`.
+- A fixture with recent and older evidence produces different 7-day and 90-day totals.
+- Both source tables receive the exact selected app and normalized country filters.
+- Evidence labels state the selected period separately from the actual available source dates.
+- Existing app-and-market recommendation-scope tests remain green.
+- No production data or row has been changed by this checkpoint.
+
+#### Known issues
+
+- The implementation has not yet been built or deployed to production.
+- Production acceptance must verify all three URLs render the matching period label and preserve InnerType/GB scope.
+- Discovery conclusions remain dynamic read-model recommendations rather than persisted lifecycle rows.
+- The standalone lint command remains unavailable because the repository lacks an ESLint 9 flat configuration.
+
+#### Files changed
+
+- `apps/tools/src/lib/discovery-period.ts`
+- `apps/tools/src/lib/discovery-period.test.ts`
+- `apps/tools/src/repositories/storefront-metrics-repository.ts`
+- `apps/tools/src/repositories/storefront-metrics-repository.test.ts`
+- `apps/tools/src/components/global-context-bar.tsx`
+- `apps/tools/src/app/insights/page.tsx`
+- `apps/tools/src/app/app-store-connect/page.tsx`
+- `KOPA_CURRENT_STATE.md`
+
+#### Database changes
+
+- None.
+- This slice changes read boundaries and presentation only.
+
+#### Deployment status
+
+- Local implementation and focused verification: complete.
+- Production build, deployment, and signed-in period acceptance: pending.
+
+#### Remaining in this vertical slice
+
+- Run root checks and the Kopa Tools production build.
+- Deploy the committed Kopa Tools source directly to production.
+- Verify signed-in InnerType/GB Discovery views for `7d`, `28d`, `90d`, and an invalid-period fallback.
+
+#### Next exact task
+
+Run all remaining quality gates, deploy production, and complete signed-in period and scope acceptance.
+
+### Checkpoint 32 — Production Discovery period-integrity acceptance
+
+Status: completed and verified on 2026-07-31.
+
+#### Current milestone
+
+Milestone 1 — Trust and Data Correctness
+Vertical slice: Discovery evidence-period integrity
+
+#### Completed
+
+- Deployed the committed period-aware Discovery implementation directly to Kopa Tools production.
+- Verified the signed-in Recommendations view for InnerType/GB with `7d`, `28d`, and `90d`.
+- Verified an unsupported `365d` value safely resolves to `28d` in assessment, presentation, the global control, and the submitted filter value.
+- Verified the App Store Connect overview and decision brief honor the same app, market, and period context.
+- Verified exact market scoping remains intact across every accepted period.
+
+#### Verified
+
+- Production deployment `dpl_FF1PxtZPFmdnvWqfD8YsWs5GGN9w` is Ready and aliased to `https://tools.kopa.studio`.
+- InnerType/GB `7d` Recommendations:
+  - global period control shows `Last 7 days`;
+  - three Discovery cards are shown;
+  - every card is scoped to InnerType Personality Test and GB;
+  - every evidence label states `7-day selected window`;
+  - actual available evidence is shown as `2026-07-24 to 2026-07-28`.
+- InnerType/GB `28d` Recommendations show the same exact scope and actual dates while stating `28-day selected window`.
+- InnerType/GB `90d` Recommendations show the same exact scope and actual dates while stating `90-day selected window`.
+- Production currently has Discovery rows only from July 24–28, so identical current conclusions across the three periods are expected and are no longer misrepresented as three different amounts of available evidence.
+- An invalid `period=365d` request:
+  - selects `Last 28 days`;
+  - assesses and labels a `28-day selected window`;
+  - stores `28d` in the submitted filter value;
+  - preserves InnerType/GB scope.
+- App Store Connect `7d` and `90d` views:
+  - show the matching selected global period;
+  - label Storefront activity with the matching period;
+  - contain only the InnerType/GB storefront row in the scoped table.
+- Kopa Tools tests: 23 files and 79/79 tests pass.
+- Kopa Tools typecheck passes.
+- Kopa Tools production build passes locally and in Vercel.
+- Root repository checks: 10/10 pass.
+- No production database row was mutated.
+- Attribution remains deferred and no Apple Ads write capability was added.
+
+#### Known issues
+
+- Discovery conclusions are still dynamic read-model recommendations rather than persisted lifecycle rows.
+- Discovery cards do not yet gate directional conclusions on the latest parser result, completeness state, or freshness.
+- Production has only five days of current GB Discovery evidence, which is now displayed honestly inside larger selected periods.
+- The standalone lint command remains unavailable because the repository lacks an ESLint 9 flat configuration.
+
+#### Files changed
+
+- `apps/tools/src/lib/discovery-period.ts`
+- `apps/tools/src/lib/discovery-period.test.ts`
+- `apps/tools/src/repositories/storefront-metrics-repository.ts`
+- `apps/tools/src/repositories/storefront-metrics-repository.test.ts`
+- `apps/tools/src/components/global-context-bar.tsx`
+- `apps/tools/src/app/insights/page.tsx`
+- `apps/tools/src/app/app-store-connect/page.tsx`
+- `KOPA_CURRENT_STATE.md`
+
+#### Database changes
+
+- None.
+- This slice changes read boundaries and presentation only.
+
+#### Deployment status
+
+- Kopa Tools: live in production.
+- Production/source parity for this slice: verified.
+- Period, evidence-window, app-scope, market-scope, and invalid-value acceptance: passed.
+- Vertical slice: complete.
+
+#### Remaining in Milestone 1 — Trust and Data Correctness
+
+- Gate Discovery conclusions on freshness, parser result, and completeness.
+- Enforce remaining locale and metadata-version context.
+- Finish shared volume, relevance, and cross-source agreement contracts.
+- Unify lifecycle semantics across ASO, Discovery, and Apple Ads persistence models.
+- Complete remaining authenticated owner/unauthorized-account parity checks.
+
+#### Next exact task
+
+Add Discovery evidence-quality gating: carry the latest App Store Connect parser result and evidence freshness into the assessment, show fresh/stale/partial/zero states explicitly, and replace directional recommendations with a waiting state whenever the scoped evidence is stale, partial, invalid, or absent.

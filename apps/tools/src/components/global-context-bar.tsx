@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { resolveDiscoveryPeriod } from "@/lib/discovery-period";
 
 type ContextApp = { id: string; name: string; primaryCountry: string };
 
@@ -16,7 +17,7 @@ export function GlobalContextBar({ apps, dataFreshness }: { apps: ContextApp[]; 
   const searchParams = useSearchParams();
   const selectedApp = searchParams.get("app") ?? "";
   const selectedCountry = searchParams.get("country") ?? "";
-  const selectedPeriod = searchParams.get("period") ?? "28d";
+  const selectedPeriod = resolveDiscoveryPeriod(searchParams.get("period")).period;
   const markets = [...new Set([...apps.map((app) => app.primaryCountry), selectedCountry].filter(Boolean))].sort();
 
   function updateContext(key: string, value: string) {

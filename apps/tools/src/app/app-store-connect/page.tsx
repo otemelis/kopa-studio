@@ -7,6 +7,7 @@ import { getAppleAdsDataQuality } from "@/repositories/apple-ads-sync-repository
 import { listRecentRuns } from "@/repositories/overview-repository";
 import { loadAppStoreConnectStatus } from "@/services/appstore-connect-service";
 import { loadStorefrontMetricSummaries } from "@/services/storefront-metrics-service";
+import { resolveDiscoveryPeriod } from "@/lib/discovery-period";
 
 export const dynamic = "force-dynamic";
 
@@ -28,11 +29,13 @@ const compactDate = (value: string) => new Intl.DateTimeFormat("en", { month: "s
 const signedPercent = (value: number | null) => value === null ? "-" : `${value > 0 ? "+" : ""}${(value * 100).toFixed(1)}%`;
 const evidenceWindow = (start: string | null, end: string | null) => start && end ? `${compactDate(start)}–${compactDate(end)}` : "-";
 
-export default async function AppStoreConnectPage() {
+export default async function AppStoreConnectPage({ searchParams }: { searchParams: Promise<{ app?: string; country?: string; period?: string }> }) {
   const user = await requireUser();
+  const filters = await searchParams;
+  const { days } = resolveDiscoveryPeriod(filters.period);
   const [connection, metrics, appleAds, attribution, recentRuns] = await Promise.all([
     loadAppStoreConnectStatus(),
-    loadStorefrontMetricSummaries(),
+    loadStorefrontMetricSummaries(days, filters.app, filters.country),
     getAppleAdsDataQuality(user.id),
     getAppleAdsAttributionStatus(user.id),
     listRecentRuns(),
@@ -183,10 +186,10 @@ export default async function AppStoreConnectPage() {
       <tbody>{connection.reportRequests.length ? connection.reportRequests.map((request, index) => <tr key={`${request.appName}:${index}`}><td>{request.appName}</td><td><StatusBadge status={request.status} /></td><td><StatusBadge status={request.lastResultState ?? "not recorded"} /></td><td>{request.parserVersion ?? "-"}</td><td>{evidenceWindow(request.evidenceStart, request.evidenceEnd)}</td><td>{request.importedRowCount ?? "-"} / {request.sourceRowCount ?? "-"}</td><td>{date(request.lastCheckedAt)}</td><td>{request.lastError ?? request.lastResultDetail ?? "-"}</td></tr>) : <tr><td colSpan={8}>No report requests recorded.</td></tr>}</tbody>
     </table></div>
 
-    <div className="section-head"><h2>Storefront activity</h2><span>Last 28 days · discovery reports</span></div>
+    <div className="section-head"><h2>Storefront activity</h2><span>Last {metrics.days} days · discovery reports</span></div>
     <div className="table-wrap"><table>
       <thead><tr><th>App</th><th>Country</th><th>Impressions</th><th>Product page views</th><th>Downloads</th><th>View rate</th><th>Download rate</th></tr></thead>
-      <tbody>{metrics.countries.length ? metrics.countries.map((metric) => <tr key={`${metric.appId}:${metric.country}`}><td>{metric.appName}</td><td>{metric.country.toUpperCase()}</td><td>{number.format(metric.impressions)}</td><td>{number.format(metric.pageViews)}</td><td>{number.format(metric.downloads)}</td><td>{percent(metric.impressionToPageRate)}</td><td>{percent(metric.downloadRate)}</td></tr>) : <tr><td colSpan={7}>No Discovery &amp; Engagement metric rows in this 28-day window.</td></tr>}</tbody>
+      <tbody>{metrics.countries.length ? metrics.countries.map((metric) => <tr key={`${metric.appId}:${metric.country}`}><td>{metric.appName}</td><td>{metric.country.toUpperCase()}</td><td>{number.format(metric.impressions)}</td><td>{number.format(metric.pageViews)}</td><td>{number.format(metric.downloads)}</td><td>{percent(metric.impressionToPageRate)}</td><td>{percent(metric.downloadRate)}</td></tr>) : <tr><td colSpan={7}>No Discovery &amp; Engagement metric rows in this {metrics.days}-day window.</td></tr>}</tbody>
     </table></div>
   </PageShell>;
 }
