@@ -43,10 +43,11 @@ export default async function AppStoreConnectPage({ searchParams }: { searchPara
   const attributionReady = attribution.endpointConfigured && attribution.secretConfigured && attribution.mappedAppCount > 0;
   const latestPublicRun = recentRuns[0] ?? null;
   const failedPublicRun = recentRuns.find((run) => run.status === "failed" || run.status === "partial");
-  const failedAscRequest = connection.reportRequests.find((request) => request.lastError || request.lastResultState === "error" || /failed|error/i.test(request.status));
-  const partialAscRequest = connection.reportRequests.find((request) => request.lastResultState === "partial");
-  const zeroAscRequest = connection.reportRequests.find((request) => request.lastResultState === "zero");
-  const latestAscRequest = connection.reportRequests[0] ?? null;
+  const scopedAscRequests = filters.app ? connection.reportRequests.filter((request) => request.appId === filters.app) : connection.reportRequests;
+  const failedAscRequest = scopedAscRequests.find((request) => request.lastError || request.lastResultState === "error" || /failed|error/i.test(request.status));
+  const partialAscRequest = scopedAscRequests.find((request) => request.lastResultState === "partial");
+  const zeroAscRequest = scopedAscRequests.find((request) => request.lastResultState === "zero");
+  const latestAscRequest = scopedAscRequests[0] ?? null;
   const appleAdsAttention = appleAds.checks.some((check) => check.status === "attention");
   const appleAdsWaiting = appleAds.checks.some((check) => check.status === "waiting");
   const failedAppleAdsRun = appleAds.runs.find((run) => run.status === "failed" || run.status === "partial");
@@ -151,6 +152,10 @@ export default async function AppStoreConnectPage({ searchParams }: { searchPara
       <article className="metric-card"><p>Product page views</p><strong>{number.format(metrics.totals.pageViews)}</strong><small>{percent(metrics.totals.impressionToPageRate)} from impression to page view</small></article>
       <article className="metric-card"><p>Downloads</p><strong>{number.format(metrics.totals.downloads)}</strong><small>{metrics.hasDailyRows ? `${percent(metrics.totals.downloadRate)} page-view conversion` : "Waiting for sales/download import"}</small></article>
       <article className="metric-card"><p>Latest report day</p><strong>{latestDiscoveryDate ? compactDate(latestDiscoveryDate) : "-"}</strong><small>{latestDiscoveryDate ? "Latest imported App Store Connect day" : "Use Retry Discovery report import"}</small></article>
+    </section>
+    <section className="notice">
+      <h2>Scoped Discovery assessment: {metrics.quality.label}</h2>
+      <p>{metrics.quality.explanation}</p>
     </section>
 
     <section className="notice">

@@ -2220,7 +2220,7 @@ Make the Discovery assessment honor the selected 7-day, 28-day, or 90-day period
 
 ### Checkpoint 31 — Period-aware Discovery assessment implementation
 
-Status: locally complete and verified on 2026-07-31.
+Status: locally complete, built, and verified on 2026-07-31.
 
 #### Current milestone
 
@@ -2374,3 +2374,92 @@ Vertical slice: Discovery evidence-period integrity
 #### Next exact task
 
 Add Discovery evidence-quality gating: carry the latest App Store Connect parser result and evidence freshness into the assessment, show fresh/stale/partial/zero states explicitly, and replace directional recommendations with a waiting state whenever the scoped evidence is stale, partial, invalid, or absent.
+
+### Checkpoint 33 — Discovery evidence-quality gating implementation
+
+Status: locally complete and verified on 2026-07-31.
+
+#### Current milestone
+
+Milestone 1 — Trust and Data Correctness
+Vertical slice: Discovery evidence-quality gating
+
+#### Completed
+
+- Added a deterministic Discovery evidence-quality contract with `fresh`, `stale`, `partial`, `zero`, `invalid`, and `absent` states.
+- Set an inspectable three-calendar-day product freshness threshold for current directional interpretation.
+- Required verified `discovery-v2` provenance, a successful parser result, complete accepted-row counts, zero rejected rows, current evidence dates, and scoped source rows before returning `fresh`.
+- Added exact app filtering to the report-quality query while retaining exact app-and-market filters on metric evidence.
+- Replaced all directional Discovery opportunities with one explicit waiting recommendation whenever evidence is stale, partial, zero, invalid, or absent.
+- Added the quality label to every Discovery recommendation evidence line.
+- Routed blocked waiting cards to App Store Connect data quality instead of offering an experiment action.
+- Added a scoped quality notice to the App Store Connect decision surface.
+- Scoped App Store Connect request-quality presentation to the selected app.
+- Corrected download completeness so Discovery-derived daily rows with null downloads do not masquerade as a completed sales/download import.
+- Kept Discovery evidence-window dates isolated from sales-only daily rows.
+
+#### Verified
+
+- Kopa Tools tests: 24 files and 87/87 tests pass.
+- Kopa Tools typecheck passes.
+- Kopa Tools production build passes.
+- Root repository checks pass for all 10 levels.
+- `git diff --check` passes.
+- Fresh complete `discovery-v2` evidence within three days remains eligible for directional assessment.
+- Evidence older than three calendar days becomes `stale`.
+- A partial import with retained valid rows is still blocked.
+- Valid zero-row reports are distinguished from zero traffic or failed conversion.
+- Parser errors and unverified parser versions become `invalid`.
+- Missing report provenance or missing exact-market rows becomes `absent`.
+- Every non-fresh state produces one waiting card and no directional opportunity.
+- Exact report-quality app filtering is applied without inventing a country filter on the app-level request.
+- Production currently reports:
+  - `success`;
+  - parser `discovery-v2`;
+  - 244/244 source rows accepted;
+  - 0 rejected;
+  - evidence from 2026-07-24 through 2026-07-29;
+  - no parser error.
+- Current production evidence should therefore remain `fresh` after deployment.
+- No production data or row has been changed by this checkpoint.
+
+#### Known issues
+
+- The implementation has not yet been deployed to production.
+- Production acceptance must confirm the current InnerType/GB feed remains directional and explicitly reports `Fresh`.
+- A blocked state cannot be induced in production without corrupting or aging real evidence; deterministic regression coverage is complete.
+- Discovery conclusions remain dynamic read-model recommendations rather than persisted lifecycle rows.
+- The standalone lint command remains unavailable because the repository lacks an ESLint 9 flat configuration.
+
+#### Files changed
+
+- `apps/tools/src/lib/discovery-quality.ts`
+- `apps/tools/src/lib/discovery-quality.test.ts`
+- `apps/tools/src/lib/metrics.ts`
+- `apps/tools/src/lib/metrics.test.ts`
+- `apps/tools/src/repositories/storefront-metrics-repository.ts`
+- `apps/tools/src/repositories/storefront-metrics-repository.test.ts`
+- `apps/tools/src/repositories/appstore-connect-repository.ts`
+- `apps/tools/src/types/domain.ts`
+- `apps/tools/src/app/insights/page.tsx`
+- `apps/tools/src/app/app-store-connect/page.tsx`
+- `KOPA_CURRENT_STATE.md`
+
+#### Database changes
+
+- None.
+- Existing parser-integrity fields provide the required provenance.
+
+#### Deployment status
+
+- Local implementation, full verification, and production build: complete.
+- Production deployment and signed-in quality-state acceptance: pending.
+
+#### Remaining in this vertical slice
+
+- Deploy the committed Kopa Tools source directly to production.
+- Verify the signed-in InnerType/GB Recommendations and App Store Connect views show `Fresh` while preserving the current three directional Discovery conclusions.
+
+#### Next exact task
+
+Deploy production and complete signed-in fresh-state acceptance without mutating production evidence.

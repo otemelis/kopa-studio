@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { compareStorefrontWindows, discoveryOpportunities, summarizeStorefrontMetrics } from "./metrics";
+import type { DiscoveryEvidenceQuality } from "./discovery-quality";
+
+const freshQuality: DiscoveryEvidenceQuality = {
+  state: "fresh",
+  label: "Fresh",
+  explanation: "Verified evidence.",
+  parserVersion: "discovery-v2",
+  evidenceEnd: "2026-07-28",
+};
 
 describe("storefront metric summaries", () => {
   it("groups supported events by app and country", () => {
@@ -26,6 +35,7 @@ describe("storefront metric summaries", () => {
       trend: compareStorefrontWindows([{ date: "2026-07-01", impressions: 100, pageViews: 50, downloads: 5 }, { date: "2026-07-02", impressions: 100, pageViews: 20, downloads: 1 }]),
       hasDiscoveryRows: true,
       hasDailyRows: true,
+      quality: freshQuality,
     });
 
     expect(opportunities.map((item) => item.title)).toEqual([
@@ -38,8 +48,21 @@ describe("storefront metric summaries", () => {
   });
 
   it("labels missing Discovery rows as waiting", () => {
-    expect(discoveryOpportunities({ countries: [], sourceTypes: [], trend: compareStorefrontWindows([]), hasDiscoveryRows: false, hasDailyRows: false })).toEqual([
+    expect(discoveryOpportunities({ countries: [], sourceTypes: [], trend: compareStorefrontWindows([]), hasDiscoveryRows: false, hasDailyRows: false, quality: freshQuality })).toEqual([
       { severity: "waiting", title: "Waiting for Discovery report data", detail: "Retry the Discovery report import after Apple has generated at least one daily segment." },
+    ]);
+  });
+
+  it("replaces directional conclusions with one waiting state when evidence is partial", () => {
+    expect(discoveryOpportunities({
+      countries: [{ appId: "a", appName: "InnerType", country: "gb", impressions: 1000, pageViews: 30, downloads: 1, impressionToPageRate: 0.03, downloadRate: 1 / 30 }],
+      sourceTypes: [{ sourceType: "App Store Search", impressions: 800, pageViews: 25 }],
+      trend: compareStorefrontWindows([{ date: "2026-07-01", impressions: 100, pageViews: 50, downloads: 5 }, { date: "2026-07-02", impressions: 100, pageViews: 20, downloads: 1 }]),
+      hasDiscoveryRows: true,
+      hasDailyRows: true,
+      quality: { ...freshQuality, state: "partial", label: "Partial", explanation: "One source row was rejected." },
+    })).toEqual([
+      { severity: "waiting", title: "Discovery evidence is partial", detail: "One source row was rejected." },
     ]);
   });
 });

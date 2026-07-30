@@ -19,6 +19,7 @@ export async function getAppStoreConnectStatus(): Promise<AppStoreConnectStatus>
     lastTestMessage: connection?.last_test_message ?? null,
     lastSyncAt: connection?.last_sync_at ?? null,
     reportRequests: (requests ?? []).map((request) => ({
+      appId: request.app_id,
       appName: names.get(request.app_id) ?? "Unknown app",
       status: request.status,
       lastCheckedAt: request.last_checked_at,

@@ -123,6 +123,7 @@ export interface AppStoreConnectStatus {
   lastTestMessage: string | null;
   lastSyncAt: string | null;
   reportRequests: Array<{
+    appId: string;
     appName: string;
     status: string;
     lastCheckedAt: string | null;

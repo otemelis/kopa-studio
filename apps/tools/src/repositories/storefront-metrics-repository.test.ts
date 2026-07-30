@@ -64,6 +64,17 @@ describe("listStorefrontMetricSummaries period and scope", () => {
       { app_id: "app-a", country: "de", date: "2026-07-30", event: "Impression", page_type: null, source_type: "App Store Search", count: 88 },
     ]);
     state.tables.set("aso_daily_metrics", []);
+    state.tables.set("aso_analytics_report_requests", [{
+      app_id: "app-a",
+      last_result_state: "success",
+      parser_version: "discovery-v2",
+      last_evidence_start: "2026-07-24",
+      last_evidence_end: "2026-07-30",
+      last_source_row_count: 2,
+      last_imported_row_count: 2,
+      last_rejected_row_count: 0,
+      last_error: null,
+    }]);
   });
 
   it("keeps 7-day and 90-day evidence isolated", async () => {
@@ -80,10 +91,21 @@ describe("listStorefrontMetricSummaries period and scope", () => {
     const result = await listStorefrontMetricSummaries(28, "app-a", "GB", NOW);
 
     expect(result.countries).toEqual([expect.objectContaining({ appId: "app-a", country: "gb", impressions: 10 })]);
+    expect(result.quality).toMatchObject({ state: "fresh", label: "Fresh" });
     for (const table of ["aso_storefront_metrics", "aso_daily_metrics"]) {
       expect(state.filters).toContainEqual({ table, operation: "gte", column: "date", value: "2026-07-04" });
       expect(state.filters).toContainEqual({ table, operation: "eq", column: "app_id", value: "app-a" });
       expect(state.filters).toContainEqual({ table, operation: "eq", column: "country", value: "gb" });
     }
+    expect(state.filters).toContainEqual({ table: "aso_analytics_report_requests", operation: "eq", column: "app_id", value: "app-a" });
+    expect(state.filters).not.toContainEqual(expect.objectContaining({ table: "aso_analytics_report_requests", column: "country" }));
+  });
+
+  it("does not treat a successful app report as scoped evidence for a market with no rows", async () => {
+    const result = await listStorefrontMetricSummaries(28, "app-a", "fr", NOW);
+    expect(result.quality).toMatchObject({ state: "absent", label: "Absent" });
+    expect(result.opportunities).toEqual([
+      expect.objectContaining({ severity: "waiting", title: "Waiting for scoped Discovery evidence" }),
+    ]);
   });
 });
