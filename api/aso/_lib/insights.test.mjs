@@ -115,9 +115,47 @@ test("different app and market scopes do not contaminate each other", () => {
   const rows = [row("other-market", "2026-07-28T10:00:00.000Z", { country: "us", dedupe_key: metadataMismatchDedupeKey(APP_ID, "us") })];
   const gbDraft = draft({ country: "gb", dedupe_key: metadataMismatchDedupeKey(APP_ID, "gb") });
 
-  const plan = reconcileMetadataMismatchInsights([gbDraft], rows, NOW);
+  const plan = reconcileMetadataMismatchInsights([gbDraft], rows, NOW, [APP_ID]);
   assert.deepEqual(plan.updates, []);
   assert.deepEqual(plan.drafts, [gbDraft]);
+});
+
+test("metadata recovery supersedes the current portfolio row while preserving its evidence", () => {
+  const existing = [row("current", "2026-07-28T10:00:00.000Z")];
+  const plan = reconcileMetadataMismatchInsights([], existing, NOW, [APP_ID]);
+
+  assert.deepEqual(plan.drafts, []);
+  assert.equal(plan.updates.length, 1);
+  assert.equal(plan.updates[0].id, "current");
+  assert.equal(plan.updates[0].patch.status, "superseded");
+  assert.match(plan.updates[0].patch.note, /Resolved automatically/);
+
+  const historical = applyPlan(existing, plan)[0];
+  assert.deepEqual(historical.evidence, existing[0].evidence);
+  assert.equal(historical.title, existing[0].title);
+});
+
+test("metadata recovery only applies to evaluated apps and the portfolio scope", () => {
+  const otherApp = row("other-app", "2026-07-28T10:00:00.000Z", {
+    app_id: "app-not-evaluated",
+    dedupe_key: metadataMismatchDedupeKey("app-not-evaluated", null),
+  });
+  const marketScoped = row("market-scoped", "2026-07-28T10:00:00.000Z", {
+    country: "gb",
+    dedupe_key: metadataMismatchDedupeKey(APP_ID, "gb"),
+  });
+
+  const plan = reconcileMetadataMismatchInsights([], [otherApp, marketScoped], NOW, [APP_ID]);
+  assert.deepEqual(plan, { drafts: [], updates: [] });
+});
+
+test("active metadata mismatches and recovered metadata history are idempotent", () => {
+  const currentDraft = draft();
+  const active = [row("current", "2026-07-28T10:00:00.000Z")];
+  assert.deepEqual(reconcileMetadataMismatchInsights([currentDraft], active, NOW, [APP_ID]), { drafts: [], updates: [] });
+
+  const recovered = applyPlan(active, reconcileMetadataMismatchInsights([], active, NOW, [APP_ID]));
+  assert.deepEqual(reconcileMetadataMismatchInsights([], recovered, NOW, [APP_ID]), { drafts: [], updates: [] });
 });
 
 function competitorDraft(overrides = {}) {

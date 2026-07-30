@@ -549,13 +549,19 @@ async function runInsightEngine(db) {
     await db.update("aso_insights", update.patch, `id=eq.${update.id}`);
   }
   drafts = operationalReconciliation.drafts;
-  const enabledAlerts = new Map(alertPreferences.map((preference) => [preference.kind, preference.enabled]));
-  drafts = drafts.filter((draft) => enabledAlerts.get(alertKindForRule(draft.rule_id)) !== false);
-  const metadataReconciliation = reconcileMetadataMismatchInsights(drafts, existingInsights);
+  const metadataReconciliation = reconcileMetadataMismatchInsights(
+    drafts,
+    existingInsights,
+    new Date(),
+    apps.map((app) => app.id),
+  );
   for (const update of metadataReconciliation.updates) {
     await db.update("aso_insights", update.patch, `id=eq.${update.id}`);
   }
-  const competitorReconciliation = reconcileCompetitorWinsInsights(metadataReconciliation.drafts, existingInsights);
+  drafts = metadataReconciliation.drafts;
+  const enabledAlerts = new Map(alertPreferences.map((preference) => [preference.kind, preference.enabled]));
+  drafts = drafts.filter((draft) => enabledAlerts.get(alertKindForRule(draft.rule_id)) !== false);
+  const competitorReconciliation = reconcileCompetitorWinsInsights(drafts, existingInsights);
   for (const update of competitorReconciliation.updates) {
     await db.update("aso_insights", update.patch, `id=eq.${update.id}`);
   }

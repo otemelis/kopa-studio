@@ -1926,3 +1926,147 @@ Vertical slice: resolved-condition lifecycle for `data_collection_failure`
 #### Next exact task
 
 Build the smallest remaining resolved-condition slice for `metadata_mismatch`: keep the current app-and-scope row active and refreshed while missing high-priority terms remain, automatically supersede it when the rule stops emitting after a metadata fix, preserve its evidence as history, and prove active, recovery, and unchanged-rerun behavior with regression tests.
+
+### Checkpoint 27 — Metadata-mismatch resolved-condition implementation
+
+Status: locally complete and verified on 2026-07-30.
+
+#### Current milestone
+
+Milestone 1 — Trust and Data Correctness
+Vertical slice: resolved-condition lifecycle for `metadata_mismatch`
+
+#### Completed
+
+- Extended the existing metadata-mismatch reconciliation instead of creating a parallel lifecycle.
+- Kept the one-current-row app-and-scope identity while the rule continues to emit.
+- Added automatic recovery for active portfolio-scoped rows when an app was evaluated and no longer emits `metadata_mismatch`.
+- Preserved recovered rows, titles, and evidence as superseded history.
+- Limited recovery to apps actually evaluated by the collector and to the portfolio scope currently owned by the rule.
+- Moved metadata lifecycle reconciliation before alert-preference filtering so disabled keyword notifications cannot be mistaken for rule recovery.
+- Added regression coverage for active, refreshed, recovered, isolated-scope, preserved-history, and unchanged-rerun behavior.
+
+#### Verified
+
+- Focused ASO/parser/lifecycle tests: 27/27 pass.
+- Current emitted metadata mismatch remains active without a duplicate.
+- Changed evidence refreshes the current row in place.
+- Recovery preserves the prior evidence and changes only lifecycle metadata.
+- Unevaluated apps and country-scoped rows are not falsely recovered by the portfolio rule.
+- Already-recovered history remains write-free on subsequent runs.
+- No production row has been changed by this checkpoint.
+
+#### Known issues
+
+- The implementation has not yet been deployed or exercised against the current production run.
+- The current production mismatch is expected to remain active because the metadata condition is still true; the recovery branch is covered by deterministic tests rather than a production metadata mutation.
+- Competitor-gap rows still lack resolved-condition retirement.
+- The standalone lint command remains unavailable because the repository lacks an ESLint 9 flat configuration.
+
+#### Files changed
+
+- `api/aso/_lib/insights.js`
+- `api/aso/_lib/insights.test.mjs`
+- `api/aso/collect.js`
+- `KOPA_CURRENT_STATE.md`
+
+#### Database changes
+
+- None.
+- The existing `superseded` lifecycle value supports this slice.
+- No migration is required.
+
+#### Deployment status
+
+- Local implementation: complete.
+- Production deployment and active-state acceptance: pending.
+
+#### Remaining in this vertical slice
+
+- Run the full root and Kopa Tools quality gates.
+- Deploy the committed collector directly to production.
+- Run collection twice and verify that the still-valid production mismatch remains one active row without duplicate or repeat lifecycle writes.
+
+#### Next exact task
+
+Run all quality gates, deploy the collector, and validate current-condition persistence plus second-run idempotency in production.
+
+### Checkpoint 28 — Production metadata-mismatch lifecycle acceptance
+
+Status: completed and verified on 2026-07-30.
+
+#### Current milestone
+
+Milestone 1 — Trust and Data Correctness
+Vertical slice: resolved-condition lifecycle for `metadata_mismatch`
+
+#### Completed
+
+- Deployed the committed metadata-mismatch lifecycle implementation directly to Kopa Studio production.
+- Ran the owner-only Public App Store collector twice after deployment.
+- Verified that the still-valid production mismatch remains the one active app-and-portfolio row.
+- Verified that unchanged evidence creates no duplicate and performs no lifecycle refresh.
+- Verified that the two older mismatch versions remain preserved as superseded history.
+- Covered the unavailable production recovery transition with deterministic tests instead of mutating live App Store metadata.
+
+#### Verified
+
+- Production deployment `dpl_4RxCTrfd9dqDwcs36Ct7XxCPfydn` is Ready and aliased to `https://www.kopa.studio`.
+- Active metadata row `00e60eeb-f616-48e6-99f2-da3b445e0bf9` remains:
+  - `active`;
+  - titled `71 high-priority keywords are missing from InnerType Personality Test's title and subtitle`;
+  - keyed as `metadata_mismatch:9bf77c42-ff52-4030-b759-ef56557adca3:portfolio`.
+- Its `updated_at` remained `2026-07-30T21:01:01.674636+00:00` through both post-deployment runs.
+- Historical 54-term and 49-term rows remain stored with `superseded` status.
+- First post-deployment run `dff7291c-a61f-4a0f-92fb-718cef41a586` completed `ok`:
+  - 54 processed;
+  - 54 succeeded;
+  - 0 failed;
+  - 0 insights created.
+- Second post-deployment run `d9eceeb5-4755-49f2-aa20-aa0b80ae688f` completed `ok` with the same counts.
+- Focused ASO/parser/lifecycle tests: 27/27 pass.
+- Root repository checks: 10/10 pass.
+- Kopa Tools tests: 21 files and 72/72 tests pass.
+- Kopa Tools typecheck passes.
+- Kopa Tools production build passes.
+- Recovery tests prove that an evaluated app whose mismatch disappears is superseded once while retaining its evidence.
+- Attribution remains deferred and no Apple Ads write capability was added.
+
+#### Known issues
+
+- Production metadata still has 71 missing high-priority terms, so the row correctly remains active.
+- The recovery transition cannot be exercised in production without a real metadata fix; deterministic regression coverage is complete.
+- Competitor-gap rows still lack resolved-condition retirement.
+- The standalone lint command remains unavailable because the repository lacks an ESLint 9 flat configuration.
+
+#### Files changed
+
+- `api/aso/_lib/insights.js`
+- `api/aso/_lib/insights.test.mjs`
+- `api/aso/collect.js`
+- `KOPA_CURRENT_STATE.md`
+
+#### Database changes
+
+- None.
+- No production insight row was manually mutated.
+- Existing active and historical rows were preserved.
+
+#### Deployment status
+
+- Kopa Studio collector: live in production.
+- Production/source parity for this slice: verified.
+- Current-condition persistence and second-run idempotency acceptance: passed.
+- Vertical slice: complete.
+
+#### Remaining in Milestone 1 — Trust and Data Correctness
+
+- Complete resolved-condition lifecycle for the remaining current ASO rule families.
+- Unify identity and lifecycle across the remaining ASO rule families and persistence models.
+- Enforce remaining locale, period, metadata-version, and evidence-window context.
+- Finish shared freshness, completeness, volume, relevance, and cross-source agreement contracts.
+- Complete remaining authenticated owner/unauthorized-account parity checks.
+
+#### Next exact task
+
+Build resolved-condition lifecycle for `competitor_wins_high_priority_terms`: keep each app, competitor, and scope row active while that rival still meets the deterministic gap rule, automatically supersede it when the evaluated rival no longer qualifies, preserve its evidence as history, and prove competitor isolation plus unchanged-rerun behavior with regression tests.

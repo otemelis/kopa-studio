@@ -801,12 +801,15 @@ function sameMetadataMismatchScope(row, draft) {
 /**
  * Reconcile the one-current-row contract for metadata mismatch insights.
  * The newest active row is refreshed in place, while older active rows are
- * retained as explicitly superseded history. Unchanged reruns make no writes.
+ * retained as explicitly superseded history. When an evaluated app no longer
+ * emits the portfolio rule, its current row becomes superseded history.
+ * Unchanged reruns make no writes.
  */
-export function reconcileMetadataMismatchInsights(drafts, existing, now = new Date()) {
+export function reconcileMetadataMismatchInsights(drafts, existing, now = new Date(), evaluatedAppIds = []) {
   const pendingDrafts = [];
   const updates = [];
   const processedScopes = new Set();
+  const evaluatedApps = new Set(evaluatedAppIds);
   const timestamp = now.toISOString();
 
   for (const draft of drafts) {
@@ -848,6 +851,30 @@ export function reconcileMetadataMismatchInsights(drafts, existing, now = new Da
         },
       });
     }
+  }
+
+  for (const row of existing) {
+    if (
+      row.rule_id !== "metadata_mismatch" ||
+      row.status !== "active" ||
+      !evaluatedApps.has(row.app_id) ||
+      row.country?.trim()
+    ) {
+      continue;
+    }
+
+    const scopeKey = metadataMismatchDedupeKey(row.app_id, null);
+    if (processedScopes.has(scopeKey)) continue;
+
+    updates.push({
+      id: row.id,
+      patch: {
+        status: "superseded",
+        snoozed_until: null,
+        note: `Resolved automatically after current metadata no longer met the mismatch rule on ${timestamp}.`,
+        updated_at: timestamp,
+      },
+    });
   }
 
   return { drafts: pendingDrafts, updates };
