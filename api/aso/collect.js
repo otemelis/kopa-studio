@@ -16,6 +16,7 @@ import { syncRecentReviews } from "./_lib/appstore-reviews.js";
 import { hasSalesReportsConfig, salesSyncMessage, syncDailySalesMetrics } from "./_lib/appstore-sales.js";
 import { syncDiscoveryAnalytics } from "./_lib/appstore-analytics.js";
 import {
+  competitorWinsDedupeKey,
   draftToInsertRow,
   evaluateRulesForApp,
   filterAgainstExisting,
@@ -488,7 +489,21 @@ async function runInsightEngine(db) {
   const portfolioAvgConversion = pv > 0 ? dl / pv : null;
 
   let drafts = [];
+  const evaluatedCompetitorScopes = [];
   for (const app of apps) {
+    const appCompetitors = competitors.filter((competitor) => competitor.app_id === app.id);
+    const appKeywordIds = new Set(
+      appKeywords.filter((link) => link.app_id === app.id && link.status !== "paused").map((link) => link.keyword_id),
+    );
+    evaluatedCompetitorScopes.push(
+      ...appCompetitors
+        .filter((competitor) =>
+          competitorRankSnapshots.some(
+            (snapshot) => snapshot.store_app_id === competitor.store_app_id && appKeywordIds.has(snapshot.keyword_id),
+          ),
+        )
+        .map((competitor) => competitorWinsDedupeKey(app.id, competitor.id, null)),
+    );
     const metricsByCountry = new Map();
     for (const m of metrics) {
       if (m.app_id !== app.id || m.country === "all") continue;
@@ -509,7 +524,7 @@ async function runInsightEngine(db) {
       storefronts: storefronts.filter((sf) => sf.app_id === app.id),
       metricsByCountry,
       storefrontMetricsByCountry,
-      competitors: competitors.filter((competitor) => competitor.app_id === app.id),
+      competitors: appCompetitors,
       competitorRankSnapshots,
       reviewClassifications,
       keywords: appKeywords
@@ -559,13 +574,18 @@ async function runInsightEngine(db) {
     await db.update("aso_insights", update.patch, `id=eq.${update.id}`);
   }
   drafts = metadataReconciliation.drafts;
-  const enabledAlerts = new Map(alertPreferences.map((preference) => [preference.kind, preference.enabled]));
-  drafts = drafts.filter((draft) => enabledAlerts.get(alertKindForRule(draft.rule_id)) !== false);
-  const competitorReconciliation = reconcileCompetitorWinsInsights(drafts, existingInsights);
+  const competitorReconciliation = reconcileCompetitorWinsInsights(
+    drafts,
+    existingInsights,
+    new Date(),
+    evaluatedCompetitorScopes,
+  );
   for (const update of competitorReconciliation.updates) {
     await db.update("aso_insights", update.patch, `id=eq.${update.id}`);
   }
   drafts = competitorReconciliation.drafts;
+  const enabledAlerts = new Map(alertPreferences.map((preference) => [preference.kind, preference.enabled]));
+  drafts = drafts.filter((draft) => enabledAlerts.get(alertKindForRule(draft.rule_id)) !== false);
   drafts = filterAgainstExisting(drafts, existingInsights);
   if (drafts.length) await db.insert("aso_insights", drafts.map(draftToInsertRow));
   return drafts.length;

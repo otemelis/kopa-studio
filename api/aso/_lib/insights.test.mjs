@@ -248,10 +248,76 @@ test("unchanged competitor reruns are idempotent", () => {
   const currentDraft = competitorDraft();
   const rows = [competitorRow("current", "2026-07-22T17:00:00.000Z")];
 
-  const first = reconcileCompetitorWinsInsights([currentDraft], rows, NOW);
+  const evaluated = [competitorWinsDedupeKey(APP_ID, ENNEAGRAM_ID, null)];
+  const first = reconcileCompetitorWinsInsights([currentDraft], rows, NOW, evaluated);
   assert.deepEqual(first, { drafts: [], updates: [] });
-  const second = reconcileCompetitorWinsInsights([currentDraft], applyPlan(rows, first), NOW);
+  const second = reconcileCompetitorWinsInsights([currentDraft], applyPlan(rows, first), NOW, evaluated);
   assert.deepEqual(second, { drafts: [], updates: [] });
+});
+
+test("competitor recovery supersedes the evaluated rival row while preserving its evidence", () => {
+  const existing = [competitorRow("current", "2026-07-22T17:00:00.000Z")];
+  const evaluated = [competitorWinsDedupeKey(APP_ID, ENNEAGRAM_ID, null)];
+  const plan = reconcileCompetitorWinsInsights([], existing, NOW, evaluated);
+
+  assert.deepEqual(plan.drafts, []);
+  assert.equal(plan.updates.length, 1);
+  assert.equal(plan.updates[0].id, "current");
+  assert.equal(plan.updates[0].patch.status, "superseded");
+  assert.match(plan.updates[0].patch.note, /Resolved automatically/);
+
+  const historical = applyPlan(existing, plan)[0];
+  assert.deepEqual(historical.evidence, existing[0].evidence);
+  assert.equal(historical.title, existing[0].title);
+});
+
+test("competitor recovery isolates rivals, apps, and country scopes", () => {
+  const otherCompetitorId = "competitor-16-personalities";
+  const currentRival = competitorRow("current-rival", "2026-07-22T17:00:00.000Z");
+  const stillEmitted = competitorRow("still-emitted", "2026-07-22T17:00:00.000Z", {
+    competitor_id: otherCompetitorId,
+    dedupe_key: competitorWinsDedupeKey(APP_ID, otherCompetitorId, null),
+  });
+  const unevaluatedApp = competitorRow("unevaluated-app", "2026-07-22T17:00:00.000Z", {
+    app_id: "app-not-evaluated",
+    dedupe_key: competitorWinsDedupeKey("app-not-evaluated", ENNEAGRAM_ID, null),
+  });
+  const unevaluatedRivalId = "competitor-without-recent-evidence";
+  const unevaluatedRival = competitorRow("unevaluated-rival", "2026-07-22T17:00:00.000Z", {
+    competitor_id: unevaluatedRivalId,
+    dedupe_key: competitorWinsDedupeKey(APP_ID, unevaluatedRivalId, null),
+  });
+  const marketScoped = competitorRow("market-scoped", "2026-07-22T17:00:00.000Z", {
+    country: "gb",
+    dedupe_key: competitorWinsDedupeKey(APP_ID, ENNEAGRAM_ID, "gb"),
+  });
+  const emittedDraft = competitorDraft({
+    competitor_id: otherCompetitorId,
+    dedupe_key: competitorWinsDedupeKey(APP_ID, otherCompetitorId, null),
+  });
+  const evaluated = [
+    competitorWinsDedupeKey(APP_ID, ENNEAGRAM_ID, null),
+    competitorWinsDedupeKey(APP_ID, otherCompetitorId, null),
+  ];
+
+  const plan = reconcileCompetitorWinsInsights(
+    [emittedDraft],
+    [currentRival, stillEmitted, unevaluatedApp, unevaluatedRival, marketScoped],
+    NOW,
+    evaluated,
+  );
+
+  assert.deepEqual(plan.drafts, []);
+  assert.deepEqual(plan.updates.map((update) => update.id), ["current-rival"]);
+  assert.equal(plan.updates[0].patch.status, "superseded");
+});
+
+test("recovered competitor history remains idempotent", () => {
+  const active = [competitorRow("current", "2026-07-22T17:00:00.000Z")];
+  const evaluated = [competitorWinsDedupeKey(APP_ID, ENNEAGRAM_ID, null)];
+  const recovered = applyPlan(active, reconcileCompetitorWinsInsights([], active, NOW, evaluated));
+
+  assert.deepEqual(reconcileCompetitorWinsInsights([], recovered, NOW, evaluated), { drafts: [], updates: [] });
 });
 
 function collectionFailureDraft(overrides = {}) {

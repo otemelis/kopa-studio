@@ -2070,3 +2070,150 @@ Vertical slice: resolved-condition lifecycle for `metadata_mismatch`
 #### Next exact task
 
 Build resolved-condition lifecycle for `competitor_wins_high_priority_terms`: keep each app, competitor, and scope row active while that rival still meets the deterministic gap rule, automatically supersede it when the evaluated rival no longer qualifies, preserve its evidence as history, and prove competitor isolation plus unchanged-rerun behavior with regression tests.
+
+### Checkpoint 29 — Competitor-gap resolved-condition implementation
+
+Status: locally complete and verified on 2026-07-30.
+
+#### Current milestone
+
+Milestone 1 — Trust and Data Correctness
+Vertical slice: resolved-condition lifecycle for `competitor_wins_high_priority_terms`
+
+#### Completed
+
+- Extended the existing competitor-gap reconciliation instead of creating a parallel lifecycle.
+- Kept one current row per app, competitor, and scope while the deterministic rule continues to emit.
+- Added automatic recovery when an explicitly evaluated competitor no longer meets the high-priority term-gap rule.
+- Preserved recovered rows, titles, and evidence as superseded history.
+- Limited recovery to exact app-and-competitor scopes with recent ranking evidence for that app's tracked keywords, and to the portfolio scope currently owned by the rule.
+- Moved competitor lifecycle reconciliation before alert-preference filtering so disabled competitor notifications cannot be mistaken for recovery.
+- Added regression coverage for recovery, rival isolation, app isolation, country-scope isolation, evidence preservation, and unchanged reruns.
+
+#### Verified
+
+- Focused ASO/parser/lifecycle tests: 30/30 pass.
+- A still-emitted competitor gap remains active without a duplicate.
+- An evaluated rival that stops qualifying is superseded once.
+- Recovery for one rival does not affect another still-emitted rival.
+- Unevaluated apps, rivals without recent evidence, and country-scoped rows are not falsely recovered.
+- Recovered history remains write-free on subsequent runs.
+- No production row has been changed by this checkpoint.
+
+#### Known issues
+
+- The implementation has not yet been deployed or exercised against the current production run.
+- Current production has three tracked competitors and three active portfolio gap rows; each is expected to remain active if its current gap evidence still qualifies.
+- The recovery branch is covered by deterministic tests rather than by manipulating production competitor rankings.
+- The standalone lint command remains unavailable because the repository lacks an ESLint 9 flat configuration.
+
+#### Files changed
+
+- `api/aso/_lib/insights.js`
+- `api/aso/_lib/insights.test.mjs`
+- `api/aso/collect.js`
+- `KOPA_CURRENT_STATE.md`
+
+#### Database changes
+
+- None.
+- The existing `superseded` lifecycle value supports this slice.
+- No migration is required.
+
+#### Deployment status
+
+- Local implementation: complete.
+- Production deployment and current-condition acceptance: pending.
+
+#### Remaining in this vertical slice
+
+- Run the full root and Kopa Tools quality gates.
+- Deploy the committed collector directly to production.
+- Run collection twice and verify current rival rows remain correctly isolated, deduplicated, and write-free when evidence is unchanged.
+
+#### Next exact task
+
+Run all quality gates, deploy the collector, and validate current competitor-scope persistence plus second-run idempotency in production.
+
+### Checkpoint 30 — Production competitor-gap lifecycle acceptance
+
+Status: completed and verified on 2026-07-31.
+
+#### Current milestone
+
+Milestone 1 — Trust and Data Correctness
+Vertical slice: resolved-condition lifecycle for `competitor_wins_high_priority_terms`
+
+#### Completed
+
+- Deployed the committed competitor-gap lifecycle implementation directly to Kopa Studio production.
+- Ran the owner-only Public App Store collector twice after deployment.
+- Verified that all three currently qualifying competitors remain isolated active portfolio rows.
+- Verified that unchanged competitor evidence creates no duplicate and performs no lifecycle refresh.
+- Verified that three older Enneagram gap versions remain preserved as superseded history.
+- Covered the unavailable production recovery transition with deterministic tests instead of manipulating live competitor rankings.
+- Audited production rule families after acceptance; every currently stored rule family now has explicit current-versus-superseded lifecycle handling.
+
+#### Verified
+
+- Production deployment `dpl_GVzQ4gw9qDm9RJxSSVdAD2YUzQjs` is Ready and aliased to `https://www.kopa.studio`.
+- The three active competitor identities remain:
+  - `dd5ef7a9-6983-4456-ad86-b0ac431bfa11` — 16 Personalities Test, 19 high-priority terms;
+  - `4caf316e-f0b8-4e28-ad25-c4983632de5f` — The Personality Types, 3 high-priority terms;
+  - `3196b29e-919c-4952-a949-f0f6a25d5975` — Enneagram: Personality Test, 8 high-priority terms.
+- Their app-plus-competitor-plus-portfolio dedupe keys remained distinct.
+- Their `updated_at` values remained unchanged through both post-deployment runs.
+- The three older Enneagram rows remain stored with `superseded` status and unchanged historical timestamps.
+- First post-deployment run `60bb401d-cdac-4975-9c33-030a75e655d5` completed `ok`:
+  - 54 processed;
+  - 54 succeeded;
+  - 0 failed;
+  - 3 competitors evaluated;
+  - 0 insights created.
+- Second post-deployment run `87148e3c-6456-4b48-b9b2-bf4e825a6dd8` completed `ok` with the same counts.
+- Focused ASO/parser/lifecycle tests: 30/30 pass.
+- Root repository checks: 10/10 pass.
+- Kopa Tools tests: 21 files and 72/72 tests pass.
+- Kopa Tools typecheck passes.
+- Kopa Tools production build passes.
+- Recovery tests prove that one evaluated rival can resolve without affecting other rivals, apps, or market scopes, while preserving its evidence.
+- Rivals without recent ranking evidence are not falsely recovered.
+- Attribution remains deferred and no Apple Ads write capability was added.
+
+#### Known issues
+
+- The current three production competitor gaps remain genuine, so their rows correctly remain active.
+- The recovery transition cannot be exercised in production without a real ranking change; deterministic regression coverage is complete.
+- The Discovery assessment still preserves period context in navigation but evaluates a fixed 28-day evidence window.
+- The standalone lint command remains unavailable because the repository lacks an ESLint 9 flat configuration.
+
+#### Files changed
+
+- `api/aso/_lib/insights.js`
+- `api/aso/_lib/insights.test.mjs`
+- `api/aso/collect.js`
+- `KOPA_CURRENT_STATE.md`
+
+#### Database changes
+
+- None.
+- No production insight row was manually mutated.
+- Existing active and historical rows were preserved.
+
+#### Deployment status
+
+- Kopa Studio collector: live in production.
+- Production/source parity for this slice: verified.
+- Competitor isolation, current-condition persistence, and second-run idempotency acceptance: passed.
+- Vertical slice: complete.
+
+#### Remaining in Milestone 1 — Trust and Data Correctness
+
+- Enforce remaining locale, period, metadata-version, and evidence-window context.
+- Finish shared freshness, completeness, volume, relevance, and cross-source agreement contracts.
+- Unify lifecycle semantics across ASO, Discovery, and Apple Ads persistence models.
+- Complete remaining authenticated owner/unauthorized-account parity checks.
+
+#### Next exact task
+
+Make the Discovery assessment honor the selected 7-day, 28-day, or 90-day period end to end: use that period for evidence queries and comparisons, display the same evidence window in the stored/read model, preserve app-and-market scope, and prove period isolation with regression tests.

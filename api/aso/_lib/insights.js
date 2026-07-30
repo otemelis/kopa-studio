@@ -899,12 +899,15 @@ function sameCompetitorWinsScope(row, draft) {
 /**
  * Reconcile one current competitor-gap row per app, competitor, and scope.
  * Legacy keys are understood during migration, so distinct competitors never
- * share lifecycle state and unchanged reruns remain write-free.
+ * share lifecycle state. When an evaluated rival no longer emits the rule,
+ * its current portfolio row becomes superseded history. Unchanged reruns
+ * remain write-free.
  */
-export function reconcileCompetitorWinsInsights(drafts, existing, now = new Date()) {
+export function reconcileCompetitorWinsInsights(drafts, existing, now = new Date(), evaluatedScopeKeys = []) {
   const pendingDrafts = [];
   const updates = [];
   const processedScopes = new Set();
+  const evaluatedScopes = new Set(evaluatedScopeKeys);
   const timestamp = now.toISOString();
   const fields = [...INSIGHT_DRAFT_FIELDS, "competitor_id"];
 
@@ -947,6 +950,31 @@ export function reconcileCompetitorWinsInsights(drafts, existing, now = new Date
         },
       });
     }
+  }
+
+  for (const row of existing) {
+    const competitorId = competitorIdFromInsight(row);
+    if (
+      row.rule_id !== "competitor_wins_high_priority_terms" ||
+      row.status !== "active" ||
+      !competitorId ||
+      row.country?.trim()
+    ) {
+      continue;
+    }
+
+    const scopeKey = competitorWinsDedupeKey(row.app_id, competitorId, null);
+    if (!evaluatedScopes.has(scopeKey) || processedScopes.has(scopeKey)) continue;
+
+    updates.push({
+      id: row.id,
+      patch: {
+        status: "superseded",
+        snoozed_until: null,
+        note: `Resolved automatically after the evaluated competitor no longer met the high-priority term-gap rule on ${timestamp}.`,
+        updated_at: timestamp,
+      },
+    });
   }
 
   return { drafts: pendingDrafts, updates };
