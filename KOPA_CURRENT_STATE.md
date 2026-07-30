@@ -1783,3 +1783,146 @@ Vertical slice: one current competitor-gap insight per app, competitor, and scop
 #### Next exact task
 
 Build the smallest resolved-condition lifecycle slice: automatically supersede the stale active `data_collection_failure` insight when the current rule no longer emits it, preserve the historical row and evidence, keep genuine current failures active, and prove recovery plus unchanged-rerun idempotency with regression tests.
+
+### Checkpoint 25 — Resolved collection-warning lifecycle implementation
+
+Status: implemented locally and verified on 2026-07-30; production deployment pending.
+
+#### Current milestone
+
+Milestone 1 — Trust and Data Correctness
+Vertical slice: resolved-condition lifecycle for `data_collection_failure`
+
+#### Completed
+
+- Audited the active production warning against the latest collection evidence.
+- Added deterministic reconciliation for `data_collection_failure` before notification-preference filtering.
+- Current failures now remain active and refresh their evidence in place.
+- Newly detected failures still create a current insight.
+- When the rule no longer emits a failure for an app and scope, the prior active row becomes `superseded` history with an explicit recovery note.
+- Added regression coverage for recovery, evidence preservation, genuine current failures, new failures, and unchanged active/recovered idempotency.
+
+#### Verified
+
+- The production warning was created 2026-07-20 and still reports:
+  - last successful run: 2026-07-20;
+  - ten stale keywords.
+- The latest ten production collection runs are all `ok`, including four acceptance runs completed on 2026-07-30.
+- The current rule therefore no longer emits this failure; the active row is obsolete historical evidence.
+- Root ASO/parser/lifecycle tests: 24/24 pass.
+- Root repository checks: 10/10 pass.
+- Kopa Tools tests: 21 files and 72/72 tests pass.
+- Kopa Tools typecheck passes.
+- Kopa Tools production build passes.
+- Recovery retains the original row and evidence and changes only lifecycle metadata.
+- A genuine emitted failure is not superseded.
+- Unchanged active and already-recovered reruns produce zero inserts and zero updates.
+- No production row has been changed by this checkpoint.
+
+#### Known issues
+
+- The obsolete production warning remains active until the collector implementation is deployed and run.
+- Resolved-condition lifecycle has not yet been generalized to every deterministic rule family.
+- The standalone lint command remains unavailable because the repository lacks an ESLint 9 flat configuration.
+
+#### Files changed
+
+- `api/aso/_lib/insights.js`
+- `api/aso/_lib/insights.test.mjs`
+- `api/aso/collect.js`
+- `KOPA_CURRENT_STATE.md`
+
+#### Database changes
+
+- None.
+- The existing `superseded` lifecycle value supports this slice.
+- No migration is required.
+
+#### Deployment status
+
+- Local implementation: complete for this checkpoint.
+- Production collector deployment and recovery validation: pending.
+
+#### Remaining in this vertical slice
+
+- Deploy the collector directly to production.
+- Run collection and verify the obsolete warning becomes superseded history.
+- Run a second collection and prove the recovered row remains unchanged.
+
+#### Next exact task
+
+Run all quality gates, deploy the collector, and validate recovery plus second-run idempotency in production.
+
+### Checkpoint 26 — Production collection-warning recovery acceptance
+
+Status: completed and verified on 2026-07-30.
+
+#### Current milestone
+
+Milestone 1 — Trust and Data Correctness
+Vertical slice: resolved-condition lifecycle for `data_collection_failure`
+
+#### Completed
+
+- Deployed the committed resolved-warning reconciliation directly to Kopa Studio production.
+- Ran the owner-only Public App Store collector twice after deployment.
+- Verified that current healthy evidence retired the obsolete warning.
+- Verified the original warning row and evidence remain available as superseded history.
+- Verified the second healthy run made no further lifecycle write.
+
+#### Verified
+
+- Production deployment `dpl_5V78Uyh5kjiMXvz8semwWL75aU5v` is Ready and aliased to `https://www.kopa.studio`.
+- The production site returns HTTP 200.
+- Active `data_collection_failure` count is now zero.
+- Historical row `47a09bbc-96be-48fd-ab34-859661c44132` remains stored with:
+  - original July 20 observation;
+  - original last-successful-run and stale-keyword evidence;
+  - `superseded` status;
+  - an explicit automatic-recovery note.
+- First post-deployment run `69951961-536b-484c-8f86-59f221af44aa` completed `ok` with `insights_created: 0`.
+- The first run changed the recovered row once at `2026-07-30T21:35:59.053Z`.
+- Second post-deployment run `24ea2f8d-a75b-4ed5-a283-34e9c71d9da4` completed `ok` with `insights_created: 0`.
+- The recovered row's `updated_at` remained unchanged after the second run, proving write-free recovered-state idempotency.
+- Root ASO/parser/lifecycle tests: 24/24 pass.
+- Root repository checks: 10/10 pass.
+- Kopa Tools tests: 21 files and 72/72 tests pass.
+- Kopa Tools typecheck and production build pass.
+- Attribution remains deferred and no Apple Ads write capability was added.
+
+#### Known issues
+
+- `metadata_mismatch` and competitor-gap identities are stable while emitted, but their active rows are not yet automatically retired when their deterministic conditions disappear.
+- Period context remains preserved but is not yet enforced by the fixed 28-day Discovery assessment.
+- The standalone lint command remains unavailable because the repository lacks an ESLint 9 flat configuration.
+
+#### Files changed
+
+- `api/aso/_lib/insights.js`
+- `api/aso/_lib/insights.test.mjs`
+- `api/aso/collect.js`
+- `KOPA_CURRENT_STATE.md`
+
+#### Database changes
+
+- None.
+- The existing row was preserved and moved from `active` to `superseded`; no deletion occurred.
+
+#### Deployment status
+
+- Kopa Studio collector: live in production.
+- Production/source parity for this slice: verified.
+- Recovery and second-run idempotency acceptance: passed.
+- Vertical slice: complete.
+
+#### Remaining in Milestone 1 — Trust and Data Correctness
+
+- Complete resolved-condition lifecycle for the remaining current ASO rule families.
+- Unify identity and lifecycle across the remaining ASO rule families and persistence models.
+- Enforce remaining locale, period, metadata-version, and evidence-window context.
+- Finish shared freshness, completeness, volume, relevance, and cross-source agreement contracts.
+- Complete remaining authenticated owner/unauthorized-account parity checks.
+
+#### Next exact task
+
+Build the smallest remaining resolved-condition slice for `metadata_mismatch`: keep the current app-and-scope row active and refreshed while missing high-priority terms remain, automatically supersede it when the rule stops emitting after a metadata fix, preserve its evidence as history, and prove active, recovery, and unchanged-rerun behavior with regression tests.

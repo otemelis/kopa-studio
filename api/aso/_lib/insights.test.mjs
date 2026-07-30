@@ -5,6 +5,7 @@ import {
   competitorWinsDedupeKey,
   metadataMismatchDedupeKey,
   reconcileCompetitorWinsInsights,
+  reconcileDataCollectionFailureInsights,
   reconcileMetadataMismatchInsights,
 } from "./insights.js";
 
@@ -213,4 +214,89 @@ test("unchanged competitor reruns are idempotent", () => {
   assert.deepEqual(first, { drafts: [], updates: [] });
   const second = reconcileCompetitorWinsInsights([currentDraft], applyPlan(rows, first), NOW);
   assert.deepEqual(second, { drafts: [], updates: [] });
+});
+
+function collectionFailureDraft(overrides = {}) {
+  return {
+    rule_id: "data_collection_failure",
+    app_id: APP_ID,
+    keyword_id: null,
+    experiment_id: null,
+    country: null,
+    title: "Data collection needs attention",
+    observation: "10 tracked keywords are stale.",
+    interpretation: "Stale collection makes conclusions unreliable.",
+    recommendation: "Run collection before acting.",
+    evidence: [
+      { label: "Last successful run", value: "2026-07-20", source: "calculated" },
+      { label: "Stale keywords", value: "10", source: "calculated" },
+    ],
+    comparison_window: "Last 3 days",
+    confidence: "high",
+    impact: "medium",
+    effort: "low",
+    priority: "high",
+    dedupe_key: `data_collection_failure:${APP_ID}`,
+    ...overrides,
+  };
+}
+
+function collectionFailureRow(id = "failure", overrides = {}) {
+  return {
+    id,
+    status: "active",
+    created_at: "2026-07-20T10:00:00.000Z",
+    updated_at: "2026-07-20T10:00:00.000Z",
+    snoozed_until: null,
+    note: null,
+    ...collectionFailureDraft(),
+    ...overrides,
+  };
+}
+
+test("recovery supersedes an obsolete collection failure while preserving its evidence", () => {
+  const existing = [collectionFailureRow()];
+  const plan = reconcileDataCollectionFailureInsights([], existing, NOW);
+
+  assert.deepEqual(plan.drafts, []);
+  assert.equal(plan.updates.length, 1);
+  assert.equal(plan.updates[0].id, "failure");
+  assert.equal(plan.updates[0].patch.status, "superseded");
+  assert.match(plan.updates[0].patch.note, /Resolved automatically/);
+
+  const historical = applyPlan(existing, plan)[0];
+  assert.deepEqual(historical.evidence, existing[0].evidence);
+});
+
+test("a genuine current collection failure remains active and refreshes changed evidence", () => {
+  const existing = [collectionFailureRow()];
+  const current = collectionFailureDraft({
+    observation: "2 tracked keywords are stale.",
+    evidence: [
+      { label: "Last successful run", value: "2026-07-30", source: "calculated" },
+      { label: "Stale keywords", value: "2", source: "calculated" },
+    ],
+  });
+  const plan = reconcileDataCollectionFailureInsights([current], existing, NOW);
+
+  assert.deepEqual(plan.drafts, []);
+  assert.equal(plan.updates.length, 1);
+  assert.equal(plan.updates[0].patch.status, undefined);
+  assert.equal(plan.updates[0].patch.observation, current.observation);
+});
+
+test("a new current collection failure is inserted instead of treated as recovery", () => {
+  const current = collectionFailureDraft();
+  const plan = reconcileDataCollectionFailureInsights([current], [], NOW);
+  assert.deepEqual(plan.updates, []);
+  assert.deepEqual(plan.drafts, [current]);
+});
+
+test("unchanged current collection failures and recovered history are idempotent", () => {
+  const current = collectionFailureDraft();
+  const active = [collectionFailureRow()];
+  assert.deepEqual(reconcileDataCollectionFailureInsights([current], active, NOW), { drafts: [], updates: [] });
+
+  const recovered = applyPlan(active, reconcileDataCollectionFailureInsights([], active, NOW));
+  assert.deepEqual(reconcileDataCollectionFailureInsights([], recovered, NOW), { drafts: [], updates: [] });
 });

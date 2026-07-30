@@ -20,6 +20,7 @@ import {
   evaluateRulesForApp,
   filterAgainstExisting,
   reconcileCompetitorWinsInsights,
+  reconcileDataCollectionFailureInsights,
   reconcileMetadataMismatchInsights,
 } from "./_lib/insights.js";
 import { requireAdmin, serviceClient } from "./_lib/supabase.js";
@@ -543,6 +544,11 @@ async function runInsightEngine(db) {
     if (ruleId.includes("keyword") || ruleId === "metadata_mismatch") return "keywords";
     return "performance";
   };
+  const operationalReconciliation = reconcileDataCollectionFailureInsights(drafts, existingInsights);
+  for (const update of operationalReconciliation.updates) {
+    await db.update("aso_insights", update.patch, `id=eq.${update.id}`);
+  }
+  drafts = operationalReconciliation.drafts;
   const enabledAlerts = new Map(alertPreferences.map((preference) => [preference.kind, preference.enabled]));
   drafts = drafts.filter((draft) => enabledAlerts.get(alertKindForRule(draft.rule_id)) !== false);
   const metadataReconciliation = reconcileMetadataMismatchInsights(drafts, existingInsights);

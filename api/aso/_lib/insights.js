@@ -925,6 +925,85 @@ export function reconcileCompetitorWinsInsights(drafts, existing, now = new Date
   return { drafts: pendingDrafts, updates };
 }
 
+function sameDataCollectionFailureScope(row, draft) {
+  return (
+    row.rule_id === "data_collection_failure" &&
+    row.app_id === draft.app_id &&
+    (row.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE) ===
+      (draft.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE)
+  );
+}
+
+/**
+ * Keep current operational warnings accurate and retire them when the
+ * deterministic rule no longer emits a failure for that app and scope.
+ * Recovery preserves the original row and evidence as superseded history.
+ */
+export function reconcileDataCollectionFailureInsights(drafts, existing, now = new Date()) {
+  const pendingDrafts = [];
+  const updates = [];
+  const emittedScopes = new Set();
+  const timestamp = now.toISOString();
+
+  for (const draft of drafts) {
+    if (draft.rule_id !== "data_collection_failure") {
+      pendingDrafts.push(draft);
+      continue;
+    }
+
+    const scopeKey = `${draft.app_id}:${draft.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE}`;
+    if (emittedScopes.has(scopeKey)) continue;
+    emittedScopes.add(scopeKey);
+
+    const active = existing
+      .filter((row) => row.status === "active" && sameDataCollectionFailureScope(row, draft))
+      .sort((left, right) => {
+        const created = String(right.created_at ?? "").localeCompare(String(left.created_at ?? ""));
+        return created || String(right.id ?? "").localeCompare(String(left.id ?? ""));
+      });
+
+    const current = active[0];
+    if (!current) {
+      pendingDrafts.push(draft);
+      continue;
+    }
+
+    const patch = Object.fromEntries(INSIGHT_DRAFT_FIELDS.map((field) => [field, draft[field]]));
+    if (INSIGHT_DRAFT_FIELDS.some((field) => !sameValue(current[field], patch[field]))) {
+      updates.push({ id: current.id, patch: { ...patch, updated_at: timestamp } });
+    }
+
+    for (const historical of active.slice(1)) {
+      updates.push({
+        id: historical.id,
+        patch: {
+          status: "superseded",
+          snoozed_until: null,
+          note: `Superseded automatically by the current data collection warning on ${timestamp}.`,
+          updated_at: timestamp,
+        },
+      });
+    }
+  }
+
+  for (const row of existing) {
+    if (row.rule_id !== "data_collection_failure" || row.status !== "active") continue;
+    const scopeKey = `${row.app_id}:${row.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE}`;
+    if (emittedScopes.has(scopeKey)) continue;
+    updates.push({
+      id: row.id,
+      patch: {
+        status: "superseded",
+        snoozed_until: null,
+        note: `Resolved automatically after current collection evidence no longer met the failure rule on ${timestamp}.`,
+        updated_at: timestamp,
+      },
+    });
+  }
+
+  return { drafts: pendingDrafts, updates };
+}
+
 export function draftToInsertRow(d) {
   const now = new Date().toISOString();
   return { ...d, status: "active", snoozed_until: null, note: null, created_at: now, updated_at: now };
