@@ -2693,3 +2693,65 @@ Vertical slice: metadata-version context for ASO conclusions
 #### Next exact task
 
 Run the remaining quality gates, then commit and deploy the metadata-version implementation.
+
+### Checkpoint 37 — Metadata-version production integration recovery
+
+Status: production integration issue diagnosed and locally fixed on 2026-07-31; recovery deployment pending.
+
+#### Current milestone
+
+Milestone 1 — Trust and Data Correctness
+Vertical slice: metadata-version context for ASO conclusions
+
+#### Completed
+
+- Committed the verified implementation as `e5955e19` (`fix(aso): isolate metadata-version evidence`).
+- Deployed the exact commit to both production projects:
+  - public collector deployment `dpl_CQywSiyLr4Z6G3LqX6sRdgCeqgds`;
+  - Kopa Tools deployment `dpl_FJoybecyPiKsi4NxLHCrRujaY57F`.
+- Started one owner-authenticated public-store refresh through the existing Jobs workflow.
+- Diagnosed the integration failure recorded by the production job: `metadataMismatchDedupeKey is not defined`.
+- Confirmed the collector referenced the existing exported identity helper but omitted it from the import list.
+- Added the missing import and a collector contract regression test that verifies every metadata reconciliation identity invoked by the collector is imported.
+
+#### Verified
+
+- The failed production run processed the normal 54 collection items before stopping at insight reconciliation.
+- Both the `apple_public` sync row and queue row correctly finished as `failed` with the exact error; no partial insight reconciliation was reported as successful.
+- No App Store or Apple Ads resource was modified.
+- Recovery collector tests: 36/36 pass.
+- Collector syntax validation passes.
+- Root repository checks pass for all 10 levels.
+- `git diff --check` passes.
+
+#### Known issues
+
+- The recovery fix has not yet been committed or redeployed.
+- Production active ASO insights still contain their prior evidence because the failed run did not complete reconciliation.
+- The two failed job rows are immutable operational history and should remain visible.
+
+#### Files changed
+
+- `api/aso/collect.js`
+- `api/aso/_lib/collect-contract.test.mjs`
+- `KOPA_CURRENT_STATE.md`
+
+#### Database changes
+
+- None.
+
+#### Deployment status
+
+- Initial collector and Tools deployments: Ready.
+- Production recomputation: failed honestly at insight reconciliation.
+- Recovery collector deployment and rerun: pending.
+
+#### Remaining in this vertical slice
+
+- Commit and deploy the tested collector recovery.
+- Rerun the single public-store refresh.
+- Verify a successful job and exact US/GB recommendation behavior.
+
+#### Next exact task
+
+Deploy the missing-import recovery to the public collector, rerun once, and complete signed-in acceptance.
