@@ -1630,3 +1630,156 @@ Vertical slice: one current `metadata_mismatch` insight per app and scope
 #### Next exact task
 
 Build the smallest competitor-recommendation identity slice: collapse the four active InnerType + Enneagram `competitor_wins_high_priority_terms` rows to one current app-plus-competitor-and-scope identity, preserve the older three as superseded history, keep the two distinct competitor identities separate, and prove rerun idempotency with regression tests.
+
+### Checkpoint 23 — Competitor insight identity audit and implementation
+
+Status: implementation and production migration verified on 2026-07-30; collector deployment pending.
+
+#### Current milestone
+
+Milestone 1 — Trust and Data Correctness
+Vertical slice: one current competitor-gap insight per app, competitor, and scope
+
+#### Completed
+
+- Audited every production `competitor_wins_high_priority_terms` row and its source competitor.
+- Replaced the changing losing-keyword-ID-list dedupe suffix with a stable app-plus-competitor-and-scope identity.
+- Added an explicit `competitor_id` reference to the insight draft and an additive database migration to persist it.
+- Added reconciliation that refreshes only the newest current row for the same app, competitor, and scope.
+- Preserved older same-identity rows as `superseded` history without deleting evidence.
+- Added regression coverage for stable identity, legacy-key reconciliation, distinct-competitor isolation, market isolation, history preservation, and unchanged-rerun idempotency.
+
+#### Verified
+
+- Production has four active InnerType + Enneagram versions:
+  - current 8-term row from 2026-07-22;
+  - 9-term row from 2026-07-21;
+  - older 8-term row from 2026-07-21;
+  - 5-term row from 2026-07-21.
+- Their changing keyword-ID suffixes caused each evidence-set change to create another active row.
+- Enneagram competitor ID is `02dbe396-cd28-4965-8a82-ae015251903e`.
+- The active 16 Personalities Test and The Personality Types findings use different competitor IDs and must remain current independent identities.
+- Root ASO/parser tests: 20/20 pass.
+- Root repository checks: 10/10 pass.
+- Kopa Tools tests: 21 files and 72/72 tests pass.
+- Kopa Tools typecheck passes after the production build completed.
+- Kopa Tools production build passes.
+- Local unchanged-rerun plans produce zero inserts and zero updates.
+- Production migration completed successfully:
+  - current 8-term Enneagram row remains active with the stable competitor identity;
+  - the 9-term, older 8-term, and 5-term Enneagram rows remain stored as superseded history;
+  - 16 Personalities Test and The Personality Types remain active as independent identities;
+  - all six original row IDs and evidence records are preserved.
+
+#### Known issues
+
+- Remaining ASO rule families have not yet received the shared identity contract.
+- The standalone lint command remains unavailable because the repository lacks an ESLint 9 flat configuration.
+
+#### Files changed
+
+- `api/aso/_lib/insights.js`
+- `api/aso/_lib/insights.test.mjs`
+- `api/aso/collect.js`
+- `supabase/migrations/20260730110000_aso_competitor_insight_identity.sql`
+- `KOPA_CURRENT_STATE.md`
+
+#### Database changes
+
+- Applied additive migration `20260730110000_aso_competitor_insight_identity.sql` to production.
+- It adds nullable `competitor_id`, backfills existing competitor-gap rows, supersedes older same-identity active rows, assigns stable keys to current rows, and creates a scoped partial unique index.
+- No row is deleted.
+
+#### Deployment status
+
+- Local implementation: complete for this checkpoint.
+- Production migration: applied and verified.
+- Collector deployment: pending.
+
+#### Remaining in this vertical slice
+
+- Deploy the collector directly to production.
+- Run two production collections and prove unchanged-rerun idempotency.
+- Confirm one active Enneagram row, three superseded Enneagram history rows, and two untouched distinct-competitor active rows.
+
+#### Next exact task
+
+Run all quality gates, then apply and validate the competitor identity contract in production.
+
+### Checkpoint 24 — Production competitor identity acceptance
+
+Status: completed and verified on 2026-07-30.
+
+#### Current milestone
+
+Milestone 1 — Trust and Data Correctness
+Vertical slice: one current competitor-gap insight per app, competitor, and scope
+
+#### Completed
+
+- Applied the additive competitor identity migration to production.
+- Deployed the committed collector source directly to Kopa Studio production.
+- Ran the owner-only Public App Store collector twice after deployment.
+- Verified stable identities, preserved history, distinct-competitor isolation, and second-run idempotency.
+- Inspected the remaining active operational insight and selected one smallest follow-on lifecycle slice.
+
+#### Verified
+
+- Production deployment `dpl_EqA4rUXgbQCvvvXwzjzWwN88WvoM` is Ready and aliased to `https://www.kopa.studio`.
+- The production site returns HTTP 200.
+- Exactly three competitor-gap rows are active, one for each distinct rival:
+  - Enneagram: Personality Test;
+  - 16 Personalities Test;
+  - The Personality Types.
+- The current Enneagram row uses the stable portfolio identity and explicit competitor ID.
+- The older 9-term, 8-term, and 5-term Enneagram rows remain stored as `superseded` history with explicit notes.
+- No row or evidence record was deleted.
+- First post-deployment run `a952c5f2-14d9-4ff6-bca4-a342c6a08df6` completed `ok` with `insights_created: 0`.
+- That first run refreshed changed current evidence in place without creating a duplicate.
+- Second post-deployment run `4680c945-d314-4523-9f7b-2fad526edd46` completed `ok` with `insights_created: 0`.
+- The three active competitor rows' `updated_at` values were unchanged by the second run, proving write-free unchanged-rerun idempotency.
+- Root ASO/parser tests: 20/20 pass.
+- Root repository checks: 10/10 pass.
+- Kopa Tools tests: 21 files and 72/72 tests pass.
+- Kopa Tools typecheck and production build pass.
+- Attribution remains deferred and no Apple Ads write capability was added.
+
+#### Known issues
+
+- The active `data_collection_failure` insight still says ten keywords are stale and the last successful run was 2026-07-20.
+- The latest ten production collection runs are all `ok`, including the two acceptance runs on 2026-07-30, so that operational warning is historical but remains active because resolved rule conditions are not yet retired.
+- Period context remains preserved but is not yet enforced by the fixed 28-day Discovery assessment.
+- The standalone lint command remains unavailable because the repository lacks an ESLint 9 flat configuration.
+
+#### Files changed
+
+- `api/aso/_lib/insights.js`
+- `api/aso/_lib/insights.test.mjs`
+- `api/aso/collect.js`
+- `supabase/migrations/20260730110000_aso_competitor_insight_identity.sql`
+- `KOPA_CURRENT_STATE.md`
+
+#### Database changes
+
+- Applied `20260730110000_aso_competitor_insight_identity.sql`.
+- Added nullable `competitor_id`, backfilled all six competitor-gap rows, superseded three older Enneagram versions, assigned stable keys to the three current competitor identities, and added a partial unique index.
+- No deletion occurred.
+
+#### Deployment status
+
+- Kopa Studio collector: live in production.
+- Production/source parity for this slice: verified.
+- Two-run idempotency acceptance: passed.
+- Vertical slice: complete.
+
+#### Remaining in Milestone 1 — Trust and Data Correctness
+
+- Complete lifecycle consistency when deterministic rule conditions resolve.
+- Unify identity and lifecycle across the remaining ASO rule families and persistence models.
+- Enforce remaining locale, period, metadata-version, and evidence-window context.
+- Finish shared freshness, completeness, volume, relevance, and cross-source agreement contracts.
+- Complete remaining authenticated owner/unauthorized-account parity checks.
+
+#### Next exact task
+
+Build the smallest resolved-condition lifecycle slice: automatically supersede the stale active `data_collection_failure` insight when the current rule no longer emits it, preserve the historical row and evidence, keep genuine current failures active, and prove recovery plus unchanged-rerun idempotency with regression tests.

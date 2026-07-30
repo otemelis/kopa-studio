@@ -25,6 +25,10 @@ export function metadataMismatchDedupeKey(appId, country) {
   return `metadata_mismatch:${appId}:${country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE}`;
 }
 
+export function competitorWinsDedupeKey(appId, competitorId, country) {
+  return `competitor_wins_high_priority_terms:${appId}:${competitorId}:${country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE}`;
+}
+
 function ev(label, value, source) {
   return { label, value, source };
 }
@@ -154,6 +158,7 @@ function ruleCompetitorWinsHighPriorityTerms(ctx) {
     out.push({
       rule_id: "competitor_wins_high_priority_terms",
       app_id: ctx.app.id,
+      competitor_id: competitor.id,
       keyword_id: losses[0].keyword.id,
       experiment_id: null,
       country: null,
@@ -173,7 +178,7 @@ function ruleCompetitorWinsHighPriorityTerms(ctx) {
       impact: "high",
       effort: "medium",
       priority: "high",
-      dedupe_key: `competitor_wins_high_priority_terms:${ctx.app.id}:${competitor.id}:${losses.map((item) => item.keyword.id).sort().join(",")}`,
+      dedupe_key: competitorWinsDedupeKey(ctx.app.id, competitor.id, null),
     });
   }
   return out;
@@ -839,6 +844,78 @@ export function reconcileMetadataMismatchInsights(drafts, existing, now = new Da
           status: "superseded",
           snoozed_until: null,
           note: `Superseded automatically by the current app-and-scope metadata mismatch insight on ${timestamp}.`,
+          updated_at: timestamp,
+        },
+      });
+    }
+  }
+
+  return { drafts: pendingDrafts, updates };
+}
+
+function competitorIdFromInsight(row) {
+  if (row.competitor_id) return row.competitor_id;
+  if (row.rule_id !== "competitor_wins_high_priority_terms") return null;
+  return String(row.dedupe_key ?? "").split(":")[2] || null;
+}
+
+function sameCompetitorWinsScope(row, draft) {
+  return (
+    row.rule_id === "competitor_wins_high_priority_terms" &&
+    row.app_id === draft.app_id &&
+    competitorIdFromInsight(row) === draft.competitor_id &&
+    (row.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE) ===
+      (draft.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE)
+  );
+}
+
+/**
+ * Reconcile one current competitor-gap row per app, competitor, and scope.
+ * Legacy keys are understood during migration, so distinct competitors never
+ * share lifecycle state and unchanged reruns remain write-free.
+ */
+export function reconcileCompetitorWinsInsights(drafts, existing, now = new Date()) {
+  const pendingDrafts = [];
+  const updates = [];
+  const processedScopes = new Set();
+  const timestamp = now.toISOString();
+  const fields = [...INSIGHT_DRAFT_FIELDS, "competitor_id"];
+
+  for (const draft of drafts) {
+    if (draft.rule_id !== "competitor_wins_high_priority_terms") {
+      pendingDrafts.push(draft);
+      continue;
+    }
+
+    const scopeKey = competitorWinsDedupeKey(draft.app_id, draft.competitor_id, draft.country);
+    if (processedScopes.has(scopeKey)) continue;
+    processedScopes.add(scopeKey);
+
+    const active = existing
+      .filter((row) => row.status === "active" && sameCompetitorWinsScope(row, draft))
+      .sort((left, right) => {
+        const created = String(right.created_at ?? "").localeCompare(String(left.created_at ?? ""));
+        return created || String(right.id ?? "").localeCompare(String(left.id ?? ""));
+      });
+
+    const current = active[0];
+    if (!current) {
+      pendingDrafts.push(draft);
+      continue;
+    }
+
+    const patch = Object.fromEntries(fields.map((field) => [field, draft[field]]));
+    if (fields.some((field) => !sameValue(current[field], patch[field]))) {
+      updates.push({ id: current.id, patch: { ...patch, updated_at: timestamp } });
+    }
+
+    for (const historical of active.slice(1)) {
+      updates.push({
+        id: historical.id,
+        patch: {
+          status: "superseded",
+          snoozed_until: null,
+          note: `Superseded automatically by the current app-plus-competitor-and-scope insight on ${timestamp}.`,
           updated_at: timestamp,
         },
       });

@@ -19,6 +19,7 @@ import {
   draftToInsertRow,
   evaluateRulesForApp,
   filterAgainstExisting,
+  reconcileCompetitorWinsInsights,
   reconcileMetadataMismatchInsights,
 } from "./_lib/insights.js";
 import { requireAdmin, serviceClient } from "./_lib/supabase.js";
@@ -544,11 +545,15 @@ async function runInsightEngine(db) {
   };
   const enabledAlerts = new Map(alertPreferences.map((preference) => [preference.kind, preference.enabled]));
   drafts = drafts.filter((draft) => enabledAlerts.get(alertKindForRule(draft.rule_id)) !== false);
-  const reconciliation = reconcileMetadataMismatchInsights(drafts, existingInsights);
-  for (const update of reconciliation.updates) {
+  const metadataReconciliation = reconcileMetadataMismatchInsights(drafts, existingInsights);
+  for (const update of metadataReconciliation.updates) {
     await db.update("aso_insights", update.patch, `id=eq.${update.id}`);
   }
-  drafts = reconciliation.drafts;
+  const competitorReconciliation = reconcileCompetitorWinsInsights(metadataReconciliation.drafts, existingInsights);
+  for (const update of competitorReconciliation.updates) {
+    await db.update("aso_insights", update.patch, `id=eq.${update.id}`);
+  }
+  drafts = competitorReconciliation.drafts;
   drafts = filterAgainstExisting(drafts, existingInsights);
   if (drafts.length) await db.insert("aso_insights", drafts.map(draftToInsertRow));
   return drafts.length;
