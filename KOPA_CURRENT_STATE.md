@@ -2463,3 +2463,84 @@ Vertical slice: Discovery evidence-quality gating
 #### Next exact task
 
 Deploy production and complete signed-in fresh-state acceptance without mutating production evidence.
+
+### Checkpoint 34 — Discovery evidence-quality production acceptance
+
+Status: complete and live in production on 2026-07-31.
+
+#### Current milestone
+
+Milestone 1 — Trust and Data Correctness
+Vertical slice: Discovery evidence-quality gating
+
+#### Completed
+
+- Committed the verified implementation as `97d59d23` (`fix(tools): gate Discovery evidence quality`).
+- Deployed that exact committed application source directly to the existing Kopa Tools production project.
+- Completed signed-in acceptance against InnerType Personality Test, market GB, and the 28-day period.
+- Kept the existing recommendation and App Store Connect pages; no page or navigation change was required.
+
+#### Verified
+
+- Production deployment `dpl_5H8ppQXsZzcWVtgD3UiXwM3a325h` is `READY` and aliased to `https://tools.kopa.studio`.
+- The scoped Discovery assessment is `Fresh`.
+- The production explanation states that verified `discovery-v2` evidence runs through 2026-07-29 and that all 244 source rows were accepted with none rejected.
+- The request table reports `success`, parser `discovery-v2`, 244/244 rows, zero rejected rows, and evidence from 2026-07-24 through 2026-07-29.
+- The exact InnerType/GB storefront table remains isolated to the selected app and market.
+- Recommendations show three directional Discovery conclusions:
+  - GB has weak page-view pull;
+  - App Store search is the strongest discovery source;
+  - product page views are rising.
+- Every Discovery card shows `Data quality: Fresh`.
+- The separate waiting card for download conversion remains explicit because the sales/download import is not complete.
+- The recommendation evidence window is derived from stored scoped metric rows and displays 2026-07-24 through 2026-07-28; the parser-quality explanation independently preserves the full request provenance through 2026-07-29.
+- No production evidence was changed to simulate stale, partial, zero, invalid, or absent states; those states are covered deterministically by tests.
+- No Apple Ads resource was modified.
+- Attribution remains deferred.
+- Kopa Tools tests pass: 24 files, 87/87 tests.
+- Kopa Tools typecheck passes.
+- Kopa Tools production build passes locally and in Vercel.
+- Root repository checks pass for all 10 levels.
+- `git diff --check` passes.
+
+#### Known issues
+
+- Discovery conclusions remain dynamic read-model recommendations rather than persisted lifecycle rows.
+- Download conversion remains unavailable until the separate sales/download import produces complete scoped daily evidence.
+- Parser request provenance is app-level because Apple’s report-request record has no market dimension; exact market eligibility is additionally required through stored metric rows.
+- The standalone lint command remains unavailable because the repository lacks an ESLint 9 flat configuration.
+
+#### Files changed
+
+- `apps/tools/src/lib/discovery-quality.ts`
+- `apps/tools/src/lib/discovery-quality.test.ts`
+- `apps/tools/src/lib/metrics.ts`
+- `apps/tools/src/lib/metrics.test.ts`
+- `apps/tools/src/repositories/storefront-metrics-repository.ts`
+- `apps/tools/src/repositories/storefront-metrics-repository.test.ts`
+- `apps/tools/src/repositories/appstore-connect-repository.ts`
+- `apps/tools/src/types/domain.ts`
+- `apps/tools/src/app/insights/page.tsx`
+- `apps/tools/src/app/app-store-connect/page.tsx`
+- `KOPA_CURRENT_STATE.md`
+
+#### Database changes
+
+- None.
+- No migration was required.
+
+#### Deployment status
+
+- Production deployment: complete.
+- Production alias: `https://tools.kopa.studio`.
+- Deployment ID: `dpl_5H8ppQXsZzcWVtgD3UiXwM3a325h`.
+- Rollback: promote the previous healthy Kopa Tools deployment `dpl_FF1PxtZPFmdnvWqfD8YsWs5GGN9w`.
+
+#### Remaining in this vertical slice
+
+- None.
+- The Discovery evidence-quality gating acceptance test passed.
+
+#### Next exact task
+
+Enforce metadata-version context for metadata-dependent ASO conclusions: attach the observed metadata snapshot/version and change time to each conclusion, prevent current metadata findings from being mixed with pre-change rank evidence, and prove version isolation with tests.
