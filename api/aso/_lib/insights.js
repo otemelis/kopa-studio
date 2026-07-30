@@ -19,6 +19,11 @@ import {
 } from "./calc.js";
 
 export const SUPPRESSION_DAYS = 14;
+export const METADATA_MISMATCH_PORTFOLIO_SCOPE = "portfolio";
+
+export function metadataMismatchDedupeKey(appId, country) {
+  return `metadata_mismatch:${appId}:${country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE}`;
+}
 
 function ev(label, value, source) {
   return { label, value, source };
@@ -457,7 +462,7 @@ function ruleMetadataMismatch(ctx) {
     impact: "medium",
     effort: "medium",
     priority: "medium",
-    dedupe_key: `metadata_mismatch:${ctx.app.id}:${missing.map((m) => m.keyword.id).sort().join(",")}`,
+    dedupe_key: metadataMismatchDedupeKey(ctx.app.id, null),
   });
   return out;
 }
@@ -752,6 +757,95 @@ export function filterAgainstExisting(drafts, existing, now = new Date(), suppre
     seen.add(d.dedupe_key);
     return true;
   });
+}
+
+const INSIGHT_DRAFT_FIELDS = [
+  "rule_id",
+  "app_id",
+  "keyword_id",
+  "experiment_id",
+  "country",
+  "title",
+  "observation",
+  "interpretation",
+  "recommendation",
+  "evidence",
+  "comparison_window",
+  "confidence",
+  "impact",
+  "effort",
+  "priority",
+  "dedupe_key",
+];
+
+function sameValue(left, right) {
+  return typeof left === "object" || typeof right === "object"
+    ? JSON.stringify(left) === JSON.stringify(right)
+    : left === right;
+}
+
+function sameMetadataMismatchScope(row, draft) {
+  return (
+    row.rule_id === "metadata_mismatch" &&
+    row.app_id === draft.app_id &&
+    (row.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE) ===
+      (draft.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE)
+  );
+}
+
+/**
+ * Reconcile the one-current-row contract for metadata mismatch insights.
+ * The newest active row is refreshed in place, while older active rows are
+ * retained as explicitly superseded history. Unchanged reruns make no writes.
+ */
+export function reconcileMetadataMismatchInsights(drafts, existing, now = new Date()) {
+  const pendingDrafts = [];
+  const updates = [];
+  const processedScopes = new Set();
+  const timestamp = now.toISOString();
+
+  for (const draft of drafts) {
+    if (draft.rule_id !== "metadata_mismatch") {
+      pendingDrafts.push(draft);
+      continue;
+    }
+
+    const scopeKey = metadataMismatchDedupeKey(draft.app_id, draft.country);
+    if (processedScopes.has(scopeKey)) continue;
+    processedScopes.add(scopeKey);
+
+    const active = existing
+      .filter((row) => row.status === "active" && sameMetadataMismatchScope(row, draft))
+      .sort((left, right) => {
+        const created = String(right.created_at ?? "").localeCompare(String(left.created_at ?? ""));
+        return created || String(right.id ?? "").localeCompare(String(left.id ?? ""));
+      });
+
+    const current = active[0];
+    if (!current) {
+      pendingDrafts.push(draft);
+      continue;
+    }
+
+    const patch = Object.fromEntries(INSIGHT_DRAFT_FIELDS.map((field) => [field, draft[field]]));
+    if (INSIGHT_DRAFT_FIELDS.some((field) => !sameValue(current[field], patch[field]))) {
+      updates.push({ id: current.id, patch: { ...patch, updated_at: timestamp } });
+    }
+
+    for (const historical of active.slice(1)) {
+      updates.push({
+        id: historical.id,
+        patch: {
+          status: "superseded",
+          snoozed_until: null,
+          note: `Superseded automatically by the current app-and-scope metadata mismatch insight on ${timestamp}.`,
+          updated_at: timestamp,
+        },
+      });
+    }
+  }
+
+  return { drafts: pendingDrafts, updates };
 }
 
 export function draftToInsertRow(d) {

@@ -15,7 +15,12 @@ import { lookupApp, searchApps } from "./_lib/providers.js";
 import { syncRecentReviews } from "./_lib/appstore-reviews.js";
 import { hasSalesReportsConfig, salesSyncMessage, syncDailySalesMetrics } from "./_lib/appstore-sales.js";
 import { syncDiscoveryAnalytics } from "./_lib/appstore-analytics.js";
-import { draftToInsertRow, evaluateRulesForApp, filterAgainstExisting } from "./_lib/insights.js";
+import {
+  draftToInsertRow,
+  evaluateRulesForApp,
+  filterAgainstExisting,
+  reconcileMetadataMismatchInsights,
+} from "./_lib/insights.js";
 import { requireAdmin, serviceClient } from "./_lib/supabase.js";
 
 let collectionInFlight = false;
@@ -466,7 +471,7 @@ async function runInsightEngine(db) {
       db.select("aso_review_classifications", "select=*&order=classified_at.desc&limit=2000"),
       db.select("aso_experiments", "select=*"),
       db.select("aso_sync_runs", "order=started_at.desc&limit=20&select=*"),
-      db.select("aso_insights", "select=dedupe_key,status,updated_at,snoozed_until"),
+      db.select("aso_insights", "select=*"),
       db.select("aso_alert_preferences", "select=kind,enabled"),
     ]);
 
@@ -539,6 +544,11 @@ async function runInsightEngine(db) {
   };
   const enabledAlerts = new Map(alertPreferences.map((preference) => [preference.kind, preference.enabled]));
   drafts = drafts.filter((draft) => enabledAlerts.get(alertKindForRule(draft.rule_id)) !== false);
+  const reconciliation = reconcileMetadataMismatchInsights(drafts, existingInsights);
+  for (const update of reconciliation.updates) {
+    await db.update("aso_insights", update.patch, `id=eq.${update.id}`);
+  }
+  drafts = reconciliation.drafts;
   drafts = filterAgainstExisting(drafts, existingInsights);
   if (drafts.length) await db.insert("aso_insights", drafts.map(draftToInsertRow));
   return drafts.length;

@@ -1480,3 +1480,153 @@ Vertical slice: Insights app-and-market scope integrity
 #### Next exact task
 
 Build the smallest recommendation-identity slice: collapse repeated active `metadata_mismatch` ASO insights to one current app-and-scope identity, preserve older rows as history, and prove rerun idempotency with regression tests.
+
+### Checkpoint 21 — Metadata-mismatch identity audit and implementation
+
+Status: implementation and production migration verified on 2026-07-30; collector deployment pending.
+
+#### Current milestone
+
+Milestone 1 — Trust and Data Correctness
+Vertical slice: one current `metadata_mismatch` insight per app and scope
+
+#### Completed
+
+- Audited the production `metadata_mismatch` rows and the collector's deterministic insight persistence flow.
+- Replaced the changing keyword-ID-list dedupe key with a stable app-and-scope identity:
+  - portfolio: `metadata_mismatch:<app-id>:portfolio`
+  - storefront: `metadata_mismatch:<app-id>:<country>`
+- Added reconciliation that refreshes the newest current row in place when evidence changes.
+- Added explicit `superseded` history handling for older active rows; no evidence row is deleted.
+- Added an additive migration that converges legacy rows and creates a partial unique index for the one-current-row contract.
+- Added regression coverage for stable identity, history preservation, changed evidence, scope isolation, and unchanged-rerun idempotency.
+
+#### Verified
+
+- Production contains exactly three active portfolio-scoped `metadata_mismatch` rows for InnerType:
+  - 71 missing high-priority keywords, created 2026-07-28;
+  - 49 missing high-priority keywords, created 2026-07-21;
+  - 54 missing high-priority keywords, created 2026-07-20.
+- The repeated rows were caused by including every current missing keyword ID in `dedupe_key`; additions/removals therefore created a new active identity.
+- The newest production row is the correct candidate to remain current; the two older rows can be retained as superseded history.
+- Root ASO/parser tests: 16/16 pass.
+- Root repository checks: 10/10 pass.
+- Kopa Tools tests: 21 files and 72/72 tests pass.
+- Kopa Tools typecheck passes.
+- Kopa Tools production build passes.
+- Production migration completed successfully:
+  - one 71-keyword row remains active with the stable portfolio identity;
+  - the 49-keyword and 54-keyword rows remain stored with `superseded` status and explicit history notes;
+  - all three original row IDs and evidence records are preserved.
+
+#### Known issues
+
+- Other repeated ASO rule families, including competitor-gap findings, remain outside this smallest slice.
+- The standalone lint command remains unavailable because the repository lacks an ESLint 9 flat configuration.
+
+#### Files changed
+
+- `api/aso/_lib/insights.js`
+- `api/aso/_lib/insights.test.mjs`
+- `api/aso/collect.js`
+- `supabase/migrations/20260730090000_aso_metadata_mismatch_identity.sql`
+- `KOPA_CURRENT_STATE.md`
+
+#### Database changes
+
+- Applied additive migration `20260730090000_aso_metadata_mismatch_identity.sql` to production.
+- The migration adds `superseded` to the allowed ASO insight lifecycle, marks older active app-and-scope copies as superseded, assigns the stable key to the newest active row, and adds a partial unique index.
+- No rows are deleted.
+
+#### Deployment status
+
+- Local implementation: complete for this checkpoint.
+- Production migration: applied and verified.
+- Collector production deployment and convergence validation: pending.
+
+#### Remaining in this vertical slice
+
+- Deploy the collector directly to production.
+- Run collection/reconciliation and prove a second unchanged run is idempotent.
+- Confirm one active current row and two superseded history rows.
+
+#### Next exact task
+
+Run all quality gates, review the migration, then apply and validate the one-current-row contract in production.
+
+### Checkpoint 22 — Production metadata-mismatch identity acceptance
+
+Status: completed and verified on 2026-07-30.
+
+#### Current milestone
+
+Milestone 1 — Trust and Data Correctness
+Vertical slice: one current `metadata_mismatch` insight per app and scope
+
+#### Completed
+
+- Applied the additive ASO insight lifecycle and identity migration to production.
+- Deployed the committed collector source directly to Kopa Studio production.
+- Ran the normal owner-only Public App Store collector twice after deployment.
+- Verified the same stable identity and history state after both runs.
+- Inspected the remaining active rule identities and selected one smallest follow-on slice.
+
+#### Verified
+
+- Production deployment `dpl_6LCai2RQtMD2CQbqZpxiUrjFQHb9` is Ready and aliased to `https://www.kopa.studio`.
+- The production site returns HTTP 200.
+- Exactly one `metadata_mismatch` row is active:
+  - row `00e60eeb-f616-48e6-99f2-da3b445e0bf9`;
+  - title reports 71 missing high-priority keywords;
+  - identity is `metadata_mismatch:9bf77c42-ff52-4030-b759-ef56557adca3:portfolio`.
+- Exactly two prior rows remain as `superseded` history:
+  - the 49-keyword row;
+  - the 54-keyword row.
+- No row or evidence record was deleted.
+- First post-deployment run `84757c7d-1cdf-4592-859d-65c8fc3ed535` completed `ok` with `insights_created: 0`.
+- Second post-deployment run `a41de5b9-dda7-46c4-a304-53c9713366e3` completed `ok` with `insights_created: 0`.
+- The active row's `updated_at` remained `2026-07-30T21:01:01.674636+00:00` across both unchanged runs, proving no unnecessary update.
+- Root ASO/parser tests: 16/16 pass.
+- Root repository checks: 10/10 pass.
+- Kopa Tools tests: 21 files and 72/72 tests pass.
+- Kopa Tools typecheck and production build pass.
+- Attribution remains deferred and no Apple Ads write capability was added.
+
+#### Known issues
+
+- The `competitor_wins_high_priority_terms` family still has four active versions for the same InnerType + Enneagram competitor identity (5, 8, 9, and current 8-term evidence).
+- Two other competitor findings have distinct competitor identities and must not be collapsed into the Enneagram history.
+- Period context remains preserved but is not yet enforced by the fixed 28-day Discovery assessment.
+- The standalone lint command remains unavailable because the repository lacks an ESLint 9 flat configuration.
+
+#### Files changed
+
+- `api/aso/_lib/insights.js`
+- `api/aso/_lib/insights.test.mjs`
+- `api/aso/collect.js`
+- `supabase/migrations/20260730090000_aso_metadata_mismatch_identity.sql`
+- `KOPA_CURRENT_STATE.md`
+
+#### Database changes
+
+- Applied `20260730090000_aso_metadata_mismatch_identity.sql`.
+- Added the `superseded` ASO insight lifecycle value and a partial unique index for the one-active metadata-mismatch app-and-scope identity.
+- Reclassified two older active rows as superseded history; no deletion occurred.
+
+#### Deployment status
+
+- Kopa Studio collector: live in production.
+- Production/source parity for this slice: verified.
+- Two-run idempotency acceptance: passed.
+- Vertical slice: complete.
+
+#### Remaining in Milestone 1 — Trust and Data Correctness
+
+- Unify recommendation identity, deduplication, and lifecycle across the remaining rule families and persistence models.
+- Enforce remaining locale, period, metadata-version, and evidence-window context.
+- Finish shared freshness, completeness, volume, relevance, and cross-source agreement contracts.
+- Complete remaining authenticated owner/unauthorized-account parity checks.
+
+#### Next exact task
+
+Build the smallest competitor-recommendation identity slice: collapse the four active InnerType + Enneagram `competitor_wins_high_priority_terms` rows to one current app-plus-competitor-and-scope identity, preserve the older three as superseded history, keep the two distinct competitor identities separate, and prove rerun idempotency with regression tests.
