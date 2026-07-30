@@ -1,7 +1,7 @@
 # Kopa Tools current state
 
 Status: authoritative handover
-Last verified: 2026-07-29
+Last verified: 2026-07-31
 Active roadmap: [KOPA_ACTIVE_ROADMAP.md](KOPA_ACTIVE_ROADMAP.md)
 Detailed inventory: [KOPA_IMPLEMENTATION_INVENTORY.md](KOPA_IMPLEMENTATION_INVENTORY.md)
 
@@ -11,13 +11,13 @@ When another status document conflicts with this file, this file wins.
 
 - Product URL: `https://tools.kopa.studio`
 - Vercel project: `kopa-tools`
-- Current production deployment: `dpl_6xvYrtUDhwgueWt4FfXaKqsEhUVg`
-- Deployment URL: `https://kopa-tools-5ky1rk0kd-otemelis-projects.vercel.app`
+- Current production deployment: `dpl_FJoybecyPiKsi4NxLHCrRujaY57F`
+- Deployment URL: `https://kopa-tools-7ew8rwb53-otemelis-projects.vercel.app`
 - Deployment state: Ready
 - Created: 2026-07-29
-- Repository audit revision: `0b9b3b0d` (`feat(tools): improve ads evidence and audit AppFollow`)
+- Repository audit revision: `07f2bd55` (`fix(aso): import metadata reconciliation identity`)
 - Production/source parity: verified for the Apple Ads evidence, App Store Connect parser-integrity, GB market-readiness, and recommendation-scope slices.
-- Public site/collector: separate root Vercel project at `www.kopa.studio`; current production deployment `dpl_DtCQqG7QUeHC9x3k9cejk5JMci84`
+- Public site/collector: separate root Vercel project at `www.kopa.studio`; current production deployment `dpl_D9ZJjsdy8pvTZCNhpHaGg2g7NQFe`
 
 ## Database migration state
 
@@ -2755,3 +2755,96 @@ Vertical slice: metadata-version context for ASO conclusions
 #### Next exact task
 
 Deploy the missing-import recovery to the public collector, rerun once, and complete signed-in acceptance.
+
+### Checkpoint 38 — Metadata-version production acceptance
+
+Status: complete and live in production on 2026-07-31.
+
+#### Current milestone
+
+Milestone 1 — Trust and Data Correctness
+Vertical slice: metadata-version context for ASO conclusions
+
+#### Completed
+
+- Committed the production recovery as `07f2bd55` (`fix(aso): import metadata reconciliation identity`).
+- Deployed the recovery to the public collector as `dpl_D9ZJjsdy8pvTZCNhpHaGg2g7NQFe`.
+- Reran the single owner-authenticated public-store refresh through the existing Jobs workflow.
+- Completed signed-in US and GB recommendation acceptance.
+- Left the verified US metadata evidence open in the production browser.
+
+#### Verified
+
+- Recovery collection completed successfully:
+  - 54/54 items processed;
+  - two insight rows created;
+  - 50 of 131 rotating keywords covered in this run;
+  - `apple_public` sync status `ok`;
+  - queue status `completed`;
+  - no error.
+- The two earlier failed rows remain visible with their exact missing-import error as immutable operational history.
+- InnerType/US ASO Recommendations show exactly one current metadata-dependent conclusion:
+  - `4 high-priority US keywords are missing from the observed title and subtitle`;
+  - scope is InnerType Personality Test + US;
+  - observed metadata snapshot is `1bf9f40b-4eab-42fe-ac7c-043c23f00223`;
+  - metadata version is `1.1.1`;
+  - checksum is `da331779`;
+  - metadata observation time is `2026-07-29T20:44:43.05+00:00`;
+  - detected metadata change time is `2026-07-29T20:44:43.088+00:00`;
+  - the comparison window states the same observed metadata-version boundary.
+- InnerType/GB with source ASO shows zero active recommendations.
+- GB cannot borrow the US snapshot, version, title, subtitle, or rank context.
+- The former portfolio metadata mismatch was replaced by an exact-country US conclusion.
+- Production evidence is shown from stored JSON rather than reduced to a rule identifier.
+- No new page or navigation item was created.
+- No database migration was applied.
+- No Apple Ads resource was modified.
+- Attribution remains deferred.
+- Full collector tests pass: 36/36.
+- Kopa Tools tests pass: 25 files, 89/89 tests.
+- Kopa Tools typecheck and production build pass.
+- Root repository checks pass for all 10 levels.
+
+#### Known issues
+
+- Public collection still rotates 50 of 131 keywords per run; that existing coverage limit is visible and unchanged.
+- The failed integration attempt remains in operational history by design.
+- Metadata snapshots currently carry country but no first-class App Store locale identifier, so language-dependent conclusions still need explicit locale integrity.
+- The standalone lint command remains unavailable because the repository lacks an ESLint 9 flat configuration.
+
+#### Files changed
+
+- `api/aso/_lib/insights.js`
+- `api/aso/_lib/insights.test.mjs`
+- `api/aso/_lib/collect-contract.test.mjs`
+- `api/aso/collect.js`
+- `apps/tools/src/lib/aso-insight-evidence.ts`
+- `apps/tools/src/lib/aso-insight-evidence.test.ts`
+- `apps/tools/src/repositories/insight-repository.ts`
+- `apps/tools/src/types/domain.ts`
+- `apps/tools/src/app/insights/page.tsx`
+- `KOPA_CURRENT_STATE.md`
+- `KOPA_ACTIVE_ROADMAP.md`
+
+#### Database changes
+
+- None.
+- Existing immutable metadata snapshots, change events, rank timestamps, and JSON insight evidence support the complete implementation.
+
+#### Deployment status
+
+- Kopa Tools production: `dpl_FJoybecyPiKsi4NxLHCrRujaY57F`, Ready, aliased to `https://tools.kopa.studio`.
+- Public collector production: `dpl_D9ZJjsdy8pvTZCNhpHaGg2g7NQFe`, Ready, aliased to `https://www.kopa.studio`.
+- Production recomputation and signed-in acceptance: passed.
+- Rollback:
+  - Kopa Tools: promote `dpl_5H8ppQXsZzcWVtgD3UiXwM3a325h`;
+  - public collector: promote `dpl_CQywSiyLr4Z6G3LqX6sRdgCeqgds` only with the known reconciliation-import failure understood, or use the earlier healthy collector deployment from production history.
+
+#### Remaining in this vertical slice
+
+- None.
+- The metadata-version context acceptance test passed.
+
+#### Next exact task
+
+Add locale-context integrity for public metadata and ASO conclusions: record the exact App Store locale when evidence provides it, require country-and-locale matches for language-dependent findings, show Unknown when locale is unavailable, and prove US/GB locale isolation with tests.

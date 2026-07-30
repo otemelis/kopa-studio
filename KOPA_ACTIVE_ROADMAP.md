@@ -59,6 +59,12 @@ Fourth slice:
 
 Implementation status on 2026-07-29: complete in production. ASO insights, Apple Ads recommendations, and Discovery evidence now filter by exact app and market before presentation, with a feed-level guard as defense in depth. The signed-in InnerType/GB feed showed eight GB cards, no portfolio/null-market ASO findings, and preserved app/market scope when filtering to three Discovery cards.
 
+Metadata-version context slice:
+
+> Bind metadata-dependent ASO conclusions to an immutable exact-country listing snapshot and isolate rank evidence to that observed version.
+
+Implementation status on 2026-07-31: complete in production. Current-metadata keyword rules require exact-country snapshots, rank evidence begins at the observed metadata-version boundary, stored snapshot/version/change provenance is visible in Recommendations, the current US conclusion exposes its immutable evidence, and GB no longer borrows US listing metadata.
+
 Acceptance:
 
 - Exclude `lovense`.
