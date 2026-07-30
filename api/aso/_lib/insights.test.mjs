@@ -3,10 +3,13 @@ import test from "node:test";
 
 import {
   competitorWinsDedupeKey,
+  evaluateRulesForApp,
+  metadataEvidenceScopeKey,
   metadataMismatchDedupeKey,
   reconcileCompetitorWinsInsights,
   reconcileDataCollectionFailureInsights,
   reconcileMetadataMismatchInsights,
+  reconcileMetadataVersionedInsights,
 } from "./insights.js";
 
 const NOW = new Date("2026-07-30T12:00:00.000Z");
@@ -115,14 +118,24 @@ test("different app and market scopes do not contaminate each other", () => {
   const rows = [row("other-market", "2026-07-28T10:00:00.000Z", { country: "us", dedupe_key: metadataMismatchDedupeKey(APP_ID, "us") })];
   const gbDraft = draft({ country: "gb", dedupe_key: metadataMismatchDedupeKey(APP_ID, "gb") });
 
-  const plan = reconcileMetadataMismatchInsights([gbDraft], rows, NOW, [APP_ID]);
+  const plan = reconcileMetadataMismatchInsights(
+    [gbDraft],
+    rows,
+    NOW,
+    [metadataMismatchDedupeKey(APP_ID, "gb")],
+  );
   assert.deepEqual(plan.updates, []);
   assert.deepEqual(plan.drafts, [gbDraft]);
 });
 
 test("metadata recovery supersedes the current portfolio row while preserving its evidence", () => {
   const existing = [row("current", "2026-07-28T10:00:00.000Z")];
-  const plan = reconcileMetadataMismatchInsights([], existing, NOW, [APP_ID]);
+  const plan = reconcileMetadataMismatchInsights(
+    [],
+    existing,
+    NOW,
+    [metadataMismatchDedupeKey(APP_ID, null)],
+  );
 
   assert.deepEqual(plan.drafts, []);
   assert.equal(plan.updates.length, 1);
@@ -135,7 +148,7 @@ test("metadata recovery supersedes the current portfolio row while preserving it
   assert.equal(historical.title, existing[0].title);
 });
 
-test("metadata recovery only applies to evaluated apps and the portfolio scope", () => {
+test("metadata recovery applies to every evaluated exact-country and legacy portfolio scope", () => {
   const otherApp = row("other-app", "2026-07-28T10:00:00.000Z", {
     app_id: "app-not-evaluated",
     dedupe_key: metadataMismatchDedupeKey("app-not-evaluated", null),
@@ -145,17 +158,254 @@ test("metadata recovery only applies to evaluated apps and the portfolio scope",
     dedupe_key: metadataMismatchDedupeKey(APP_ID, "gb"),
   });
 
-  const plan = reconcileMetadataMismatchInsights([], [otherApp, marketScoped], NOW, [APP_ID]);
-  assert.deepEqual(plan, { drafts: [], updates: [] });
+  const plan = reconcileMetadataMismatchInsights(
+    [],
+    [otherApp, marketScoped],
+    NOW,
+    [metadataMismatchDedupeKey(APP_ID, "gb")],
+  );
+  assert.equal(plan.drafts.length, 0);
+  assert.equal(plan.updates.length, 1);
+  assert.equal(plan.updates[0].id, "market-scoped");
+  assert.equal(plan.updates[0].patch.status, "superseded");
 });
 
 test("active metadata mismatches and recovered metadata history are idempotent", () => {
   const currentDraft = draft();
   const active = [row("current", "2026-07-28T10:00:00.000Z")];
-  assert.deepEqual(reconcileMetadataMismatchInsights([currentDraft], active, NOW, [APP_ID]), { drafts: [], updates: [] });
+  const evaluated = [metadataMismatchDedupeKey(APP_ID, null)];
+  assert.deepEqual(reconcileMetadataMismatchInsights([currentDraft], active, NOW, evaluated), { drafts: [], updates: [] });
 
-  const recovered = applyPlan(active, reconcileMetadataMismatchInsights([], active, NOW, [APP_ID]));
-  assert.deepEqual(reconcileMetadataMismatchInsights([], recovered, NOW, [APP_ID]), { drafts: [], updates: [] });
+  const recovered = applyPlan(active, reconcileMetadataMismatchInsights([], active, NOW, evaluated));
+  assert.deepEqual(reconcileMetadataMismatchInsights([], recovered, NOW, evaluated), { drafts: [], updates: [] });
+});
+
+function ruleContext(overrides = {}) {
+  return {
+    app: { id: APP_ID, name: "InnerType", subtitle: null },
+    storefronts: [],
+    metadataSnapshots: [],
+    metricsByCountry: new Map(),
+    storefrontMetricsByCountry: new Map(),
+    competitors: [],
+    competitorRankSnapshots: [],
+    reviewClassifications: [],
+    keywords: [],
+    changeEvents: [],
+    reviews: [],
+    experiments: [],
+    portfolioAvgConversion: null,
+    recentSyncRuns: [{ status: "ok", started_at: "2026-07-31T08:00:00.000Z" }],
+    today: "2026-07-31",
+    ...overrides,
+  };
+}
+
+function metadataSnapshot(overrides = {}) {
+  return {
+    id: "metadata-us-v2",
+    app_id: APP_ID,
+    country: "us",
+    captured_at: "2026-07-25T10:00:00.000Z",
+    name: "InnerType Personality Test",
+    subtitle: "Know yourself",
+    current_version: "2.1",
+    checksum: "checksum-v2",
+    source: "public_store",
+    ...overrides,
+  };
+}
+
+function rankSnapshot(date, rank) {
+  return {
+    captured_at: `${date}T12:00:00.000Z`,
+    rank,
+    found: rank != null,
+  };
+}
+
+test("current metadata keyword opportunities exclude every pre-version rank snapshot", () => {
+  const keyword = { id: "keyword-personality", term: "personality test", country: "us" };
+  const oldRanks = [
+    rankSnapshot("2026-07-18", 28),
+    rankSnapshot("2026-07-19", 26),
+    rankSnapshot("2026-07-20", 25),
+    rankSnapshot("2026-07-21", 24),
+    rankSnapshot("2026-07-22", 23),
+  ];
+  const fourCurrentRanks = [
+    rankSnapshot("2026-07-25", 22),
+    rankSnapshot("2026-07-26", 21),
+    rankSnapshot("2026-07-27", 20),
+    rankSnapshot("2026-07-28", 19),
+  ];
+  const base = ruleContext({
+    metadataSnapshots: [metadataSnapshot()],
+    keywords: [{ keyword, priority: "medium", snapshots: [...oldRanks, ...fourCurrentRanks] }],
+  });
+
+  assert.equal(
+    evaluateRulesForApp(base).filter((item) => item.rule_id === "keyword_opportunity").length,
+    0,
+    "pre-version ranks must not satisfy the five-snapshot threshold",
+  );
+
+  const withFiveCurrentRanks = {
+    ...base,
+    keywords: [{
+      keyword,
+      priority: "medium",
+      snapshots: [...oldRanks, ...fourCurrentRanks, rankSnapshot("2026-07-29", 18)],
+    }],
+  };
+  const [opportunity] = evaluateRulesForApp(withFiveCurrentRanks)
+    .filter((item) => item.rule_id === "keyword_opportunity");
+  assert.ok(opportunity);
+  assert.match(opportunity.dedupe_key, /metadata-us-v2$/);
+  assert.match(
+    opportunity.evidence.find((item) => item.label === "Rank evidence under metadata version").value,
+    /^2026-07-25/,
+  );
+  assert.equal(opportunity.evidence.find((item) => item.label === "Metadata snapshot").value, "metadata-us-v2");
+  assert.equal(opportunity.evidence.find((item) => item.label === "Metadata version").value, "2.1 · checksum checksum-v2");
+});
+
+test("metadata-dependent findings require an exact-country observed snapshot", () => {
+  const context = ruleContext({
+    metadataSnapshots: [metadataSnapshot()],
+    keywords: [
+      {
+        keyword: { id: "keyword-us", term: "enneagram", country: "us" },
+        priority: "high",
+        snapshots: [],
+      },
+      {
+        keyword: { id: "keyword-gb", term: "personality quiz", country: "gb" },
+        priority: "high",
+        snapshots: [
+          rankSnapshot("2026-07-25", 25),
+          rankSnapshot("2026-07-26", 24),
+          rankSnapshot("2026-07-27", 23),
+          rankSnapshot("2026-07-28", 22),
+          rankSnapshot("2026-07-29", 21),
+        ],
+      },
+    ],
+  });
+
+  const metadataFindings = evaluateRulesForApp(context)
+    .filter((item) => item.rule_id === "metadata_mismatch" || item.rule_id === "keyword_opportunity");
+  assert.equal(metadataFindings.length, 1);
+  assert.equal(metadataFindings[0].rule_id, "metadata_mismatch");
+  assert.equal(metadataFindings[0].country, "us");
+  assert.equal(metadataFindings[0].evidence.find((item) => item.label === "Metadata snapshot").value, "metadata-us-v2");
+  assert.match(
+    metadataFindings[0].evidence.find((item) => item.label === "Metadata change time").value,
+    /No detected change event/,
+  );
+});
+
+test("change-response findings expose the observed post-change metadata version and change time", () => {
+  const changeTime = "2026-07-20T10:00:02.000Z";
+  const context = ruleContext({
+    metadataSnapshots: [metadataSnapshot({
+      id: "metadata-us-change",
+      captured_at: "2026-07-20T10:00:00.000Z",
+      checksum: "checksum-change",
+    })],
+    changeEvents: [{
+      app_id: APP_ID,
+      country: "us",
+      change_type: "subtitle",
+      happened_at: changeTime,
+      origin: "detected",
+      old_value: "Old subtitle",
+      new_value: "New subtitle",
+    }],
+    keywords: [{
+      keyword: { id: "keyword-rising", term: "personality", country: "us" },
+      priority: "medium",
+      snapshots: [
+        rankSnapshot("2026-07-17", 30),
+        rankSnapshot("2026-07-18", 30),
+        rankSnapshot("2026-07-19", 30),
+        rankSnapshot("2026-07-20", 24),
+        rankSnapshot("2026-07-21", 23),
+        rankSnapshot("2026-07-22", 22),
+        rankSnapshot("2026-07-23", 21),
+      ],
+    }],
+  });
+
+  const [finding] = evaluateRulesForApp(context)
+    .filter((item) => item.rule_id === "keyword_rising_after_change");
+  assert.ok(finding);
+  assert.equal(finding.evidence.find((item) => item.label === "Metadata snapshot").value, "metadata-us-change");
+  assert.equal(finding.evidence.find((item) => item.label === "Metadata change time").value, changeTime);
+  assert.match(finding.comparison_window, /metadata version observed 2026-07-20T10:00:00.000Z/);
+});
+
+test("legacy current-metadata rows are refreshed in place with versioned evidence", () => {
+  const currentDraft = {
+    ...draft({
+      rule_id: "keyword_opportunity",
+      keyword_id: "keyword-personality",
+      country: "us",
+      title: "Current metadata opportunity",
+      evidence: [
+        { label: "Metadata snapshot", value: "metadata-us-v2", source: "public_store" },
+        { label: "Metadata version", value: "2.1 · checksum checksum-v2", source: "public_store" },
+      ],
+      comparison_window: "Rank evidence since metadata version observed 2026-07-25T10:00:00.000Z",
+      dedupe_key: "keyword_opportunity:keyword-personality:metadata-us-v2",
+    }),
+  };
+  const legacy = row("legacy-opportunity", "2026-07-20T10:00:00.000Z", {
+    rule_id: "keyword_opportunity",
+    keyword_id: "keyword-personality",
+    country: "us",
+    evidence: [{ label: "Current rank", value: "#18", source: "public_store" }],
+    comparison_window: "Last 14 days",
+    dedupe_key: "keyword_opportunity:keyword-personality",
+  });
+
+  const plan = reconcileMetadataVersionedInsights(
+    [currentDraft],
+    [legacy],
+    NOW,
+    [metadataEvidenceScopeKey(APP_ID, "us")],
+  );
+  assert.equal(plan.drafts.length, 0);
+  assert.equal(plan.updates.length, 1);
+  assert.equal(plan.updates[0].id, "legacy-opportunity");
+  assert.equal(plan.updates[0].patch.dedupe_key, currentDraft.dedupe_key);
+  assert.equal(plan.updates[0].patch.evidence[0].value, "metadata-us-v2");
+});
+
+test("unsupported market metadata findings are superseded without contaminating another market", () => {
+  const gbLegacy = row("legacy-gb-opportunity", "2026-07-20T10:00:00.000Z", {
+    rule_id: "keyword_opportunity",
+    keyword_id: "keyword-personality-gb",
+    country: "gb",
+    dedupe_key: "keyword_opportunity:keyword-personality-gb",
+  });
+
+  const gbPlan = reconcileMetadataVersionedInsights(
+    [],
+    [gbLegacy],
+    NOW,
+    [metadataEvidenceScopeKey(APP_ID, "gb")],
+  );
+  assert.equal(gbPlan.updates.length, 1);
+  assert.equal(gbPlan.updates[0].patch.status, "superseded");
+
+  const usPlan = reconcileMetadataVersionedInsights(
+    [],
+    [gbLegacy],
+    NOW,
+    [metadataEvidenceScopeKey(APP_ID, "us")],
+  );
+  assert.deepEqual(usPlan, { drafts: [], updates: [] });
 });
 
 function competitorDraft(overrides = {}) {

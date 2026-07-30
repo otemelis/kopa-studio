@@ -79,7 +79,15 @@ export interface InsightRow {
   impact: string;
   effort: string;
   ruleId: string;
+  evidence: InsightEvidenceItem[];
+  comparisonWindow: string;
   createdAt: string;
+}
+
+export interface InsightEvidenceItem {
+  label: string;
+  value: string;
+  source: string;
 }
 
 export interface RankingHistoryRow {

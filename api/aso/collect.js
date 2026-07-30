@@ -20,9 +20,11 @@ import {
   draftToInsertRow,
   evaluateRulesForApp,
   filterAgainstExisting,
+  metadataEvidenceScopeKey,
   reconcileCompetitorWinsInsights,
   reconcileDataCollectionFailureInsights,
   reconcileMetadataMismatchInsights,
+  reconcileMetadataVersionedInsights,
 } from "./_lib/insights.js";
 import { requireAdmin, serviceClient } from "./_lib/supabase.js";
 
@@ -458,10 +460,11 @@ async function runCollection(trigger) {
 
 async function runInsightEngine(db) {
   const today = toDateStr(new Date());
-  const [apps, storefronts, metrics, storefrontMetrics, appKeywords, keywords, snapshots, competitorRankSnapshots, competitors, changeEvents, reviews, reviewClassifications, experiments, syncRuns, existingInsights, alertPreferences] =
+  const [apps, storefronts, metadataSnapshots, metrics, storefrontMetrics, appKeywords, keywords, snapshots, competitorRankSnapshots, competitors, changeEvents, reviews, reviewClassifications, experiments, syncRuns, existingInsights, alertPreferences] =
     await Promise.all([
       db.select("aso_apps", "select=*"),
       db.select("aso_app_storefronts", "select=*"),
+      db.select("aso_metadata_snapshots", "app_id=not.is.null&select=*"),
       db.select("aso_daily_metrics", `date=gte.${addDays(today, -80)}&select=*`),
       db.select("aso_storefront_metrics", `date=gte.${addDays(today, -40)}&select=app_id,date,country,event,page_type,source_type,count`),
       db.select("aso_app_keywords", "select=*"),
@@ -522,6 +525,7 @@ async function runInsightEngine(db) {
     const ctx = {
       app,
       storefronts: storefronts.filter((sf) => sf.app_id === app.id),
+      metadataSnapshots: metadataSnapshots.filter((snapshot) => snapshot.app_id === app.id),
       metricsByCountry,
       storefrontMetricsByCountry,
       competitors: appCompetitors,
@@ -564,11 +568,31 @@ async function runInsightEngine(db) {
     await db.update("aso_insights", update.patch, `id=eq.${update.id}`);
   }
   drafts = operationalReconciliation.drafts;
+  const evaluatedMetadataEvidenceScopes = appKeywords
+    .filter((link) => link.status !== "paused")
+    .map((link) => {
+      const keyword = keywords.find((item) => item.id === link.keyword_id);
+      return keyword ? metadataEvidenceScopeKey(link.app_id, keyword.country) : null;
+    })
+    .filter(Boolean);
+  const metadataVersionReconciliation = reconcileMetadataVersionedInsights(
+    drafts,
+    existingInsights,
+    new Date(),
+    evaluatedMetadataEvidenceScopes,
+  );
+  for (const update of metadataVersionReconciliation.updates) {
+    await db.update("aso_insights", update.patch, `id=eq.${update.id}`);
+  }
+  drafts = metadataVersionReconciliation.drafts;
   const metadataReconciliation = reconcileMetadataMismatchInsights(
     drafts,
     existingInsights,
     new Date(),
-    apps.map((app) => app.id),
+    [
+      ...apps.map((app) => metadataMismatchDedupeKey(app.id, null)),
+      ...metadataSnapshots.map((snapshot) => metadataMismatchDedupeKey(snapshot.app_id, snapshot.country)),
+    ],
   );
   for (const update of metadataReconciliation.updates) {
     await db.update("aso_insights", update.patch, `id=eq.${update.id}`);

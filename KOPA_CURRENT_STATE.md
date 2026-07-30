@@ -2544,3 +2544,152 @@ Vertical slice: Discovery evidence-quality gating
 #### Next exact task
 
 Enforce metadata-version context for metadata-dependent ASO conclusions: attach the observed metadata snapshot/version and change time to each conclusion, prevent current metadata findings from being mixed with pre-change rank evidence, and prove version isolation with tests.
+
+### Checkpoint 35 — Metadata-version evidence audit
+
+Status: complete and verified on 2026-07-31.
+
+#### Current milestone
+
+Milestone 1 — Trust and Data Correctness
+Vertical slice: metadata-version context for ASO conclusions
+
+#### Completed
+
+- Read the authoritative handover, active roadmap, implementation inventory, and roadmap reconciliation.
+- Traced public-store metadata collection, checksum snapshots, detected change events, owned rank snapshots, deterministic ASO rules, insight persistence, recommendation reads, and the current recommendation presentation.
+- Identified the metadata-dependent rules and their current evidence boundaries.
+
+#### Verified
+
+- `aso_metadata_snapshots` already stores an immutable row ID, app, country, capture time, listing fields, App Store version, checksum, and source.
+- `aso_metadata_change_events` stores the app, country, field/change type, old/new value, origin, and event time.
+- `aso_keyword_rank_snapshots` stores exact keyword identity and capture time, so rank evidence can be isolated to a metadata-version boundary without a schema change.
+- `aso_insights.evidence` is JSON and can carry the exact metadata snapshot, checksum/version, observation time, change time, and rank-evidence window.
+- The current `keyword_opportunity` rule reads current app title/subtitle while allowing all recent rank snapshots, including snapshots captured before the current metadata version.
+- The current `metadata_mismatch` rule compares keywords from every market against the app-level primary listing and emits a portfolio conclusion, even when no exact-country metadata snapshot exists.
+- Change-response rules split ranks around a change date but do not expose the observed post-change metadata snapshot/version in their evidence.
+- The recommendation repository does not read `evidence` or `comparison_window`; the page displays only the rule ID, so stored provenance is hidden from the user.
+- Production currently has one owned metadata snapshot and zero detected metadata change rows. Exact-country metadata evidence remains available only for the primary US listing; GB metadata evidence remains Unknown.
+
+#### Known issues
+
+- Existing active ASO rows will retain their old evidence until the deterministic insight engine is run after deployment.
+- A first observed metadata snapshot has an observation boundary but no earlier detected change event; presentation must state that distinction instead of inventing a change time.
+- Metadata-dependent rules must not fall back from a missing market snapshot to app-wide primary metadata.
+
+#### Files changed
+
+- `KOPA_CURRENT_STATE.md`
+
+#### Database changes
+
+- None.
+- A migration is not required because existing immutable snapshots, timestamped ranks, change events, and JSON insight evidence can represent the complete contract.
+
+#### Deployment status
+
+- No deployment in this checkpoint.
+- Production remained read-only.
+
+#### Remaining in this vertical slice
+
+- Bind metadata-dependent rules to exact-country snapshot context.
+- Isolate current-metadata rank conclusions to rank snapshots captured on or after that snapshot.
+- Attach snapshot/version, observation time, change time, and rank window to persisted evidence.
+- Surface stored evidence and comparison windows in Recommendations.
+- Add version-boundary, missing-market, and idempotency regression tests.
+- Run all quality gates, deploy, recompute safely, and complete signed-in production acceptance.
+
+#### Next exact task
+
+Implement the deterministic metadata-version context and exact-country rank-evidence guard without adding a migration.
+
+### Checkpoint 36 — Metadata-version context implementation
+
+Status: locally complete, built, and fully verified on 2026-07-31.
+
+#### Current milestone
+
+Milestone 1 — Trust and Data Correctness
+Vertical slice: metadata-version context for ASO conclusions
+
+#### Completed
+
+- Added an exact-country metadata snapshot resolver for deterministic ASO rules.
+- Added a stable metadata-version identity from the immutable snapshot ID, App Store version, checksum, and capture time.
+- Linked a detected metadata change event to its snapshot only when app, country, origin, and a ten-minute collection boundary agree.
+- Explicitly distinguishes first-observed metadata from a detected change instead of inventing a change time.
+- Restricted current-metadata keyword opportunities to rank snapshots captured on or after the exact metadata snapshot.
+- Required at least five rank observations under the current metadata version; pre-version ranks cannot satisfy that threshold.
+- Bound keyword rising/decline change-response rules to the observed post-change exact-country metadata snapshot and rank window.
+- Corrected the declined-after-removal rule to carry keyword priority through its deterministic evaluation.
+- Replaced the portfolio metadata-mismatch comparison with exact-country conclusions only where an observed snapshot exists.
+- Added metadata snapshot, version/checksum, observation time, detected change time, and version-bound rank window to persisted evidence.
+- Added current-row reconciliation for metadata-versioned keyword conclusions:
+  - legacy rows are refreshed in place when the current version still supports them;
+  - duplicates become superseded history;
+  - unsupported or no-longer-current scoped conclusions become superseded;
+  - different markets remain isolated.
+- Extended metadata-mismatch reconciliation to retire obsolete exact-country and legacy portfolio rows only for scopes that were actually evaluated.
+- Updated the collector insight context to load immutable metadata snapshots before evaluation.
+- Updated the recommendation repository and read model to retain structured evidence and comparison windows.
+- Updated the existing Recommendations page to show material ASO evidence, including all metadata-version fields.
+
+#### Verified
+
+- Collector insight tests: 24/24 pass.
+- Full collector tests: 35/35 pass.
+- Kopa Tools tests: 25 files and 89/89 tests pass.
+- Kopa Tools typecheck passes.
+- Kopa Tools production build passes.
+- Root repository checks pass for all 10 levels.
+- Collector syntax validation passes.
+- `git diff --check` passes.
+- Five pre-version rank snapshots plus four current-version snapshots do not produce a keyword opportunity.
+- The same fixture produces the opportunity after a fifth current-version rank snapshot is added.
+- The emitted rank window starts at the metadata snapshot and excludes every older rank.
+- A GB keyword cannot use the only available US metadata snapshot.
+- Exact-country metadata mismatch output is US-scoped and carries the immutable US snapshot/version evidence.
+- A detected subtitle change is linked to the post-change snapshot and exact change time.
+- A first-observed snapshot without a detected change states that no change event exists.
+- A legacy metadata opportunity is refreshed in place with versioned evidence instead of duplicated.
+- An unsupported GB metadata finding is superseded without affecting a US scope.
+
+#### Known issues
+
+- Production active insights will retain their existing evidence until the collector insight engine is run after deployment.
+- Production has no detected owned metadata change event, so current output must honestly show the first-observed snapshot boundary rather than a fabricated change.
+- GB must continue to show no metadata-dependent ASO conclusion because no exact-country GB metadata snapshot exists.
+
+#### Files changed
+
+- `api/aso/_lib/insights.js`
+- `api/aso/_lib/insights.test.mjs`
+- `api/aso/collect.js`
+- `apps/tools/src/lib/aso-insight-evidence.ts`
+- `apps/tools/src/lib/aso-insight-evidence.test.ts`
+- `apps/tools/src/repositories/insight-repository.ts`
+- `apps/tools/src/types/domain.ts`
+- `apps/tools/src/app/insights/page.tsx`
+- `KOPA_CURRENT_STATE.md`
+
+#### Database changes
+
+- None.
+- No migration is required.
+
+#### Deployment status
+
+- Local implementation, full verification, and production build: complete.
+- Commit, deployment, recomputation, and signed-in production acceptance: pending.
+
+#### Remaining in this vertical slice
+
+- Commit and deploy the exact verified source.
+- Run the existing safe collection/recompute flow once.
+- Verify the production Recommendations feed shows versioned US metadata evidence and no borrowed GB metadata conclusion.
+
+#### Next exact task
+
+Run the remaining quality gates, then commit and deploy the metadata-version implementation.
