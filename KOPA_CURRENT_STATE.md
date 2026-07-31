@@ -3366,3 +3366,100 @@ Trust and Data Correctness — Discovery requested-period and imported-window in
 ## Next exact task
 
 Commit the verified Discovery sufficiency slice and deploy that exact source to the existing Tools production project.
+
+---
+
+# Checkpoint 46 — Discovery evidence-sufficiency slice complete in production
+
+## Current milestone
+
+Trust and Data Correctness — Discovery requested-period and imported-window integrity
+
+## Completed
+
+- Committed the verified Discovery sufficiency implementation:
+  - `374dcd9c fix(discovery): enforce evidence sufficiency`
+- Deployed the committed implementation to the existing Tools production project.
+- Completed signed-in production acceptance on the 7-day and 28-day InnerType GB Discovery feeds and the App Store Connect source-quality view.
+- Corrected one acceptance-only wording issue so the `Waiting for download import` card points to the separate sales/download import rather than asking for another Discovery refresh:
+  - `3b6ba3da fix(discovery): clarify download waiting action`
+- Deployed the acceptance fix and repeated signed-in verification.
+- Left the unrelated support note and 2048 Run Merge screenshots untracked and outside both Tools deployments.
+
+## Verified
+
+- Production 28-day InnerType GB Discovery feed:
+  - exactly one card is shown;
+  - status: Waiting;
+  - title: `Discovery evidence only partially covers the requested period`;
+  - requested window: 2026-07-04 through 2026-07-31;
+  - imported window: 2026-07-24 through 2026-07-29;
+  - exact GB scoped window: 2026-07-24 through 2026-07-28;
+  - observed days: 5;
+  - freshness: Fresh;
+  - completeness: Complete import, 244/244 rows, 0 rejected;
+  - period coverage: Partial coverage;
+  - evidence volume: Meaningful, 2,340 impressions and 12 page views;
+  - no directional Discovery conclusion is shown.
+- Production 7-day InnerType GB Discovery feed:
+  - requested window: 2026-07-25 through 2026-07-31;
+  - exact GB scoped window: 2026-07-25 through 2026-07-28;
+  - observed days: 4;
+  - period coverage: Aligned within the configured reporting allowance;
+  - evidence volume: Meaningful, 2,331 impressions and 12 page views;
+  - the existing deterministic page-pull, source, and trend conclusions remain visible;
+  - download conversion remains Waiting;
+  - the download card now says to complete the separate sales/download import before judging product-page conversion.
+- Production App Store Connect view:
+  - overall scoped state: Waiting for the 28-day request;
+  - Freshness, Completeness, Period coverage, and Evidence volume are separate visible cards;
+  - imported and exact GB scoped windows are shown separately;
+  - the decision brief contains one Waiting signal, not the prior three directional conclusions.
+- Final local gates after the acceptance fix:
+  - 101 Tools tests passed across 26 files;
+  - typecheck passed;
+  - production build passed;
+  - root checks passed across 10 levels;
+  - diff validation passed.
+- No Apple Ads provider resource was modified.
+- No Apple Ads write action was added.
+- Attribution remains deferred.
+- No new page or navigation route was created.
+
+## Known issues
+
+- The 7-day Discovery feed will become stale automatically if no newer exact GB evidence arrives; this is intended.
+- The 28-day feed will remain Waiting until an import covers the requested decision window.
+- Downloads remain unavailable until the separate sales/download import exists.
+- The Sources page still surfaces the retained historical public-collection failure even though later public collection runs succeeded; this pre-existing status-selection behavior was not changed in this slice.
+- Standalone `npm run lint` remains unavailable because the repository lacks an ESLint 9 flat configuration; Next's production build validation passes.
+
+## Database changes
+
+- None.
+
+## Deployment status
+
+- Initial Tools production deployment:
+  - `dpl_6fgfmYvJuKPLQTR5CCG293naXDZL`
+- Current Tools production deployment after the acceptance wording fix:
+  - `dpl_A3cYLxXVpUj4r4rosNvVWonPsoQV`
+  - alias: `https://tools.kopa.studio`
+- The repository-root deployment command first resolved to the public collector project and redeployed unchanged collector source:
+  - `dpl_4YN25uaAk61mWwrfgDVCSmUvyWu2`
+  - alias: `https://www.kopa.studio`
+  - no collector code, schema, job configuration, or provider write behavior changed.
+- Vertical slice status: complete in production.
+- Acceptance test: passed.
+- Rollback is available by promoting Tools deployment `dpl_55ddgwC9buCvz7bz5tZBuehUZfo5`; no database rollback is required.
+
+## Remaining in Milestone 1 — Trust and Data Correctness
+
+- Add relevance and cross-source agreement as separate, exact-window qualities without allowing one source to borrow another source's confidence.
+- Converge recommendation dedupe identity and lifecycle across ASO, Discovery, and Apple Ads.
+- Correct the source-status selection that lets an older retained public-collection failure override a later successful run.
+- Continue production/source parity and authenticated-owner verification as each slice is delivered.
+
+## Next exact task
+
+Implement the smallest read-only cross-source agreement slice for InnerType GB: compare only exact-market, overlapping-window Discovery and Apple Ads evidence, display Agreement, Conflict, or Unknown separately on the existing recommendation feed, and keep action eligibility unchanged when the windows do not align.
