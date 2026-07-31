@@ -3924,3 +3924,65 @@ Trust and Data Correctness — current source-status integrity
 ## Next exact task
 
 Commit, deploy, and complete signed-in production acceptance.
+
+---
+
+# Checkpoint 54 — Public source-status recency complete in production
+
+## Current milestone
+
+Trust and Data Correctness — current source-status integrity
+
+## Completed
+
+- Committed the verified source-status recency slice as `174cdffd`.
+- Deployed an archive of that exact commit to the production Kopa Tools Vercel project.
+- Completed signed-in acceptance on the production Sources and Jobs pages.
+- Corrected the production Public App Store status from historical-failure Error to latest-outcome Configured.
+- Preserved the prior failure as recovered history.
+
+## Verified
+
+- Production deployment: `dpl_CZevziakzGwDgQwCmZhnpuDQK829`.
+- Production alias: `https://tools.kopa.studio`.
+- Sources page:
+  - Public App Store status is `configured`;
+  - freshness comes from the latest successful run;
+  - the prior `metadataMismatchDedupeKey is not defined` failure remains visible;
+  - the prior failure is explicitly labelled `Recovered by a later successful run`.
+- Jobs page:
+  - latest public run remains Jul 31, 2026 07:28 Europe/Berlin, `ok`, 54 records;
+  - successful recovery at 00:57 remains visible;
+  - the 00:52 failed run remains visible and unchanged;
+  - no collection history was modified or hidden.
+- Release gates:
+  - 119 tests passed across 28 files;
+  - typecheck passed;
+  - production build passed;
+  - root repository check passed;
+  - whitespace validation passed.
+- No database migration was required.
+- No collection provider behavior, recommendation logic, Apple Ads write behavior, or attribution behavior changed.
+
+## Known issues
+
+- The Sources page date helper renders server-locale timestamps without the explicit Europe/Berlin suffix used on the Jobs page; the selected stored run is correct.
+- The current-status resolver operates on the ten most recent sync runs returned by the existing overview repository.
+
+## Database changes
+
+- None.
+
+## Deployment status
+
+- Complete and live in production.
+- Production acceptance passed.
+
+## Remaining in this milestone
+
+- Converge stable recommendation identity and repeated-generation idempotency across the existing ASO, Discovery, and Apple Ads recommendation paths.
+- Complete final production/source parity and authenticated-owner verification after that convergence.
+
+## Next exact task
+
+Implement deterministic cross-source recommendation identity for the InnerType GB feed so unchanged ASO, Discovery, and Apple Ads conclusions retain one stable identity across reloads and recomputes, without changing recommendation lifecycle actions.
