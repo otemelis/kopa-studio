@@ -4164,3 +4164,85 @@ Trust and Data Correctness — stable recommendation identity
 ## Next exact task
 
 Commit, deploy, and complete signed-in repeat-run acceptance.
+
+---
+
+# Checkpoint 58 — Cross-source recommendation identity complete in production
+
+## Current milestone
+
+Trust and Data Correctness — stable recommendation identity
+
+## Completed
+
+- Committed the verified identity slice as `e64eca4f`.
+- Deployed an archive of that exact commit to the production Kopa Tools project.
+- Completed signed-in owner acceptance on the InnerType/GB Recommendations feed and Apple Ads recommendation page.
+- Performed the intentional one-time Apple Ads identity transition.
+- Performed a second unchanged recompute.
+- Compared exact versioned card identities after recompute and after a full page reload.
+- Updated the active roadmap with the production completion status.
+
+## Verified
+
+- Production deployment: `dpl_7XRfjjFuy5euYmYWzdpVL57Dnsbb`.
+- Production alias: `https://tools.kopa.studio`.
+- First owner recompute:
+  - 5 active Apple Ads recommendations;
+  - 5 new;
+  - 0 refreshed;
+  - 0 unchanged;
+  - this was the expected one-time migration from window-bound legacy hashes.
+- Second owner recompute:
+  - 5 active Apple Ads recommendations;
+  - 0 new;
+  - 0 refreshed;
+  - 5 unchanged.
+- InnerType/GB/28-day feed:
+  - 6 total scoped cards;
+  - 5 Apple Ads conclusions;
+  - 1 Discovery evidence-sufficiency conclusion;
+  - 0 active ASO conclusions because exact-locale-dependent GB evidence remains unavailable;
+  - every title-to-identity pair remained exactly unchanged after reload.
+- Current Apple Ads conclusions:
+  - exclude `y not`;
+  - exclude `lovense remote`;
+  - exclude `lovense`;
+  - continue learning on `personality test`;
+  - conversion evidence is insufficient at 5 taps and 0 installs.
+- The prior broad `relationship test` review is correctly absent from the current assessment:
+  - the broad `relationship test` keyword is now Paused;
+  - the current enabled `relationship test` keyword is Exact;
+  - the rule correctly does not recommend reviewing or pausing an already-paused broad target.
+- Release gates:
+  - 124 tests passed across 29 files;
+  - typecheck passed;
+  - production build passed;
+  - root repository check passed;
+  - whitespace validation passed.
+- No Apple Ads campaign, ad group, keyword, negative, bid, or budget resource was modified.
+- Attribution remains deferred.
+
+## Known issues
+
+- Discovery remains derived read-only rather than persisted; its stable semantic identity is now deterministic at the product-feed boundary.
+- The active roadmap still requires final production/source parity and access-boundary verification before Milestone 1 can exit.
+
+## Database changes
+
+- None.
+
+## Deployment status
+
+- Complete and live in production.
+- Signed-in repeat-run acceptance passed.
+
+## Remaining in this milestone
+
+- Complete the final production/source parity check for the deployed Tools application.
+- Record authenticated-owner and unauthorized-account behavior.
+- Reconcile the final Milestone 1 exit criteria against current production evidence.
+
+## Next exact task
+
+Complete the final Milestone 1 production/source parity and access-boundary acceptance, including documented owner and unauthorized-account behavior, without making additional product changes unless the audit finds a concrete blocker.

@@ -71,6 +71,12 @@ Locale-context integrity slice:
 
 Implementation status on 2026-07-31: complete in production. Metadata snapshots, detected changes, tracked keywords, and persisted ASO conclusions now support exact locale context without inferring it from storefront country or Apple's app-wide supported-language list. Language-dependent rules require exact app, country, and locale matches. Current US and GB evidence correctly remains Unknown, the unsupported country-only US conclusion is preserved as superseded history, and a successful production collection did not recreate it.
 
+Recommendation-identity integrity slice:
+
+> Give ASO, Discovery, and Apple Ads conclusions one stable normalized identity contract while keeping changing evidence and stored lifecycle row IDs separate.
+
+Implementation status on 2026-07-31: complete in production. Discovery no longer depends on array position, Apple Ads no longer treats an advancing evidence window as a new conclusion, rule/window provenance remains in the evidence fingerprint, and the combined feed exposes stable identities for signed-in acceptance. The first owner recompute performed the expected one-time legacy transition; the second returned five unchanged Apple Ads conclusions with no insert or refresh, and all six current InnerType/GB feed-card identities remained stable across reload.
+
 Acceptance:
 
 - Exclude `lovense`.
