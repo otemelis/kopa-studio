@@ -1,6 +1,7 @@
 import { compareStorefrontWindows, discoveryOpportunities, isImpressionEvent, isPageViewEvent, summarizeStorefrontMetrics, type StorefrontDailyMetric, type StorefrontSourceMetric } from "../lib/metrics";
 import { discoveryQueryStart, normalizeDiscoveryDays } from "../lib/discovery-period";
 import { assessDiscoveryEvidenceQuality, type DiscoveryReportQualityInput } from "../lib/discovery-quality";
+import { assessDiscoveryEvidenceSufficiency } from "../lib/discovery-sufficiency";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type StorefrontMetricRow = { app_id: string; country: string; date: string; event: string; page_type: string | null; source_type: string | null; count: number | null };
@@ -46,9 +47,10 @@ function addSource(map: Map<string, StorefrontSourceMetric>, sourceType: string,
 export async function listStorefrontMetricSummaries(days = 28, appId?: string, country?: string, now = new Date()) {
   const selectedDays = normalizeDiscoveryDays(days);
   const since = discoveryQueryStart(selectedDays, now);
+  const through = now.toISOString().slice(0, 10);
   const db = createAdminClient();
-  let storefrontQuery = db.from("aso_storefront_metrics").select("app_id,country,date,event,page_type,source_type,count").gte("date", since).order("date", { ascending: false }).limit(5000);
-  let dailyQuery = db.from("aso_daily_metrics").select("app_id,country,date,impressions,page_views,downloads,source").gte("date", since).order("date", { ascending: false }).limit(5000);
+  let storefrontQuery = db.from("aso_storefront_metrics").select("app_id,country,date,event,page_type,source_type,count").gte("date", since).lte("date", through).order("date", { ascending: false }).limit(5000);
+  let dailyQuery = db.from("aso_daily_metrics").select("app_id,country,date,impressions,page_views,downloads,source").gte("date", since).lte("date", through).order("date", { ascending: false }).limit(5000);
   let requestQuery = db.from("aso_analytics_report_requests").select("app_id,last_result_state,parser_version,last_evidence_start,last_evidence_end,last_source_row_count,last_imported_row_count,last_rejected_row_count,last_error").order("created_at", { ascending: false }).limit(100);
   if (appId) {
     storefrontQuery = storefrontQuery.eq("app_id", appId);
@@ -129,18 +131,27 @@ export async function listStorefrontMetricSummaries(days = 28, appId?: string, c
     ...discoveryDailyRows.map((row) => row.app_id),
   ]);
   const relevantRequests = appId ? requestRows : requestRows.filter((request) => evidenceAppIds.has(request.app_id));
+  const requestInputs = relevantRequests.map((request) => ({
+    resultState: request.last_result_state,
+    parserVersion: request.parser_version,
+    evidenceStart: request.last_evidence_start,
+    evidenceEnd: request.last_evidence_end,
+    sourceRowCount: request.last_source_row_count,
+    importedRowCount: request.last_imported_row_count,
+    rejectedRowCount: request.last_rejected_row_count,
+    lastError: request.last_error,
+  }));
   const quality = assessDiscoveryEvidenceQuality({
-    requests: relevantRequests.map((request) => ({
-      resultState: request.last_result_state,
-      parserVersion: request.parser_version,
-      evidenceStart: request.last_evidence_start,
-      evidenceEnd: request.last_evidence_end,
-      sourceRowCount: request.last_source_row_count,
-      importedRowCount: request.last_imported_row_count,
-      rejectedRowCount: request.last_rejected_row_count,
-      lastError: request.last_error,
-    })),
+    requests: requestInputs,
     scopedRowCount: rawRows.length,
+    now,
+  });
+  const sufficiency = assessDiscoveryEvidenceSufficiency({
+    days: selectedDays,
+    requests: requestInputs,
+    observedDates: evidenceDates,
+    quality,
+    totals,
     now,
   });
 
@@ -160,7 +171,8 @@ export async function listStorefrontMetricSummaries(days = 28, appId?: string, c
     sourceTypes: orderedSourceTypes,
     trend,
     quality,
-    opportunities: discoveryOpportunities({ countries, sourceTypes: orderedSourceTypes, trend, hasDiscoveryRows, hasDailyRows, quality }),
+    sufficiency,
+    opportunities: discoveryOpportunities({ countries, sourceTypes: orderedSourceTypes, trend, hasDiscoveryRows, hasDailyRows, sufficiency }),
     hasDiscoveryRows,
     hasDailyRows,
   };

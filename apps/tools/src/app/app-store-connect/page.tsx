@@ -154,8 +154,18 @@ export default async function AppStoreConnectPage({ searchParams }: { searchPara
       <article className="metric-card"><p>Latest report day</p><strong>{latestDiscoveryDate ? compactDate(latestDiscoveryDate) : "-"}</strong><small>{latestDiscoveryDate ? "Latest imported App Store Connect day" : "Use Retry Discovery report import"}</small></article>
     </section>
     <section className="notice">
-      <h2>Scoped Discovery assessment: {metrics.quality.label}</h2>
-      <p>{metrics.quality.explanation}</p>
+      <h2>Scoped Discovery assessment: {metrics.sufficiency.decisionReady ? "Decision-ready" : "Waiting"}</h2>
+      <p>{metrics.sufficiency.decisionReady ? "The exact market evidence is ready for deterministic directional checks." : metrics.sufficiency.waitingExplanation}</p>
+    </section>
+    <section className="metric-grid">
+      <article className="metric-card"><p>Freshness</p><strong>{metrics.sufficiency.freshness.label}</strong><small>{metrics.sufficiency.freshness.explanation}</small></article>
+      <article className="metric-card"><p>Completeness</p><strong>{metrics.sufficiency.completeness.label}</strong><small>{metrics.sufficiency.completeness.importedRows}/{metrics.sufficiency.completeness.sourceRows} rows · {metrics.sufficiency.completeness.rejectedRows} rejected</small></article>
+      <article className="metric-card"><p>Period coverage</p><strong>{metrics.sufficiency.windowAlignment.label}</strong><small>Requested {metrics.sufficiency.requestedWindow.start}–{metrics.sufficiency.requestedWindow.end}</small></article>
+      <article className="metric-card"><p>Evidence volume</p><strong>{metrics.sufficiency.volume.label}</strong><small>{metrics.sufficiency.observedDays} observed days · {number.format(metrics.sufficiency.volume.impressions)} impressions · {number.format(metrics.sufficiency.volume.pageViews)} page views</small></article>
+    </section>
+    <section className="notice">
+      <h2>Exact evidence windows</h2>
+      <p>Imported report: {evidenceWindow(metrics.sufficiency.importedWindow.start, metrics.sufficiency.importedWindow.end)}. Scoped {filters.country?.toUpperCase() ?? "selected-market"} rows: {evidenceWindow(metrics.sufficiency.observedWindow.start, metrics.sufficiency.observedWindow.end)}.</p>
     </section>
 
     <section className="notice">

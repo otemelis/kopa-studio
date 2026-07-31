@@ -1,4 +1,4 @@
-import type { DiscoveryEvidenceQuality } from "./discovery-quality";
+import type { DiscoveryEvidenceSufficiency } from "./discovery-sufficiency";
 
 export type MetricInput = { appId: string; country: string; event: string; count: number };
 export type StorefrontMetricSummary = { appId: string; country: string; impressions: number; pageViews: number; downloads: number };
@@ -85,18 +85,14 @@ export function discoveryOpportunities(input: {
   trend: StorefrontTrend;
   hasDiscoveryRows: boolean;
   hasDailyRows: boolean;
-  quality: DiscoveryEvidenceQuality;
+  sufficiency: DiscoveryEvidenceSufficiency;
 }): StorefrontOpportunity[] {
-  if (input.quality.state !== "fresh") {
-    const titles: Record<DiscoveryEvidenceQuality["state"], string> = {
-      fresh: "Discovery evidence is ready",
-      stale: "Discovery evidence is stale",
-      partial: "Discovery evidence is partial",
-      zero: "Discovery report contains no evidence rows",
-      invalid: "Discovery evidence is invalid",
-      absent: "Waiting for scoped Discovery evidence",
-    };
-    return [{ severity: "waiting", title: titles[input.quality.state], detail: input.quality.explanation }];
+  if (!input.sufficiency.decisionReady) {
+    return [{
+      severity: "waiting",
+      title: input.sufficiency.waitingTitle ?? "Waiting for sufficient Discovery evidence",
+      detail: input.sufficiency.waitingExplanation ?? "The scoped evidence is not ready for a directional conclusion.",
+    }];
   }
   if (!input.hasDiscoveryRows) return [{ severity: "waiting", title: "Waiting for Discovery report data", detail: "Retry the Discovery report import after Apple has generated at least one daily segment." }];
 

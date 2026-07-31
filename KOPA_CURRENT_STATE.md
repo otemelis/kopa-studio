@@ -3164,3 +3164,205 @@ Trust and Data Correctness — public metadata locale-context integrity
 ## Next exact task
 
 Implement the smallest Discovery evidence-sufficiency slice for the InnerType GB feed: bind each Discovery card to its exact imported evidence window and requested period, expose freshness, completeness, and volume separately, mark stale/partial/out-of-window cards as Waiting, and prove 7-day versus 28-day isolation with tests.
+
+---
+
+# Checkpoint 43 — Discovery evidence-sufficiency audit
+
+## Current milestone
+
+Trust and Data Correctness — Discovery requested-period and imported-window integrity
+
+## Completed
+
+- Audited the Discovery report request, exact-market row filtering, aggregation, opportunity rules, recommendation feed mapping, App Store Connect presentation, and existing period/quality tests.
+- Inspected the live InnerType GB Discovery feed for both 7-day and 28-day periods.
+- Inspected the live App Store Connect source-quality view and current import provenance.
+- Confirmed that the existing repository filters metric rows by the selected period and exact normalized market.
+- Confirmed that the existing quality model evaluates parser success, rejected rows, scoped-row presence, and evidence-end freshness, but does not compare the requested period with the imported or observed evidence windows.
+
+## Verified
+
+- Current production import:
+  - result: success;
+  - parser: `discovery-v2`;
+  - imported rows: 244 of 244;
+  - rejected rows: 0;
+  - imported report window: 2026-07-24 through 2026-07-29;
+  - exact GB observed row window: 2026-07-24 through 2026-07-28;
+  - latest GB report day: 2026-07-28.
+- Current production GB evidence:
+  - impressions: 2,340 in the 28-day query and 2,331 in the 7-day query;
+  - product page views: 12;
+  - downloads: 0 because the separate sales/download import is still unavailable.
+- Current production behavior:
+  - the 7-day feed labels 2026-07-25 through 2026-07-28 as a fresh 7-day selected window and exposes three directional conclusions;
+  - the 28-day feed labels 2026-07-24 through 2026-07-28 as a fresh 28-day selected window and exposes three directional conclusions;
+  - neither feed shows requested start/end, imported start/end, observed days, import completeness, period coverage, or evidence volume as separate qualities.
+- Root cause:
+  - freshness is currently a single report-level state;
+  - a successful, recent import is treated as decision-ready even when it covers only part of the requested period;
+  - recommendation status is derived from the opportunity rule alone, so incomplete-window conclusions are not forced to Waiting.
+
+## Known issues
+
+- The production 28-day Discovery cards currently draw directional conclusions from five observed GB days inside a 28-day request.
+- The production 7-day and 28-day feeds are row-filtered but do not have independently assessed requested-period coverage.
+- Import completeness and requested-window completeness are currently conflated under one generic data-quality label.
+- Evidence volume is not displayed separately from freshness or completeness.
+- Downloads remain unavailable until the separate sales/download import is implemented; zero stored downloads must continue to be shown as Waiting, not failed conversion.
+
+## Database changes
+
+- None.
+- The existing report-request provenance and stored daily evidence contain the fields required for this slice, so no migration is justified.
+
+## Deployment status
+
+- Audit only; no application code or production state changed in this checkpoint.
+
+## Remaining in this milestone
+
+- Add a deterministic requested-period sufficiency assessment with separate freshness, import completeness, window alignment, and evidence-volume states.
+- Bind the assessment to exact imported and observed evidence windows.
+- Force stale, partial, out-of-window, and insufficient-volume conclusions to Waiting.
+- Display the separate qualities in the existing recommendation feed and App Store Connect view.
+- Prove 7-day versus 28-day isolation and all blocking states with tests.
+- Run the full release gates, commit, deploy, and validate production.
+
+## Next exact task
+
+Implement the deterministic Discovery sufficiency model and wire it into stored-row aggregation before changing presentation.
+
+---
+
+# Checkpoint 44 — Discovery sufficiency model implemented
+
+## Current milestone
+
+Trust and Data Correctness — Discovery requested-period and imported-window integrity
+
+## Completed
+
+- Added a deterministic Discovery evidence-sufficiency assessment with separate:
+  - freshness;
+  - import completeness;
+  - requested-period coverage;
+  - evidence volume.
+- Bound each assessment to:
+  - exact requested start/end;
+  - imported report start/end;
+  - exact scoped observed start/end;
+  - observed-day count;
+  - scoped impressions, page views, and downloads.
+- Added an inclusive query end so future-dated evidence cannot leak into a selected period.
+- Changed opportunity generation so stale, incomplete, partial-window, out-of-window, absent, invalid, zero-row, and very-low-volume states produce one Waiting conclusion instead of directional cards.
+- Updated the existing recommendation feed evidence line to show every quality dimension separately.
+- Updated the existing App Store Connect page to show decision readiness, freshness, completeness, period coverage, evidence volume, and exact imported/scoped windows.
+- Added a sanitized production-shaped InnerType GB fixture preserving the current daily impressions and page views.
+
+## Verified
+
+- Focused Discovery suite: 23 tests passed across 4 files.
+- Tools typecheck: passed.
+- The production-shaped fixture proves:
+  - 7-day requested window: 2026-07-25 through 2026-07-31;
+  - 7-day scoped evidence: 2026-07-25 through 2026-07-28;
+  - 7-day totals: 2,331 impressions and 12 page views;
+  - 7-day period coverage: aligned within the three-day reporting allowance;
+  - 7-day decision state: ready.
+  - 28-day requested window: 2026-07-04 through 2026-07-31;
+  - 28-day scoped evidence: 2026-07-24 through 2026-07-28;
+  - 28-day totals: 2,340 impressions and 12 page views;
+  - 28-day period coverage: partial;
+  - 28-day decision state: Waiting with no directional conclusion.
+- Tests separately cover fresh, stale, complete, partial, out-of-window, very-low-volume, absent-market, and exact evidence formatting states.
+- A future-dated fixture row is excluded by the new inclusive query end.
+
+## Known issues
+
+- The current imported evidence can support the 7-day feed within the configured reporting allowance but cannot support a 28-day conclusion.
+- Downloads remain unavailable until the separate sales/download import exists.
+- The deterministic volume thresholds are product interpretation thresholds, not claims of statistical significance.
+- Production still runs the prior application version until release gates and deployment complete.
+
+## Database changes
+
+- None.
+- Existing report provenance and metric rows are sufficient for exact requested/imported/scoped window assessment.
+
+## Deployment status
+
+- Implementation is local only.
+- Focused tests and typecheck pass.
+- Full test, build, root checks, commit, and production deployment remain.
+
+## Remaining in this milestone
+
+- Run the complete Tools test suite and production build.
+- Run root checks and diff validation.
+- Inspect the final UI output locally or through the production deployment.
+- Commit without including unrelated support files.
+- Deploy Tools to production and validate the exact 7-day and 28-day states.
+
+## Next exact task
+
+Run the complete release gates and review the final evidence presentation before committing.
+
+---
+
+# Checkpoint 45 — Discovery sufficiency release verified
+
+## Current milestone
+
+Trust and Data Correctness — Discovery requested-period and imported-window integrity
+
+## Completed
+
+- Completed the deterministic model, repository integration, recommendation-feed presentation, App Store Connect presentation, and production-shaped verification fixture.
+- Reviewed the final evidence format so requested, imported, and scoped windows remain distinct.
+- Preserved the existing navigation and existing recommendation page; no new route was created.
+- Completed the full local release matrix.
+
+## Verified
+
+- Tools test suite: 101 tests passed across 26 files.
+- Tools typecheck: passed.
+- Tools production build: passed, including Next's lint/type validation.
+- Root checks: passed across 10 levels.
+- `git diff --check`: passed.
+- Focused production-shaped acceptance remains:
+  - 7-day InnerType GB evidence is aligned and decision-ready;
+  - 28-day InnerType GB evidence is partial and produces one Waiting card;
+  - future-dated rows are excluded;
+  - stale, partial-import, out-of-window, absent, and very-low-volume evidence cannot produce directional cards.
+- Import completeness remains independent from exact-market row presence: a successful 244/244 app import can be complete while a market still waits for scoped evidence.
+- No Apple Ads write action or attribution behavior changed.
+
+## Known issues
+
+- The current 28-day production evidence is expected to change from three directional cards to one Waiting card after deployment.
+- The current 7-day production evidence should remain directional while it stays inside the three-day reporting allowance; it will become stale automatically if no newer scoped evidence arrives.
+- Downloads remain Waiting because the separate sales/download import is unavailable.
+- Standalone `npm run lint` remains unavailable because the repository still lacks an ESLint 9 flat configuration; Next's production build validation passes.
+
+## Database changes
+
+- None.
+
+## Deployment status
+
+- All local release gates pass.
+- The implementation is ready to commit and deploy to the existing `kopa-tools` production project.
+- Rollback is available by promoting the prior Tools production deployment; there is no database rollback.
+
+## Remaining in this milestone
+
+- Commit the verified slice without unrelated untracked files.
+- Deploy the committed Tools source to production.
+- Validate the signed-in 7-day and 28-day InnerType GB recommendation feeds and App Store Connect quality view.
+- Record the production deployment ID and final acceptance result.
+
+## Next exact task
+
+Commit the verified Discovery sufficiency slice and deploy that exact source to the existing Tools production project.

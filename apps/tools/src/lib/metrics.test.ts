@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { compareStorefrontWindows, discoveryOpportunities, summarizeStorefrontMetrics } from "./metrics";
+import { assessDiscoveryEvidenceSufficiency } from "./discovery-sufficiency";
 import type { DiscoveryEvidenceQuality } from "./discovery-quality";
 
+const NOW = new Date("2026-07-31T12:00:00.000Z");
 const freshQuality: DiscoveryEvidenceQuality = {
   state: "fresh",
   label: "Fresh",
@@ -9,6 +11,24 @@ const freshQuality: DiscoveryEvidenceQuality = {
   parserVersion: "discovery-v2",
   evidenceEnd: "2026-07-28",
 };
+const request = {
+  resultState: "success" as const,
+  parserVersion: "discovery-v2",
+  evidenceStart: "2026-07-24",
+  evidenceEnd: "2026-07-29",
+  sourceRowCount: 244,
+  importedRowCount: 244,
+  rejectedRowCount: 0,
+  lastError: null,
+};
+const freshSufficiency = assessDiscoveryEvidenceSufficiency({
+  days: 7,
+  requests: [request],
+  observedDates: ["2026-07-25", "2026-07-26", "2026-07-27", "2026-07-28"],
+  quality: freshQuality,
+  totals: { impressions: 1000, pageViews: 30, downloads: 1 },
+  now: NOW,
+});
 
 describe("storefront metric summaries", () => {
   it("groups supported events by app and country", () => {
@@ -35,7 +55,7 @@ describe("storefront metric summaries", () => {
       trend: compareStorefrontWindows([{ date: "2026-07-01", impressions: 100, pageViews: 50, downloads: 5 }, { date: "2026-07-02", impressions: 100, pageViews: 20, downloads: 1 }]),
       hasDiscoveryRows: true,
       hasDailyRows: true,
-      quality: freshQuality,
+      sufficiency: freshSufficiency,
     });
 
     expect(opportunities.map((item) => item.title)).toEqual([
@@ -48,21 +68,30 @@ describe("storefront metric summaries", () => {
   });
 
   it("labels missing Discovery rows as waiting", () => {
-    expect(discoveryOpportunities({ countries: [], sourceTypes: [], trend: compareStorefrontWindows([]), hasDiscoveryRows: false, hasDailyRows: false, quality: freshQuality })).toEqual([
+    expect(discoveryOpportunities({ countries: [], sourceTypes: [], trend: compareStorefrontWindows([]), hasDiscoveryRows: false, hasDailyRows: false, sufficiency: freshSufficiency })).toEqual([
       { severity: "waiting", title: "Waiting for Discovery report data", detail: "Retry the Discovery report import after Apple has generated at least one daily segment." },
     ]);
   });
 
   it("replaces directional conclusions with one waiting state when evidence is partial", () => {
+    const partialQuality = { ...freshQuality, state: "partial" as const, label: "Partial", explanation: "One source row was rejected." };
+    const partialSufficiency = assessDiscoveryEvidenceSufficiency({
+      days: 7,
+      requests: [{ ...request, resultState: "partial", importedRowCount: 243, rejectedRowCount: 1 }],
+      observedDates: ["2026-07-25", "2026-07-26", "2026-07-27", "2026-07-28"],
+      quality: partialQuality,
+      totals: { impressions: 1000, pageViews: 30, downloads: 1 },
+      now: NOW,
+    });
     expect(discoveryOpportunities({
       countries: [{ appId: "a", appName: "InnerType", country: "gb", impressions: 1000, pageViews: 30, downloads: 1, impressionToPageRate: 0.03, downloadRate: 1 / 30 }],
       sourceTypes: [{ sourceType: "App Store Search", impressions: 800, pageViews: 25 }],
       trend: compareStorefrontWindows([{ date: "2026-07-01", impressions: 100, pageViews: 50, downloads: 5 }, { date: "2026-07-02", impressions: 100, pageViews: 20, downloads: 1 }]),
       hasDiscoveryRows: true,
       hasDailyRows: true,
-      quality: { ...freshQuality, state: "partial", label: "Partial", explanation: "One source row was rejected." },
+      sufficiency: partialSufficiency,
     })).toEqual([
-      { severity: "waiting", title: "Discovery evidence is partial", detail: "One source row was rejected." },
+      { severity: "waiting", title: "Discovery import is partial", detail: "One source row was rejected." },
     ]);
   });
 });
