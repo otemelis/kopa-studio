@@ -3665,3 +3665,87 @@ Trust and Data Correctness — exact-window cross-source agreement
 ## Next exact task
 
 Commit and deploy the verified cross-source agreement slice, then complete signed-in production acceptance.
+
+---
+
+# Checkpoint 50 — Cross-source agreement slice complete in production
+
+## Current milestone
+
+Trust and Data Correctness — exact-window cross-source agreement
+
+## Completed
+
+- Committed the verified exact-scope/window agreement implementation:
+  - `00d0eaba feat(recommendations): show cross-source agreement`
+- Deployed the exact committed Tools source to production.
+- Completed signed-in acceptance on Discovery-filtered, Apple Ads-filtered, and missing-market feed states.
+- Corrected one acceptance-only clarity issue so scope-level Agreement cannot be mistaken for validation of an individual keyword or search-term target:
+  - `652e7b2c fix(recommendations): clarify agreement scope`
+- Re-ran the full release matrix, deployed the clarification, and repeated signed-in acceptance.
+- Left unrelated support files and 2048 Run Merge screenshots untouched and outside both production archives.
+
+## Verified
+
+- Production InnerType/GB/7-day Discovery-filtered feed:
+  - 4 existing cards remain;
+  - each shows Agreement;
+  - compared overlap: 2026-07-25 through 2026-07-28;
+  - shared scope conclusions:
+    - acquisition traffic quality needs review;
+    - conversion should not yet be judged;
+  - source-specific status, confidence, evidence, risk, and follow-up remain unchanged.
+- Production InnerType/GB/7-day Apple Ads-filtered feed:
+  - 5 existing cards remain;
+  - each shows the same Agreement and exact overlap even though Discovery cards are filtered out of presentation;
+  - `lovense`, `lovense remote`, and `y not` remain exact-negative proposals;
+  - `personality test` remains Continue learning;
+  - campaign conversion remains Insufficient;
+  - no card became executable and no provider write occurred.
+- Production missing-market state:
+  - Cross-source agreement displays Unknown;
+  - explanation: the sources do not have the same exact market scope;
+  - no portfolio or app-wide inference upgrades the state.
+- Final scope guard:
+  - Agreement and Conflict text states that the comparison is app/market scope context;
+  - it explicitly does not validate the card's specific target or change action eligibility.
+- Final local release gates:
+  - 113 Tools tests passed across 27 files;
+  - typecheck passed;
+  - production build passed;
+  - root checks passed across 10 levels;
+  - diff validation passed.
+- No database change, Apple Ads campaign mutation, attribution work, new page, or navigation change occurred.
+
+## Known issues
+
+- Cross-source agreement is read-only feed context and is not persisted.
+- Current agreement covers only shared traffic-quality and conversion-readiness questions.
+- The Sources page still lets an older retained public-collection failure visually override a later successful run.
+- Recommendation identity and lifecycle are not yet unified across ASO, Discovery, and Apple Ads.
+- Standalone `npm run lint` remains unavailable because the repository lacks an ESLint 9 flat configuration; Next's production build validation passes.
+
+## Database changes
+
+- None.
+
+## Deployment status
+
+- Initial cross-source Tools production deployment:
+  - `dpl_AQxKDHvLyCKApqu2bgnoXyfKCc91`
+- Current Tools production deployment after the scope-clarity fix:
+  - `dpl_HtMV4CvgUAxm5GT5WPRGNf8HWzb6`
+  - alias: `https://tools.kopa.studio`
+- Vertical slice status: complete in production.
+- Acceptance test: passed.
+- Rollback is available by promoting Tools deployment `dpl_A3cYLxXVpUj4r4rosNvVWonPsoQV`; no database rollback is required.
+
+## Remaining in Milestone 1 — Trust and Data Correctness
+
+- Correct source-status recency so an older retained failure cannot override a later successful run.
+- Converge recommendation dedupe identity and lifecycle across ASO, Discovery, and Apple Ads.
+- Complete final production/source parity and authenticated-owner verification.
+
+## Next exact task
+
+Correct the Public App Store source-status recency rule: derive current status from the latest relevant collection outcome, retain older failures as history without presenting the source as currently failed, and prove success-after-failure plus failure-after-success behavior with tests.
