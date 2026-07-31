@@ -3463,3 +3463,205 @@ Trust and Data Correctness — Discovery requested-period and imported-window in
 ## Next exact task
 
 Implement the smallest read-only cross-source agreement slice for InnerType GB: compare only exact-market, overlapping-window Discovery and Apple Ads evidence, display Agreement, Conflict, or Unknown separately on the existing recommendation feed, and keep action eligibility unchanged when the windows do not align.
+
+---
+
+# Checkpoint 47 — Cross-source agreement audit
+
+## Current milestone
+
+Trust and Data Correctness — exact-window cross-source agreement
+
+## Completed
+
+- Audited the live InnerType GB Discovery and Apple Ads evidence, exact windows, quality fields, recommendation types, and unified feed presentation.
+- Identified the smallest shared decision questions that both sources can answer independently:
+  - whether acquisition traffic quality needs review;
+  - whether conversion can currently be judged.
+- Confirmed that cross-source agreement can be computed read-only in the existing recommendation feed without a new page, provider action, persistence model, or migration.
+
+## Verified
+
+- Current production Discovery:
+  - 7-day requested window: 2026-07-25 through 2026-07-31;
+  - exact GB observed window: 2026-07-25 through 2026-07-28;
+  - 2,331 impressions and 12 page views;
+  - 0.5% impression-to-page-view rate;
+  - no sales/download evidence, so conversion remains unjudged.
+- Current production Apple Ads:
+  - exact GB evidence window: 2026-07-20 through 2026-07-30;
+  - 579 campaign impressions, 5 taps, 0 installs, and €2.3623 campaign spend;
+  - traffic quality: Poor;
+  - conversion evidence: Insufficient;
+  - stored recommendations contain explicit irrelevant-term findings and one continue-learning finding for relevant `personality test`.
+- Exact overlap:
+  - 7-day Discovery versus Apple Ads: 2026-07-25 through 2026-07-28;
+  - 28-day scoped Discovery versus Apple Ads: 2026-07-24 through 2026-07-28.
+- The current exact-window evidence independently agrees that:
+  - acquisition traffic quality needs review;
+  - conversion should not yet be judged.
+
+## Known issues
+
+- The recommendation feed currently exposes each source independently and has no separate Agreement, Conflict, or Unknown quality.
+- Apple Ads recommendations are persisted against their own evidence window and are not re-windowed by the feed period selector; comparison must use the intersection of actual source windows.
+- A source filter must not hide the other source from the read-only comparison calculation.
+- Cross-source context must not raise confidence, change status, make a card actionable, or suppress a source-specific recommendation.
+- Portfolio, missing-market, different-market, missing-window, and non-overlapping-window evidence must remain Unknown.
+
+## Database changes
+
+- None.
+- Existing stored recommendation windows and Discovery scoped windows are sufficient.
+
+## Deployment status
+
+- Audit only; no code or production state changed in this checkpoint.
+
+## Remaining in this milestone
+
+- Add a deterministic exact-scope/window agreement model.
+- Derive independent traffic-quality and conversion-readiness signals from each source.
+- Display Agreement, Conflict, or Unknown separately on the existing recommendation cards.
+- Prove app, market, window, source-filter, conflict, and unknown isolation with tests.
+- Run release gates, commit, deploy, and complete signed-in production acceptance.
+
+## Next exact task
+
+Implement the pure cross-source agreement model and feed mapping without changing recommendation actionability or status.
+
+---
+
+# Checkpoint 48 — Cross-source agreement model implemented
+
+## Current milestone
+
+Trust and Data Correctness — exact-window cross-source agreement
+
+## Completed
+
+- Added a deterministic cross-source agreement model with explicit `Agreement`, `Conflict`, and `Unknown` states.
+- Added independent source adapters for:
+  - Discovery traffic quality and conversion readiness;
+  - Apple Ads traffic relevance and conversion sufficiency.
+- Added exact app and normalized market matching.
+- Added actual-window intersection; selected-period labels are never substituted for source evidence windows.
+- Added a separate cross-source agreement line to the existing recommendation cards.
+- Kept cross-source calculation ahead of presentation source filtering so selecting only Discovery or only Apple Ads does not erase comparison context.
+- Kept status, priority, confidence, risk, source-specific evidence, and actionability unchanged.
+
+## Verified
+
+- Focused cross-source, Discovery sufficiency, and Apple Ads assessment suite: 27 tests passed.
+- Tools typecheck: passed.
+- Production-shaped model result:
+  - state: Agreement;
+  - exact app: InnerType;
+  - exact market: GB;
+  - overlap: 2026-07-25 through 2026-07-28 for the 7-day Discovery scope;
+  - shared traffic conclusion: acquisition traffic quality needs review;
+  - shared conversion conclusion: conversion should not yet be judged.
+- Isolation tests prove Unknown for:
+  - different apps;
+  - different markets;
+  - missing market;
+  - missing source window;
+  - non-overlapping windows;
+  - overlapping windows with no independently supported shared question;
+  - multiple Apple Ads evidence windows in one exact scope.
+- Conflict tests preserve both independent conclusions and explicitly tell the user to keep them separate.
+- Stale or very-low Discovery evidence cannot contribute a comparison signal.
+- Apple Ads rows from another storefront do not contribute a comparison signal.
+
+## Known issues
+
+- Cross-source agreement is currently computed at exact app/market feed scope and is not persisted.
+- Agreement is supporting context only; it does not create a new recommendation or increase source confidence.
+- The current comparison covers the two shared questions supported by both sources; it does not invent agreement for rank, metadata, bid, budget, or product-fit questions that only one source can answer.
+- Full release gates and production acceptance remain.
+
+## Database changes
+
+- None.
+
+## Deployment status
+
+- Implementation is local only.
+- Focused tests and typecheck pass.
+
+## Remaining in this milestone
+
+- Run the full Tools suite, production build, root checks, and diff validation.
+- Commit only the cross-source slice and current-state checkpoints.
+- Deploy the exact committed Tools source.
+- Validate signed-in Agreement on both source-filtered feed views.
+- Validate Unknown when exact scope or overlapping windows are unavailable.
+- Record final production acceptance and one next task.
+
+## Next exact task
+
+Run the full release gates and inspect the final diff before committing.
+
+---
+
+# Checkpoint 49 — Cross-source agreement release verified
+
+## Current milestone
+
+Trust and Data Correctness — exact-window cross-source agreement
+
+## Completed
+
+- Completed the deterministic model, exact-scope/window adapters, existing-feed presentation, and production-shaped tests.
+- Reviewed the final diff to confirm that cross-source context is additive presentation only.
+- Preserved all source-specific recommendation statuses, confidence values, priorities, evidence, and follow-up actions.
+- Completed the full local release matrix.
+
+## Verified
+
+- Tools test suite: 113 tests passed across 27 files.
+- Tools typecheck: passed.
+- Tools production build: passed, including Next's lint/type validation.
+- Root checks: passed across 10 levels.
+- `git diff --check`: passed.
+- Agreement requires:
+  - identical non-null app;
+  - identical non-null market;
+  - explicit valid windows for both sources;
+  - at least one overlapping date;
+  - at least one independently supported shared decision question.
+- Conflict remains advisory context and explicitly preserves the separate source conclusions.
+- Unknown is shown rather than inferred agreement for incomplete scope, missing or multiple windows, non-overlap, or no shared comparable question.
+- Presentation source filters are applied after the agreement assessment, so `source=Discovery` and `source=Apple Ads` retain the same exact-scope comparison.
+- No database, Apple Ads provider, campaign, attribution, navigation, or persistence behavior changed.
+
+## Known issues
+
+- Production still runs the prior Tools version until deployment.
+- Cross-source agreement is intentionally not a deduplication or recommendation-lifecycle mechanism.
+- Standalone `npm run lint` remains unavailable because the repository lacks an ESLint 9 flat configuration; Next's production build validation passes.
+
+## Database changes
+
+- None.
+
+## Deployment status
+
+- All local release gates pass.
+- The implementation is ready to commit and deploy to the existing `kopa-tools` production project.
+- Rollback is available by promoting the prior Tools deployment; there is no database rollback.
+
+## Remaining in this milestone
+
+- Commit without unrelated support files.
+- Deploy the exact committed source archive to the Tools project.
+- Validate signed-in Agreement on:
+  - the Discovery-filtered InnerType GB feed;
+  - the Apple Ads-filtered InnerType GB feed.
+- Validate Unknown without exact market scope.
+- Confirm recommendation counts, statuses, confidence, and actions remain unchanged.
+- Record final acceptance and exactly one next task.
+
+## Next exact task
+
+Commit and deploy the verified cross-source agreement slice, then complete signed-in production acceptance.
