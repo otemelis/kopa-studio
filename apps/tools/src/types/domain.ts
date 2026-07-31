@@ -55,6 +55,7 @@ export interface KeywordRow {
   appName: string;
   term: string;
   country: string;
+  locale: string | null;
   priority: "high" | "medium" | "low";
   status: "active" | "paused";
   rank: number | null;
@@ -71,6 +72,7 @@ export interface InsightRow {
   appId: string | null;
   appName: string | null;
   country: string | null;
+  locale: string | null;
   title: string;
   observation: string;
   recommendation: string;
@@ -114,6 +116,7 @@ export interface StorefrontRow {
   appName: string;
   country: string;
   isPrimary: boolean;
+  metadataLocale: string | null;
   metadataEvidence: import("@/lib/storefront-readiness").LocalizationEvidence;
   screenshotEvidence: import("@/lib/storefront-readiness").LocalizationEvidence;
   appLanguageEvidence: import("@/lib/storefront-readiness").LocalizationEvidence;

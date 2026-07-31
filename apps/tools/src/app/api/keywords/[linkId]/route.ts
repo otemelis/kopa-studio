@@ -8,7 +8,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ li
   if (!id.success || !body.success) return NextResponse.json({ error: "Invalid keyword update." }, { status: 400 });
   const db = createAdminClient(); const { data: link, error: linkError } = await db.from("aso_app_keywords").select("id,keyword_id").eq("id", id.data).maybeSingle();
   if (linkError || !link) return NextResponse.json({ error: "Keyword assignment not found." }, { status: 404 });
-  const { error: keywordError } = await db.from("aso_keywords").update({ term: body.data.term.toLowerCase(), country: body.data.country }).eq("id", link.keyword_id);
+  const { error: keywordError } = await db.from("aso_keywords").update({ term: body.data.term.toLowerCase(), country: body.data.country, language: body.data.locale }).eq("id", link.keyword_id);
   if (keywordError) return NextResponse.json({ error: "Could not update keyword text. It may duplicate an existing term in this country." }, { status: 409 });
   const { error: updateError } = await db.from("aso_app_keywords").update({ priority: body.data.priority, status: body.data.status, updated_at: new Date().toISOString() }).eq("id", id.data);
   if (updateError) return NextResponse.json({ error: "Could not update keyword settings." }, { status: 500 });

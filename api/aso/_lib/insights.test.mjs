@@ -23,6 +23,7 @@ function draft(overrides = {}) {
     keyword_id: "keyword-current",
     experiment_id: null,
     country: null,
+    locale: null,
     title: "71 high-priority keywords are missing",
     observation: "Current missing keyword evidence.",
     interpretation: "Current deterministic diagnosis.",
@@ -59,8 +60,8 @@ function applyPlan(rows, plan) {
 }
 
 test("metadata mismatch identity is stable across changing keyword evidence", () => {
-  assert.equal(metadataMismatchDedupeKey(APP_ID, null), `metadata_mismatch:${APP_ID}:portfolio`);
-  assert.equal(metadataMismatchDedupeKey(APP_ID, "GB"), `metadata_mismatch:${APP_ID}:gb`);
+  assert.equal(metadataMismatchDedupeKey(APP_ID, null), `metadata_mismatch:${APP_ID}:portfolio:unknown`);
+  assert.equal(metadataMismatchDedupeKey(APP_ID, "GB", "en-GB"), `metadata_mismatch:${APP_ID}:gb:en-GB`);
   assert.equal(
     draft({ keyword_id: "keyword-a", evidence: [{ label: "Missing terms", value: "49", source: "calculated" }] }).dedupe_key,
     draft({ keyword_id: "keyword-b", evidence: [{ label: "Missing terms", value: "71", source: "calculated" }] }).dedupe_key,
@@ -206,6 +207,7 @@ function metadataSnapshot(overrides = {}) {
     id: "metadata-us-v2",
     app_id: APP_ID,
     country: "us",
+    locale: "en-US",
     captured_at: "2026-07-25T10:00:00.000Z",
     name: "InnerType Personality Test",
     subtitle: "Know yourself",
@@ -225,7 +227,7 @@ function rankSnapshot(date, rank) {
 }
 
 test("current metadata keyword opportunities exclude every pre-version rank snapshot", () => {
-  const keyword = { id: "keyword-personality", term: "personality test", country: "us" };
+  const keyword = { id: "keyword-personality", term: "personality test", country: "us", language: "en-US" };
   const oldRanks = [
     rankSnapshot("2026-07-18", 28),
     rankSnapshot("2026-07-19", 26),
@@ -275,12 +277,12 @@ test("metadata-dependent findings require an exact-country observed snapshot", (
     metadataSnapshots: [metadataSnapshot()],
     keywords: [
       {
-        keyword: { id: "keyword-us", term: "enneagram", country: "us" },
+        keyword: { id: "keyword-us", term: "enneagram", country: "us", language: "en-US" },
         priority: "high",
         snapshots: [],
       },
       {
-        keyword: { id: "keyword-gb", term: "personality quiz", country: "gb" },
+        keyword: { id: "keyword-gb", term: "personality quiz", country: "gb", language: "en-GB" },
         priority: "high",
         snapshots: [
           rankSnapshot("2026-07-25", 25),
@@ -316,6 +318,7 @@ test("change-response findings expose the observed post-change metadata version 
     changeEvents: [{
       app_id: APP_ID,
       country: "us",
+      locale: "en-US",
       change_type: "subtitle",
       happened_at: changeTime,
       origin: "detected",
@@ -323,7 +326,7 @@ test("change-response findings expose the observed post-change metadata version 
       new_value: "New subtitle",
     }],
     keywords: [{
-      keyword: { id: "keyword-rising", term: "personality", country: "us" },
+      keyword: { id: "keyword-rising", term: "personality", country: "us", language: "en-US" },
       priority: "medium",
       snapshots: [
         rankSnapshot("2026-07-17", 30),
@@ -345,12 +348,13 @@ test("change-response findings expose the observed post-change metadata version 
   assert.match(finding.comparison_window, /metadata version observed 2026-07-20T10:00:00.000Z/);
 });
 
-test("legacy current-metadata rows are refreshed in place with versioned evidence", () => {
+test("current exact-locale metadata rows are refreshed in place with versioned evidence", () => {
   const currentDraft = {
     ...draft({
       rule_id: "keyword_opportunity",
       keyword_id: "keyword-personality",
       country: "us",
+      locale: "en-US",
       title: "Current metadata opportunity",
       evidence: [
         { label: "Metadata snapshot", value: "metadata-us-v2", source: "public_store" },
@@ -364,6 +368,7 @@ test("legacy current-metadata rows are refreshed in place with versioned evidenc
     rule_id: "keyword_opportunity",
     keyword_id: "keyword-personality",
     country: "us",
+    locale: "en-US",
     evidence: [{ label: "Current rank", value: "#18", source: "public_store" }],
     comparison_window: "Last 14 days",
     dedupe_key: "keyword_opportunity:keyword-personality",
@@ -373,13 +378,59 @@ test("legacy current-metadata rows are refreshed in place with versioned evidenc
     [currentDraft],
     [legacy],
     NOW,
-    [metadataEvidenceScopeKey(APP_ID, "us")],
+    [metadataEvidenceScopeKey(APP_ID, "us", "en-US")],
   );
   assert.equal(plan.drafts.length, 0);
   assert.equal(plan.updates.length, 1);
   assert.equal(plan.updates[0].id, "legacy-opportunity");
   assert.equal(plan.updates[0].patch.dedupe_key, currentDraft.dedupe_key);
   assert.equal(plan.updates[0].patch.evidence[0].value, "metadata-us-v2");
+});
+
+test("metadata-dependent findings stay silent when either locale is unknown", () => {
+  const knownKeyword = { id: "keyword-known", term: "enneagram", country: "us", language: "en-US" };
+  const unknownKeyword = { id: "keyword-unknown", term: "personality quiz", country: "us", language: null };
+
+  const unknownSnapshotContext = ruleContext({
+    metadataSnapshots: [metadataSnapshot({ locale: null })],
+    keywords: [{ keyword: knownKeyword, priority: "high", snapshots: [] }],
+  });
+  const unknownKeywordContext = ruleContext({
+    metadataSnapshots: [metadataSnapshot()],
+    keywords: [{ keyword: unknownKeyword, priority: "high", snapshots: [] }],
+  });
+
+  for (const context of [unknownSnapshotContext, unknownKeywordContext]) {
+    assert.deepEqual(
+      evaluateRulesForApp(context).filter((item) =>
+        ["metadata_mismatch", "keyword_opportunity", "keyword_rising_after_change", "keyword_declined_after_removal"].includes(item.rule_id),
+      ),
+      [],
+    );
+  }
+});
+
+test("US and GB metadata findings require independent country-and-locale evidence", () => {
+  const context = ruleContext({
+    metadataSnapshots: [
+      metadataSnapshot({ id: "metadata-us", name: "InnerType", locale: "en-US" }),
+      metadataSnapshot({ id: "metadata-gb", country: "gb", name: "InnerType UK", locale: "en-GB" }),
+    ],
+    keywords: [
+      { keyword: { id: "keyword-us", term: "enneagram", country: "us", language: "en-US" }, priority: "high", snapshots: [] },
+      { keyword: { id: "keyword-gb", term: "personality quiz", country: "gb", language: "en-GB" }, priority: "high", snapshots: [] },
+      { keyword: { id: "keyword-wrong-locale", term: "relationship test", country: "us", language: "en-GB" }, priority: "high", snapshots: [] },
+    ],
+  });
+
+  const findings = evaluateRulesForApp(context).filter((item) => item.rule_id === "metadata_mismatch");
+  assert.deepEqual(
+    findings.map((item) => [item.country, item.locale, item.evidence.find((evidence) => evidence.label === "Missing terms").value]),
+    [
+      ["us", "en-US", "\"enneagram\""],
+      ["gb", "en-GB", "\"personality quiz\""],
+    ],
+  );
 });
 
 test("unsupported market metadata findings are superseded without contaminating another market", () => {
@@ -394,7 +445,7 @@ test("unsupported market metadata findings are superseded without contaminating 
     [],
     [gbLegacy],
     NOW,
-    [metadataEvidenceScopeKey(APP_ID, "gb")],
+    [metadataEvidenceScopeKey(APP_ID, "gb", null)],
   );
   assert.equal(gbPlan.updates.length, 1);
   assert.equal(gbPlan.updates[0].patch.status, "superseded");
@@ -403,7 +454,7 @@ test("unsupported market metadata findings are superseded without contaminating 
     [],
     [gbLegacy],
     NOW,
-    [metadataEvidenceScopeKey(APP_ID, "us")],
+    [metadataEvidenceScopeKey(APP_ID, "us", null)],
   );
   assert.deepEqual(usPlan, { drafts: [], updates: [] });
 });

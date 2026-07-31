@@ -51,7 +51,13 @@ async function politeFetchJson(url) {
   throw lastError ?? new Error("fetch failed");
 }
 
-function mapLookupResult(r) {
+export function normalizeExactLocale(value) {
+  const raw = typeof value === "string" ? value.trim().replaceAll("_", "-") : "";
+  const match = raw.match(/^([A-Za-z]{2,3})-([A-Za-z]{2})$/);
+  return match ? `${match[1].toLowerCase()}-${match[2].toUpperCase()}` : null;
+}
+
+export function mapLookupResult(r) {
   return {
     store_app_id: String(r.trackId),
     bundle_id: r.bundleId ?? null,
@@ -68,6 +74,9 @@ function mapLookupResult(r) {
     price: typeof r.price === "number" ? r.price : null,
     currency: r.currency ?? null,
     store_url: r.trackViewUrl ?? null,
+    // The lookup API normally omits this. Never infer it from country or
+    // languageCodesISO2A; only preserve an explicit structured locale.
+    locale: normalizeExactLocale(r.locale),
     languages: Array.isArray(r.languageCodesISO2A) ? r.languageCodesISO2A : null,
     screenshot_urls: Array.isArray(r.screenshotUrls) ? r.screenshotUrls : null,
     last_store_update_at: r.currentVersionReleaseDate ?? null,

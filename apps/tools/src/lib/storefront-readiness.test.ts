@@ -4,6 +4,7 @@ import { assessStorefrontLocalization } from "./storefront-readiness";
 
 const gbSnapshot = {
   country: "gb",
+  locale: "en-GB",
   capturedAt: "2026-07-29T10:00:00.000Z",
   name: "InnerType Personality Test",
   description: "A personality test.",
@@ -46,6 +47,17 @@ describe("storefront localization evidence", () => {
     expect(assessment.screenshotEvidence).toMatchObject({ state: "verified", source: "public_store_snapshot", observedAt: gbSnapshot.capturedAt });
     expect(assessment.appLanguageEvidence.state).toBe("unknown");
     expect(assessment.readiness).toBe("Localization evidence partial");
+  });
+
+  it("keeps exact-country metadata Unknown when its listing locale is unavailable", () => {
+    const assessment = assessStorefrontLocalization({
+      country: "gb",
+      metadataSnapshot: { ...gbSnapshot, locale: null },
+    });
+    expect(assessment.metadataLocale).toBeNull();
+    expect(assessment.metadataEvidence).toMatchObject({ state: "unknown", source: null });
+    expect(assessment.metadataEvidence.detail).toContain("locale is Unknown");
+    expect(assessment.screenshotEvidence.state).toBe("unknown");
   });
 
   it("keeps storefront evidence isolated", () => {

@@ -3,7 +3,7 @@ import type { InsightRow } from "@/types/domain";
 
 export async function listActiveInsights({ appId, country, priority, limit = 100 }: { appId?: string; country?: string; priority?: string; limit?: number } = {}): Promise<InsightRow[]> {
   const db = createAdminClient();
-  let query = db.from("aso_insights").select("id,app_id,country,title,observation,recommendation,priority,confidence,impact,effort,rule_id,evidence,comparison_window,created_at").eq("status", "active");
+  let query = db.from("aso_insights").select("id,app_id,country,locale,title,observation,recommendation,priority,confidence,impact,effort,rule_id,evidence,comparison_window,created_at").eq("status", "active");
   if (appId) query = query.eq("app_id", appId);
   if (country && country.toLowerCase() !== "all") query = query.eq("country", country.toLowerCase());
   if (priority && ["high", "medium", "low"].includes(priority)) query = query.eq("priority", priority);
@@ -18,6 +18,7 @@ export async function listActiveInsights({ appId, country, priority, limit = 100
     appId: row.app_id ?? null,
     appName: row.app_id ? names.get(row.app_id) ?? null : null,
     country: row.country ?? null,
+    locale: row.locale ?? null,
     title: row.title,
     observation: row.observation,
     recommendation: row.recommendation,

@@ -127,6 +127,7 @@ async function runCollection(trigger) {
         const fields = {
           name: meta.name,
           subtitle: app.subtitle,
+          locale: meta.locale,
           description: meta.description,
           icon_url: meta.icon_url,
           screenshot_urls: meta.screenshot_urls,
@@ -161,6 +162,7 @@ async function runCollection(trigger) {
                   app_id: app.id,
                   competitor_id: null,
                   country: app.primary_country,
+                  locale: meta.locale,
                   ...c,
                   happened_at: new Date().toISOString(),
                   note: null,
@@ -233,6 +235,7 @@ async function runCollection(trigger) {
                   app_id: null,
                   competitor_id: comp.id,
                   country: null,
+                  locale: meta.locale,
                   ...c,
                   happened_at: new Date().toISOString(),
                   note: null,
@@ -573,7 +576,7 @@ async function runInsightEngine(db) {
     .filter((link) => link.status !== "paused")
     .map((link) => {
       const keyword = keywords.find((item) => item.id === link.keyword_id);
-      return keyword ? metadataEvidenceScopeKey(link.app_id, keyword.country) : null;
+      return keyword ? metadataEvidenceScopeKey(link.app_id, keyword.country, keyword.language) : null;
     })
     .filter(Boolean);
   const metadataVersionReconciliation = reconcileMetadataVersionedInsights(
@@ -591,8 +594,8 @@ async function runInsightEngine(db) {
     existingInsights,
     new Date(),
     [
-      ...apps.map((app) => metadataMismatchDedupeKey(app.id, null)),
-      ...metadataSnapshots.map((snapshot) => metadataMismatchDedupeKey(snapshot.app_id, snapshot.country)),
+      ...apps.map((app) => metadataMismatchDedupeKey(app.id, null, null)),
+      ...metadataSnapshots.map((snapshot) => metadataMismatchDedupeKey(snapshot.app_id, snapshot.country, snapshot.locale)),
     ],
   );
   for (const update of metadataReconciliation.updates) {

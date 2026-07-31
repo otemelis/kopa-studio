@@ -24,8 +24,8 @@ export async function createReviewPack(input: ReviewPackInput) {
     applyMarket(db.from("aso_app_storefronts").select("app_id,country,is_primary,metadata_localised,screenshots_localised,notes").eq("app_id", input.appId)),
     applyMarket(dateRange(db.from("aso_storefront_metrics").select("app_id,date,country,event,page_type,source_type,count,unique_count,source").eq("app_id", input.appId), "date")),
     applyMarket(dateRange(db.from("aso_daily_metrics").select("app_id,date,country,impressions,page_views,downloads,proceeds,source").eq("app_id", input.appId), "date")),
-    applyMarket(dateRange(db.from("aso_metadata_snapshots").select("app_id,country,captured_at,name,subtitle,description,current_version,release_notes,price,source").eq("app_id", input.appId), "captured_at")),
-    applyMarket(dateRange(db.from("aso_metadata_change_events").select("app_id,country,change_type,field,old_value,new_value,happened_at,note,origin,source").eq("app_id", input.appId), "happened_at")),
+    applyMarket(dateRange(db.from("aso_metadata_snapshots").select("app_id,country,locale,captured_at,name,subtitle,description,current_version,release_notes,price,source").eq("app_id", input.appId), "captured_at")),
+    applyMarket(dateRange(db.from("aso_metadata_change_events").select("app_id,country,locale,change_type,field,old_value,new_value,happened_at,note,origin,source").eq("app_id", input.appId), "happened_at")),
     applyMarket(db.from("aso_insights").select("rule_id,country,title,observation,recommendation,evidence,comparison_window,priority,status,created_at").eq("app_id", input.appId).eq("status", "active").order("priority", { ascending: false }).limit(5)),
     db.from("apple_ads_recommendations").select("recommendation_type,title,evidence_summary,deterministic_rationale,priority,generated_at,status").eq("app_id", input.appId).eq("status", "active").order("priority", { ascending: false }).limit(5),
   ]);

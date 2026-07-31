@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { appleAdsAppMappingSchema, appleAdsConnectionSchema, canTransitionJob, insightActionSchema, paginationSchema } from "./api";
+import { appleAdsAppMappingSchema, appleAdsConnectionSchema, canTransitionJob, insightActionSchema, localeSchema, paginationSchema } from "./api";
 
 describe("job transitions", () => {
   it("prevents terminal jobs from being completed twice", () => expect(canTransitionJob("completed", "completed")).toBe(false));
@@ -12,6 +12,11 @@ describe("pagination", () => {
 describe("insight actions", () => {
   it("allows only retained insight states", () => expect(insightActionSchema.safeParse({ action: "snoozed" }).success).toBe(true));
   it("rejects arbitrary status changes", () => expect(insightActionSchema.safeParse({ action: "active" }).success).toBe(false));
+});
+describe("App Store locale context", () => {
+  it("normalizes an exact language-region locale", () => expect(localeSchema.parse("EN_gb")).toBe("en-GB"));
+  it("keeps an unavailable locale explicitly unknown", () => expect(localeSchema.parse("")).toBeNull());
+  it("rejects a language-only value", () => expect(localeSchema.safeParse("en").success).toBe(false));
 });
 describe("Apple Ads setup", () => {
   it("accepts a read-only organization record", () => expect(appleAdsConnectionSchema.safeParse({ appleAdsOrgId: "23026890", appleAdsOrgName: "Otas Temelis" }).success).toBe(true));

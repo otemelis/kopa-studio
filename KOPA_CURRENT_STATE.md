@@ -2848,3 +2848,213 @@ Vertical slice: metadata-version context for ASO conclusions
 #### Next exact task
 
 Add locale-context integrity for public metadata and ASO conclusions: record the exact App Store locale when evidence provides it, require country-and-locale matches for language-dependent findings, show Unknown when locale is unavailable, and prove US/GB locale isolation with tests.
+
+---
+
+# Checkpoint 39 — Public metadata locale audit
+
+## Current milestone
+
+Trust and Data Correctness — public metadata locale-context integrity
+
+## Completed
+
+- Audited the Apple public-store provider, metadata collection, metadata snapshots, detected change events, tracked keyword model, deterministic metadata rules, keyword read model, Markets presentation, recommendation evidence, migrations, and current tests.
+- Confirmed the public iTunes lookup is requested with an exact storefront country but does not currently return an exact App Store listing locale.
+- Confirmed `languageCodesISO2A` is stored as an app-wide supported-language list and must not be treated as the locale of the returned storefront listing.
+- Confirmed metadata snapshots and detected metadata change events currently store country but no first-class locale.
+- Confirmed tracked keywords already have a nullable `language` field; this can be used as the keyword's explicit locale context without creating a parallel keyword-locale model.
+- Confirmed current metadata-dependent rules match on country only, so a US keyword and US snapshot with different or unknown languages can currently be compared.
+- Confirmed the keyword read model compares every tracked term with the app-level name/subtitle, which is not safe for language-dependent metadata conclusions.
+- Confirmed the Markets read model currently verifies exact-country metadata even when the listing locale is unknown.
+
+## Verified
+
+- The provider's app-wide language list is not exact-locale evidence.
+- Existing production-shaped metadata snapshots have no locale value, so their locale must be presented as Unknown rather than inferred from storefront country or supported languages.
+- The active schema can reuse `aso_keywords.language` for explicit keyword locale context.
+- Additive nullable locale columns are required on `aso_metadata_snapshots` and `aso_metadata_change_events`; existing rows can safely remain null as historical Unknown evidence.
+- Language-dependent keyword opportunity, change-response, and metadata-mismatch findings must require all of:
+  - the same app;
+  - the same storefront country;
+  - a known metadata locale;
+  - a known keyword locale;
+  - an exact normalized locale match.
+- Country-only rank collection remains valid because App Store rank evidence is storefront-scoped; only language-dependent metadata interpretation requires the additional locale match.
+
+## Known issues
+
+- Current US public metadata is exact-country evidence but not exact-locale evidence.
+- Current high-priority US keywords have no explicit locale context in the inspected schema path.
+- Until both contexts are recorded, current metadata coverage and localization claims must remain Unknown and metadata-dependent action findings must not be emitted.
+
+## Database changes
+
+- None applied in this checkpoint.
+- An additive migration is required to add nullable `locale` fields to metadata snapshots and detected change events. No destructive rewrite or locale backfill is justified.
+
+## Deployment status
+
+- Audit only; no code, schema, or production deployment changes yet.
+
+## Remaining in this milestone
+
+- Persist exact locale only when a provider or approved structured source explicitly supplies it.
+- Expose optional keyword locale input using the existing `aso_keywords.language` field.
+- Require exact country-and-locale matches in metadata-dependent deterministic rules and reconciliation.
+- Make keyword metadata presence and Markets evidence display Unknown when locale is unavailable.
+- Add missing-locale and US/GB locale-isolation tests.
+- Run all verification gates, review/apply the migration, deploy both production projects, and complete signed-in acceptance.
+
+## Next exact task
+
+Implement the additive metadata-locale schema and exact country-plus-locale matching contract without inferring locale from `languageCodesISO2A`, country, or app-wide metadata.
+
+---
+
+# Checkpoint 40 — Exact locale contract implemented
+
+## Current milestone
+
+Trust and Data Correctness — public metadata locale-context integrity
+
+## Completed
+
+- Added an additive migration for nullable locale context on owned metadata snapshots, detected metadata change events, and persisted ASO insights.
+- Preserved existing records as Unknown; no locale is backfilled or inferred.
+- Updated the public provider mapper to accept only an explicit structured language-region locale and to keep `languageCodesISO2A` separate as app-wide supported-language data.
+- Added locale to new owned metadata snapshots and detected metadata change events.
+- Included a known exact locale in metadata snapshot identity checks while preserving legacy checksums when locale remains unavailable.
+- Reused `aso_keywords.language` as the tracked keyword's explicit listing locale.
+- Added optional exact-locale input and editing to the existing keyword workflow.
+- Added a visible Locale column and Unknown state to Keyword Intelligence.
+- Replaced app-level metadata-presence comparison with the latest exact app, country, and locale metadata snapshot; missing locale or missing matching evidence now yields Unknown.
+- Required exact app, country, and locale matches for:
+  - keyword opportunity findings;
+  - keyword rising-after-change findings;
+  - keyword decline-after-removal findings;
+  - metadata mismatch findings.
+- Added locale to persisted language-dependent ASO conclusions, evidence, identity, and reconciliation scope.
+- Updated the migration to supersede active historical language-dependent findings whose locale context is unknown.
+- Updated Markets to show the exact captured listing locale or Unknown and to require explicit locale context before verifying metadata or screenshot evidence.
+- Included locale in review-pack metadata and change-event exports.
+
+## Verified
+
+- Provider and deterministic-rule tests pass: 30/30.
+- Supported-language arrays do not become inferred locales.
+- Unknown metadata locale blocks language-dependent findings.
+- Unknown keyword locale blocks language-dependent findings.
+- A same-country but different-locale keyword does not borrow metadata.
+- US `en-US` and GB `en-GB` evidence produce isolated conclusions.
+- TypeScript typecheck passes.
+- `git diff --check` passes.
+
+## Known issues
+
+- The current public iTunes lookup does not expose an exact listing locale, so newly collected snapshots will normally continue to store locale as null unless Apple supplies an explicit structured locale.
+- Existing production snapshots and keyword rows remain Unknown until an approved exact locale is recorded.
+- The additive migration has not yet been applied to production.
+
+## Database changes
+
+- Added `supabase/migrations/20260731120000_aso_locale_context.sql`.
+- The migration adds nullable `locale` columns to:
+  - `aso_metadata_snapshots`;
+  - `aso_metadata_change_events`;
+  - `aso_insights`.
+- It replaces the active metadata-mismatch identity with app + country + locale scope and supersedes unsupported active country-only language conclusions.
+- No destructive data rewrite or locale backfill is included.
+
+## Deployment status
+
+- Implementation is local only.
+- No migration or application deployment has been applied yet.
+
+## Remaining in this milestone
+
+- Complete focused UI and locale-evidence tests.
+- Run the full Tools test suite, all collector tests, lint, typecheck, root checks, and production build.
+- Review migration behavior against the production schema.
+- Commit the completed slice.
+- Apply the reviewed migration, deploy both production projects, and validate Unknown locale behavior plus US/GB isolation.
+
+## Next exact task
+
+Complete the locale-context verification suite and run every local quality gate before production migration or deployment.
+
+---
+
+# Checkpoint 41 — Locale-context verification complete
+
+## Current milestone
+
+Trust and Data Correctness — public metadata locale-context integrity
+
+## Completed
+
+- Added provider-contract tests for explicit locale normalization and non-inference from supported languages.
+- Added metadata-checksum tests proving:
+  - unknown locale preserves the legacy checksum identity;
+  - a newly available exact locale creates a new immutable metadata snapshot identity;
+  - different exact locales cannot share an identity.
+- Added deterministic-rule tests for:
+  - unknown metadata locale suppression;
+  - unknown keyword locale suppression;
+  - same-country/different-locale isolation;
+  - independent US `en-US` and GB `en-GB` conclusions.
+- Added Markets tests that keep exact-country metadata and screenshots Unknown when listing locale is unavailable.
+- Added recommendation evidence tests that keep exact metadata locale visible.
+- Added API validation tests for locale normalization, Unknown, and invalid language-only values.
+- Ran the full local verification matrix.
+
+## Verified
+
+- Collector/provider/rule tests: 43 passed.
+- Tools test suite: 93 passed across 25 files.
+- Tools typecheck: passed.
+- Tools production build: passed, including Next's lint/type validation.
+- Root checks: passed across 10 levels.
+- `git diff --check`: passed.
+- Standalone `npm run lint`: remains unavailable because ESLint 9 is installed without a flat `eslint.config.*`; this is the documented pre-existing repository condition, not a regression in this slice.
+
+## Known issues
+
+- The standalone lint script remains unavailable until the repository adopts an ESLint 9 flat configuration.
+- Production schema does not yet have the new nullable locale columns.
+- Production currently has no approved exact-locale value for the existing public metadata snapshot or tracked keywords, so Unknown is the required post-deployment state.
+
+## Database changes
+
+- The additive locale migration is locally reviewed and contains:
+  - three nullable columns;
+  - one replacement partial unique index scoped by app, country, and locale;
+  - one supporting metadata-snapshot locale index;
+  - an explicit supersession update for unsupported active language-dependent findings.
+- Rollback is known:
+  - redeploy the prior application versions;
+  - retain nullable columns safely;
+  - restore the prior country-only partial index only if the old collector must run;
+  - historical superseded findings remain preserved and can be reviewed, not deleted.
+
+## Deployment status
+
+- All local release gates that can execute in this repository pass.
+- No production migration or deployment has been performed in this checkpoint.
+
+## Remaining in this milestone
+
+- Commit the verified implementation without including unrelated untracked files.
+- Apply and inspect the additive production migration.
+- Deploy the collector and Tools application to production.
+- Run a production collection/reconciliation.
+- Confirm:
+  - existing metadata locale displays Unknown;
+  - unsupported country-only language conclusions are no longer active;
+  - no country or supported-language inference occurs;
+  - US and GB stay isolated;
+  - existing non-language-dependent Kopa functionality remains operational.
+
+## Next exact task
+
+Commit the verified locale-context slice, then apply the reviewed additive migration before deploying code that queries the new columns.

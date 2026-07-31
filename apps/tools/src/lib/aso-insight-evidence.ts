@@ -2,6 +2,7 @@ import type { InsightEvidenceItem } from "@/types/domain";
 
 const contextLabels = new Set([
   "Metadata snapshot",
+  "Metadata locale",
   "Metadata version",
   "Metadata observed",
   "Metadata change time",

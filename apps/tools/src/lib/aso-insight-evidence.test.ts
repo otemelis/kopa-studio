@@ -9,12 +9,18 @@ describe("ASO insight evidence presentation", () => {
       evidence: [
         { label: "Current rank", value: "#18", source: "public_store" },
         { label: "Metadata snapshot", value: "snapshot-us-v2", source: "public_store" },
+        { label: "Metadata locale", value: "en-US", source: "public_store" },
         { label: "Metadata version", value: "2.1 · checksum abc123", source: "public_store" },
         { label: "Metadata observed", value: "2026-07-25T10:00:00.000Z", source: "public_store" },
         { label: "Metadata change time", value: "2026-07-25T10:00:02.000Z", source: "public_store" },
         { label: "Rank evidence under metadata version", value: "2026-07-25 to 2026-07-30", source: "public_store" },
       ],
     })).toContain("Metadata snapshot: snapshot-us-v2");
+    expect(formatAsoInsightEvidence({
+      ruleId: "keyword_opportunity",
+      comparisonWindow: "Current version only",
+      evidence: [{ label: "Metadata locale", value: "en-US", source: "public_store" }],
+    })).toContain("Metadata locale: en-US");
     expect(formatAsoInsightEvidence({
       ruleId: "keyword_opportunity",
       comparisonWindow: "Current version only",

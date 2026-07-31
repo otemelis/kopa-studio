@@ -21,16 +21,16 @@ import {
 export const SUPPRESSION_DAYS = 14;
 export const METADATA_MISMATCH_PORTFOLIO_SCOPE = "portfolio";
 
-export function metadataMismatchDedupeKey(appId, country) {
-  return `metadata_mismatch:${appId}:${country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE}`;
+export function metadataMismatchDedupeKey(appId, country, locale = null) {
+  return `metadata_mismatch:${appId}:${country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE}:${normalizedLocale(locale) || "unknown"}`;
 }
 
 export function competitorWinsDedupeKey(appId, competitorId, country) {
   return `competitor_wins_high_priority_terms:${appId}:${competitorId}:${country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE}`;
 }
 
-export function metadataEvidenceScopeKey(appId, country) {
-  return `${appId}:${normalizedCountry(country) || METADATA_MISMATCH_PORTFOLIO_SCOPE}`;
+export function metadataEvidenceScopeKey(appId, country, locale = null) {
+  return `${appId}:${normalizedCountry(country) || METADATA_MISMATCH_PORTFOLIO_SCOPE}:${normalizedLocale(locale) || "unknown"}`;
 }
 
 function ev(label, value, source) {
@@ -43,16 +43,25 @@ function normalizedCountry(value) {
   return String(value ?? "").trim().toLowerCase();
 }
 
+function normalizedLocale(value) {
+  const raw = String(value ?? "").trim().replaceAll("_", "-");
+  const match = raw.match(/^([A-Za-z]{2,3})-([A-Za-z]{2})$/);
+  return match ? `${match[1].toLowerCase()}-${match[2].toUpperCase()}` : "";
+}
+
 function metadataVersionKey(snapshot) {
   return snapshot.id ?? snapshot.checksum ?? snapshot.captured_at;
 }
 
-function metadataSnapshotContext(ctx, country, options = {}) {
+function metadataSnapshotContext(ctx, country, locale, options = {}) {
   const targetCountry = normalizedCountry(country);
+  const targetLocale = normalizedLocale(locale);
+  if (!targetCountry || !targetLocale) return null;
   const snapshots = (ctx.metadataSnapshots ?? [])
     .filter((snapshot) =>
       snapshot.app_id === ctx.app.id &&
       normalizedCountry(snapshot.country) === targetCountry &&
+      normalizedLocale(snapshot.locale) === targetLocale &&
       (!options.onOrAfter || snapshot.captured_at.slice(0, 10) >= options.onOrAfter),
     )
     .sort((left, right) => left.captured_at.localeCompare(right.captured_at));
@@ -64,6 +73,7 @@ function metadataSnapshotContext(ctx, country, options = {}) {
       change.app_id === ctx.app.id &&
       change.origin === "detected" &&
       normalizedCountry(change.country) === targetCountry &&
+      normalizedLocale(change.locale) === targetLocale &&
       Math.abs(Date.parse(change.happened_at) - Date.parse(snapshot.captured_at)) <= METADATA_CHANGE_EVENT_TOLERANCE_MS,
     )
     .sort((left, right) =>
@@ -73,6 +83,7 @@ function metadataSnapshotContext(ctx, country, options = {}) {
 
   return {
     snapshot,
+    locale: targetLocale,
     snapshotId: metadataVersionKey(snapshot),
     version: snapshot.current_version ?? null,
     checksum: snapshot.checksum,
@@ -84,6 +95,7 @@ function metadataSnapshotContext(ctx, country, options = {}) {
 function metadataContextEvidence(context) {
   return [
     ev("Metadata snapshot", String(context.snapshotId), "public_store"),
+    ev("Metadata locale", context.locale, "public_store"),
     ev(
       "Metadata version",
       context.version ? `${context.version} · checksum ${context.checksum}` : `checksum ${context.checksum}`,
@@ -376,7 +388,7 @@ function ruleKeywordRisingAfterChange(ctx) {
     if (daysAgo(changeDate, ctx.today) > 45 || daysAgo(changeDate, ctx.today) < 5) continue;
     for (const { keyword, priority, snapshots } of ctx.keywords) {
       if (change.country && change.country !== keyword.country) continue;
-      const metadata = metadataSnapshotContext(ctx, keyword.country, { onOrAfter: changeDate, oldest: true });
+      const metadata = metadataSnapshotContext(ctx, keyword.country, keyword.language, { onOrAfter: changeDate, oldest: true });
       if (!metadata) continue;
       const before = snapshots.filter((s) => s.captured_at.slice(0, 10) < changeDate);
       const after = ranksForMetadataVersion(snapshots, metadata);
@@ -397,6 +409,7 @@ function ruleKeywordRisingAfterChange(ctx) {
         keyword_id: keyword.id,
         experiment_id: null,
         country: keyword.country,
+        locale: metadata.locale,
         title: `"${keyword.term}" (${keyword.country.toUpperCase()}) is rising after the ${change.change_type} change`,
         observation: `Since the ${change.change_type} change on ${changeDate}, "${keyword.term}" moved from ${formatRank(beforeRank)} to around #${Math.round(afterAvg)}, holding the gain across ${afterRanks.length} collection points.`,
         interpretation: "The metadata change plausibly contributed to the gain, though store-side factors may also play a role.",
@@ -435,7 +448,7 @@ function ruleKeywordDeclinedAfterRemoval(ctx) {
       if (change.country && change.country !== keyword.country) continue;
       const term = keyword.term.toLowerCase();
       if (!removedText.includes(term) || newText.includes(term)) continue;
-      const metadata = metadataSnapshotContext(ctx, keyword.country, { onOrAfter: changeDate, oldest: true });
+      const metadata = metadataSnapshotContext(ctx, keyword.country, keyword.language, { onOrAfter: changeDate, oldest: true });
       if (!metadata) continue;
       const before = snapshots.filter((s) => s.captured_at.slice(0, 10) < changeDate);
       const after = ranksForMetadataVersion(snapshots, metadata);
@@ -451,6 +464,7 @@ function ruleKeywordDeclinedAfterRemoval(ctx) {
         keyword_id: keyword.id,
         experiment_id: null,
         country: keyword.country,
+        locale: metadata.locale,
         title: `"${keyword.term}" dropped after being removed from the ${change.change_type}`,
         observation: `"${keyword.term}" (${keyword.country.toUpperCase()}) went from ${formatRank(beforeRank)} to ${formatRank(afterRank)} after the ${change.change_type} change on ${changeDate} removed the term.`,
         interpretation: "Losing metadata coverage for a term usually costs ranking; the timing here matches, though other factors may contribute.",
@@ -478,7 +492,7 @@ function ruleKeywordDeclinedAfterRemoval(ctx) {
 function ruleKeywordOpportunity(ctx) {
   const out = [];
   for (const { keyword, priority, snapshots } of ctx.keywords) {
-    const metadata = metadataSnapshotContext(ctx, keyword.country);
+    const metadata = metadataSnapshotContext(ctx, keyword.country, keyword.language);
     if (!metadata) continue;
     const versionSnapshots = ranksForMetadataVersion(snapshots, metadata);
     if (versionSnapshots.length < 5) continue;
@@ -500,6 +514,7 @@ function ruleKeywordOpportunity(ctx) {
       keyword_id: keyword.id,
       experiment_id: null,
       country: keyword.country,
+      locale: metadata.locale,
       title: `Push "${keyword.term}" (${keyword.country.toUpperCase()}) — ranked ${formatRank(last.rank)} and within reach`,
       observation: `${ctx.app.name} holds ${formatRank(last.rank)} for "${keyword.term}" with ${weekAgo != null && weekAgo > 0 ? `a +${weekAgo} improvement over 7 days` : "a stable trend"}, and the term already appears in the ${inTitle ? "title" : "subtitle"}.`,
       interpretation: "Ranks 11–50 with existing coverage respond best to incremental pushes — conversion improvements or stronger placement of the term.",
@@ -525,17 +540,25 @@ function ruleKeywordOpportunity(ctx) {
 
 function ruleMetadataMismatch(ctx) {
   const out = [];
-  const countries = [...new Set((ctx.metadataSnapshots ?? [])
+  const scopes = [...new Map((ctx.metadataSnapshots ?? [])
     .filter((snapshot) => snapshot.app_id === ctx.app.id)
-    .map((snapshot) => normalizedCountry(snapshot.country))
-    .filter(Boolean))];
-  for (const country of countries) {
-    const metadata = metadataSnapshotContext(ctx, country);
+    .map((snapshot) => ({
+      country: normalizedCountry(snapshot.country),
+      locale: normalizedLocale(snapshot.locale),
+    }))
+    .filter((scope) => scope.country && scope.locale)
+    .map((scope) => [`${scope.country}:${scope.locale}`, scope])).values()];
+  for (const { country, locale } of scopes) {
+    const metadata = metadataSnapshotContext(ctx, country, locale);
     if (!metadata) continue;
     const title = metadata.snapshot.name.toLowerCase();
     const subtitle = (metadata.snapshot.subtitle ?? "").toLowerCase();
     const missing = ctx.keywords.filter(({ keyword, priority }) => {
-      if (priority !== "high" || normalizedCountry(keyword.country) !== country) return false;
+      if (
+        priority !== "high" ||
+        normalizedCountry(keyword.country) !== country ||
+        normalizedLocale(keyword.language) !== locale
+      ) return false;
       const term = keyword.term.toLowerCase();
       return !title.includes(term) && !subtitle.includes(term);
     });
@@ -547,9 +570,10 @@ function ruleMetadataMismatch(ctx) {
       keyword_id: missing[0].keyword.id,
       experiment_id: null,
       country,
+      locale,
       title: `${missing.length} high-priority ${country.toUpperCase()} keyword${missing.length > 1 ? "s are" : " is"} missing from the observed title and subtitle`,
-      observation: `${terms.join(", ")} ${missing.length > 1 ? "are" : "is"} tracked as high priority but appear${missing.length > 1 ? "" : "s"} in neither the exact-country title nor subtitle observed in metadata snapshot ${metadata.snapshotId}.`,
-      interpretation: "This is an exact-country metadata coverage gap. It does not make a claim about markets without their own observed listing snapshot.",
+      observation: `${terms.join(", ")} ${missing.length > 1 ? "are" : "is"} tracked as high priority but appear${missing.length > 1 ? "" : "s"} in neither the ${country.toUpperCase()} ${locale} title nor subtitle observed in metadata snapshot ${metadata.snapshotId}.`,
+      interpretation: "This is an exact-country and exact-locale metadata coverage gap. It does not make a claim about markets or listing locales without their own observed snapshot.",
       recommendation: `Review up to five ${country.toUpperCase()} metadata candidates, starting with ${terms[0]}, and validate relevance, rank evidence, and character capacity before editing.`,
       evidence: [
         ev("Missing terms", terms.join(", "), "calculated"),
@@ -562,7 +586,7 @@ function ruleMetadataMismatch(ctx) {
       impact: "medium",
       effort: "medium",
       priority: "medium",
-      dedupe_key: metadataMismatchDedupeKey(ctx.app.id, country),
+      dedupe_key: metadataMismatchDedupeKey(ctx.app.id, country, locale),
     });
   }
   return out;
@@ -866,6 +890,7 @@ const INSIGHT_DRAFT_FIELDS = [
   "keyword_id",
   "experiment_id",
   "country",
+  "locale",
   "title",
   "observation",
   "interpretation",
@@ -896,7 +921,8 @@ function sameMetadataMismatchScope(row, draft) {
     row.rule_id === "metadata_mismatch" &&
     row.app_id === draft.app_id &&
     (row.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE) ===
-      (draft.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE)
+      (draft.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE) &&
+    normalizedLocale(row.locale) === normalizedLocale(draft.locale)
   );
 }
 
@@ -905,7 +931,8 @@ function sameMetadataVersionedScope(row, draft) {
     row.rule_id === draft.rule_id &&
     row.app_id === draft.app_id &&
     row.keyword_id === draft.keyword_id &&
-    normalizedCountry(row.country) === normalizedCountry(draft.country)
+    normalizedCountry(row.country) === normalizedCountry(draft.country) &&
+    normalizedLocale(row.locale) === normalizedLocale(draft.locale)
   );
 }
 
@@ -922,7 +949,7 @@ export function reconcileMetadataVersionedInsights(drafts, existing, now = new D
       continue;
     }
 
-    const logicalScope = `${draft.rule_id}:${draft.app_id}:${draft.keyword_id}:${normalizedCountry(draft.country)}`;
+    const logicalScope = `${draft.rule_id}:${draft.app_id}:${draft.keyword_id}:${normalizedCountry(draft.country)}:${normalizedLocale(draft.locale)}`;
     if (processedScopes.has(logicalScope)) continue;
     processedScopes.add(logicalScope);
     const active = existing
@@ -953,8 +980,8 @@ export function reconcileMetadataVersionedInsights(drafts, existing, now = new D
 
   for (const row of existing) {
     if (!METADATA_VERSIONED_RULE_IDS.has(row.rule_id) || row.status !== "active") continue;
-    if (!evaluatedScopes.has(metadataEvidenceScopeKey(row.app_id, row.country))) continue;
-    const logicalScope = `${row.rule_id}:${row.app_id}:${row.keyword_id}:${normalizedCountry(row.country)}`;
+    if (!evaluatedScopes.has(metadataEvidenceScopeKey(row.app_id, row.country, row.locale))) continue;
+    const logicalScope = `${row.rule_id}:${row.app_id}:${row.keyword_id}:${normalizedCountry(row.country)}:${normalizedLocale(row.locale)}`;
     if (processedScopes.has(logicalScope)) continue;
     updates.push({
       id: row.id,
@@ -991,7 +1018,7 @@ export function reconcileMetadataMismatchInsights(drafts, existing, now = new Da
       continue;
     }
 
-    const scopeKey = metadataMismatchDedupeKey(draft.app_id, draft.country);
+    const scopeKey = metadataMismatchDedupeKey(draft.app_id, draft.country, draft.locale);
     if (processedScopes.has(scopeKey)) continue;
     processedScopes.add(scopeKey);
 
@@ -1034,7 +1061,7 @@ export function reconcileMetadataMismatchInsights(drafts, existing, now = new Da
       continue;
     }
 
-    const scopeKey = metadataMismatchDedupeKey(row.app_id, row.country);
+    const scopeKey = metadataMismatchDedupeKey(row.app_id, row.country, row.locale);
     if (!evaluatedScopes.has(scopeKey)) continue;
     if (processedScopes.has(scopeKey)) continue;
 

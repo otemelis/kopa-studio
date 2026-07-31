@@ -10,7 +10,11 @@ export async function POST(request: Request) {
   const db = createAdminClient(); const terms = [...new Set(parsed.data.terms.map((term) => term.toLowerCase()))];
   const { data: existingApp } = await db.from("aso_apps").select("id").eq("id", parsed.data.appId).maybeSingle();
   if (!existingApp) return NextResponse.json({ error: "App not found." }, { status: 404 });
-  const { data: keywords, error: keywordError } = await db.from("aso_keywords").upsert(terms.map((term) => ({ term, country: parsed.data.country })), { onConflict: "term,country" }).select("id");
+  const { data: keywords, error: keywordError } = await db.from("aso_keywords").upsert(terms.map((term) => ({
+    term,
+    country: parsed.data.country,
+    ...(parsed.data.locale ? { language: parsed.data.locale } : {}),
+  })), { onConflict: "term,country" }).select("id");
   if (keywordError || !keywords?.length) return NextResponse.json({ error: "Could not save keywords." }, { status: 500 });
   const { error: linkError } = await db.from("aso_app_keywords").upsert(keywords.map((keyword) => ({ app_id: parsed.data.appId, keyword_id: keyword.id, priority: parsed.data.priority, status: "active", updated_at: new Date().toISOString() })), { onConflict: "app_id,keyword_id" });
   if (linkError) return NextResponse.json({ error: "Could not assign keywords to this app." }, { status: 500 });

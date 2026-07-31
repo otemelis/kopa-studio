@@ -15,6 +15,7 @@ export type StorefrontReadinessInput = {
   legacyNotes?: string | null;
   metadataSnapshot?: {
     country: string;
+    locale: string | null;
     capturedAt: string;
     name: string | null;
     description: string | null;
@@ -24,6 +25,7 @@ export type StorefrontReadinessInput = {
 };
 
 export type StorefrontLocalizationAssessment = {
+  metadataLocale: string | null;
   metadataEvidence: LocalizationEvidence;
   screenshotEvidence: LocalizationEvidence;
   appLanguageEvidence: LocalizationEvidence;
@@ -31,6 +33,11 @@ export type StorefrontLocalizationAssessment = {
 };
 
 const normalizeCountry = (value: string | null | undefined) => (value ?? "").trim().toLowerCase();
+const normalizeLocale = (value: string | null | undefined) => {
+  const raw = (value ?? "").trim().replaceAll("_", "-");
+  const match = raw.match(/^([A-Za-z]{2,3})-([A-Za-z]{2})$/);
+  return match ? `${match[1].toLowerCase()}-${match[2].toUpperCase()}` : null;
+};
 
 const unknown = (detail: string): LocalizationEvidence => ({
   state: "unknown",
@@ -47,22 +54,25 @@ export function assessStorefrontLocalization(input: StorefrontReadinessInput): S
     && snapshot.source === "public_store"
     ? snapshot
     : null;
-  const hasMetadata = Boolean(exactCountrySnapshot?.name?.trim() && exactCountrySnapshot?.description?.trim());
-  const screenshotUrls = Array.isArray(exactCountrySnapshot?.screenshotUrls)
+  const metadataLocale = normalizeLocale(exactCountrySnapshot?.locale);
+  const hasMetadata = Boolean(metadataLocale && exactCountrySnapshot?.name?.trim() && exactCountrySnapshot?.description?.trim());
+  const screenshotUrls = metadataLocale && Array.isArray(exactCountrySnapshot?.screenshotUrls)
     ? exactCountrySnapshot.screenshotUrls.filter((value): value is string => typeof value === "string" && Boolean(value.trim()))
     : [];
 
   const metadataEvidence: LocalizationEvidence = hasMetadata
     ? {
         state: "verified",
-        detail: `Exact-country public-store listing captured for ${country.toUpperCase()}.`,
+        detail: `Exact-country public-store listing captured for ${country.toUpperCase()} in ${metadataLocale}.`,
         source: "public_store_snapshot",
         observedAt: exactCountrySnapshot?.capturedAt ?? null,
       }
     : unknown(
         input.legacyMetadataLocalised
           ? "A legacy localization flag exists, but it has no evidence source or verification time."
-          : "No exact-country metadata snapshot is stored.",
+          : exactCountrySnapshot && !metadataLocale
+            ? "An exact-country metadata snapshot is stored, but its App Store locale is Unknown."
+            : "No exact-country metadata snapshot is stored.",
       );
 
   const screenshotEvidence: LocalizationEvidence = screenshotUrls.length
@@ -91,5 +101,5 @@ export function assessStorefrontLocalization(input: StorefrontReadinessInput): S
       ? "Localization evidence partial"
       : "Localization evidence unknown";
 
-  return { metadataEvidence, screenshotEvidence, appLanguageEvidence, readiness };
+  return { metadataLocale, metadataEvidence, screenshotEvidence, appLanguageEvidence, readiness };
 }

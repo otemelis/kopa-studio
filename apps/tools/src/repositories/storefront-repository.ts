@@ -24,7 +24,7 @@ export async function listStorefronts(appId?: string): Promise<StorefrontRow[]> 
     appId ? db.from("aso_app_keywords").select("app_id,keyword_id").eq("app_id", appId).limit(5000) : db.from("aso_app_keywords").select("app_id,keyword_id").limit(5000),
     appId ? db.from("aso_storefront_metrics").select("app_id,country").eq("app_id", appId).limit(5000) : db.from("aso_storefront_metrics").select("app_id,country").limit(5000),
     appId ? db.from("apple_ads_campaigns").select("app_id,countries_or_regions,status,serving_status").eq("app_id", appId).eq("is_deleted", false).limit(1000) : db.from("apple_ads_campaigns").select("app_id,countries_or_regions,status,serving_status").eq("is_deleted", false).limit(1000),
-    appId ? db.from("aso_metadata_snapshots").select("app_id,country,captured_at,name,description,screenshot_urls,source").eq("app_id", appId).order("captured_at", { ascending: false }).limit(1000) : db.from("aso_metadata_snapshots").select("app_id,country,captured_at,name,description,screenshot_urls,source").order("captured_at", { ascending: false }).limit(5000),
+    appId ? db.from("aso_metadata_snapshots").select("app_id,country,locale,captured_at,name,description,screenshot_urls,source").eq("app_id", appId).order("captured_at", { ascending: false }).limit(1000) : db.from("aso_metadata_snapshots").select("app_id,country,locale,captured_at,name,description,screenshot_urls,source").order("captured_at", { ascending: false }).limit(5000),
   ]);
   if (appsError) throw new Error("Could not resolve storefront apps.");
   if (storefrontError) throw new Error("Could not read storefront coverage.");
@@ -117,6 +117,7 @@ export async function listStorefronts(appId?: string): Promise<StorefrontRow[]> 
       legacyNotes: market.notes,
       metadataSnapshot: snapshot ? {
         country: snapshot.country,
+        locale: snapshot.locale,
         capturedAt: snapshot.captured_at,
         name: snapshot.name,
         description: snapshot.description,

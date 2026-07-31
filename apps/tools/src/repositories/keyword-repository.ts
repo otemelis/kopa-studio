@@ -3,12 +3,18 @@ import type { KeywordRow } from "@/types/domain";
 
 const normalize = (value: string) => value.trim().toLowerCase().replace(/\s+/g, " ");
 
-function metadataPresence(term: string, app: { name?: string | null; subtitle?: string | null } | undefined): KeywordRow["metadataPresence"] {
-  if (!app) return "unknown";
+function normalizedLocale(value: string | null | undefined) {
+  const raw = (value ?? "").trim().replaceAll("_", "-");
+  const match = raw.match(/^([A-Za-z]{2,3})-([A-Za-z]{2})$/);
+  return match ? `${match[1].toLowerCase()}-${match[2].toUpperCase()}` : null;
+}
+
+function metadataPresence(term: string, snapshot: { name?: string | null; subtitle?: string | null } | undefined): KeywordRow["metadataPresence"] {
+  if (!snapshot) return "unknown";
   const keyword = normalize(term);
   if (!keyword) return "unknown";
-  if (normalize(app.name ?? "").includes(keyword)) return "title";
-  if (normalize(app.subtitle ?? "").includes(keyword)) return "subtitle";
+  if (normalize(snapshot.name ?? "").includes(keyword)) return "title";
+  if (normalize(snapshot.subtitle ?? "").includes(keyword)) return "subtitle";
   return "missing";
 }
 
@@ -32,17 +38,25 @@ export async function listKeywordRows({ appId, country, limit = 200 }: { appId?:
   if (!linkRows?.length) return [];
   const appIds = [...new Set(linkRows.map((row) => row.app_id))];
   const keywordIds = [...new Set(linkRows.map((row) => row.keyword_id))];
-  const [{ data: apps, error: appsError }, { data: keywords, error: keywordsError }] = await Promise.all([
+  const [{ data: apps, error: appsError }, { data: keywords, error: keywordsError }, { data: metadataSnapshots, error: metadataError }] = await Promise.all([
     db.from("aso_apps").select("id,name,subtitle,store_app_id").in("id", appIds),
-    db.from("aso_keywords").select("id,term,country,priority").in("id", keywordIds),
+    db.from("aso_keywords").select("id,term,country,language,priority").in("id", keywordIds),
+    db.from("aso_metadata_snapshots").select("app_id,country,locale,name,subtitle,captured_at").in("app_id", appIds).order("captured_at", { ascending: false }).limit(5000),
   ]);
-  if (appsError || keywordsError) throw new Error("Could not resolve keyword references.");
+  if (appsError || keywordsError || metadataError) throw new Error("Could not resolve keyword references.");
   const scopedKeywords = (keywords ?? []).filter((keyword) => !country || keyword.country === country);
   const scopedIds = scopedKeywords.map((keyword) => keyword.id);
   const { data: snapshots, error: snapshotsError } = scopedIds.length ? await db.from("aso_keyword_rank_snapshots").select("keyword_id,store_app_id,rank,change_7d,change_30d,best_rank,captured_at").eq("app_kind", "owned").in("keyword_id", scopedIds).order("captured_at", { ascending: false }).limit(1000) : { data: [], error: null };
   if (snapshotsError) throw new Error("Could not read rank snapshots.");
   const appById = new Map((apps ?? []).map((app) => [app.id, app]));
   const keywordById = new Map(scopedKeywords.map((keyword) => [keyword.id, keyword]));
+  const metadataByScope = new Map<string, NonNullable<typeof metadataSnapshots>[number]>();
+  for (const snapshot of metadataSnapshots ?? []) {
+    const locale = normalizedLocale(snapshot.locale);
+    if (!locale) continue;
+    const key = `${snapshot.app_id}:${snapshot.country.toLowerCase()}:${locale}`;
+    if (!metadataByScope.has(key)) metadataByScope.set(key, snapshot);
+  }
   const latest = new Map<string, NonNullable<typeof snapshots>[number]>();
   for (const snapshot of snapshots ?? []) { const key = `${snapshot.keyword_id}:${snapshot.store_app_id}`; if (!latest.has(key)) latest.set(key, snapshot); }
   const { data: campaigns, error: campaignsError } = appIds.length ? await db.from("apple_ads_campaigns").select("id,app_id,countries_or_regions").in("app_id", appIds).eq("is_deleted", false).limit(1000) : { data: [], error: null };
@@ -79,6 +93,8 @@ export async function listKeywordRows({ appId, country, limit = 200 }: { appId?:
     if (!app || !keyword) return [];
     const latestSnapshot = latest.get(`${keyword.id}:${app.store_app_id}`);
     const paidKey = `${app.id}:${keyword.country.toLowerCase()}:${normalize(keyword.term)}`;
-    return [{ linkId: link.id, appId: app.id, appName: app.name, term: keyword.term, country: keyword.country, priority: link.priority ?? keyword.priority, status: link.status, rank: latestSnapshot?.rank ?? null, change7d: latestSnapshot?.change_7d ?? null, change30d: latestSnapshot?.change_30d ?? null, bestRank: latestSnapshot?.best_rank ?? null, metadataPresence: metadataPresence(keyword.term, app), adsStatus: adsStatus(paidMatches.get(paidKey), negativeMatches.has(paidKey)), capturedAt: latestSnapshot?.captured_at ?? null }];
+    const locale = normalizedLocale(keyword.language);
+    const metadata = locale ? metadataByScope.get(`${app.id}:${keyword.country.toLowerCase()}:${locale}`) : undefined;
+    return [{ linkId: link.id, appId: app.id, appName: app.name, term: keyword.term, country: keyword.country, locale, priority: link.priority ?? keyword.priority, status: link.status, rank: latestSnapshot?.rank ?? null, change7d: latestSnapshot?.change_7d ?? null, change30d: latestSnapshot?.change_30d ?? null, bestRank: latestSnapshot?.best_rank ?? null, metadataPresence: metadataPresence(keyword.term, metadata), adsStatus: adsStatus(paidMatches.get(paidKey), negativeMatches.has(paidKey)), capturedAt: latestSnapshot?.captured_at ?? null }];
   });
 }

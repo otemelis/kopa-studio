@@ -12,7 +12,7 @@ type KeywordManagerProps = {
   changes?: ExperimentRow[];
 };
 
-type ColumnKey = "keyword" | "app" | "market" | "priority" | "rank" | "change7d" | "change30d" | "best" | "metadata" | "ads" | "updated" | "status";
+type ColumnKey = "keyword" | "app" | "market" | "locale" | "priority" | "rank" | "change7d" | "change30d" | "best" | "metadata" | "ads" | "updated" | "status";
 type SortKey = ColumnKey;
 type KeywordColumn = { key: ColumnKey; label: string; value: (row: KeywordRow) => string; sortValue: (row: KeywordRow) => string | number };
 type SavedKeywordView = { search: string; rankBucket: string; metadataFilter: string; adsFilter: string; sortKey: SortKey; sortDirection: "asc" | "desc"; visibleColumns: ColumnKey[] };
@@ -25,6 +25,7 @@ const columns: KeywordColumn[] = [
   { key: "keyword", label: "Keyword", value: (row) => row.term, sortValue: (row) => row.term.toLowerCase() },
   { key: "app", label: "App", value: (row) => row.appName, sortValue: (row) => row.appName.toLowerCase() },
   { key: "market", label: "Market", value: (row) => row.country.toUpperCase(), sortValue: (row) => row.country },
+  { key: "locale", label: "Locale", value: (row) => row.locale ?? "Unknown", sortValue: (row) => row.locale ?? "" },
   { key: "priority", label: "Priority", value: (row) => row.priority, sortValue: (row) => ({ high: 0, medium: 1, low: 2 })[row.priority] },
   { key: "rank", label: "Current rank", value: (row) => rank(row.rank), sortValue: (row) => row.rank ?? 999 },
   { key: "change7d", label: "7d", value: (row) => delta(row.change7d), sortValue: (row) => row.change7d ?? -999 },
@@ -157,10 +158,11 @@ export function KeywordManager({ apps, rows, contestedTerms = [], insights = [],
 
   return <>
     <div className="section-head"><h2>Tracked keyword strategy</h2><button className="primary compact" onClick={() => setMode(mode === "add" ? null : "add")}>{mode === "add" ? "Close" : "Add keywords"}</button></div>
-    {mode === "add" && <form action={(form) => request("/api/keywords", "POST", { appId: form.get("appId"), terms: String(form.get("terms")).split(/[\n,]/).map((item) => item.trim()).filter(Boolean), country: form.get("country"), priority: form.get("priority") })} className="management-form">
+    {mode === "add" && <form action={(form) => request("/api/keywords", "POST", { appId: form.get("appId"), terms: String(form.get("terms")).split(/[\n,]/).map((item) => item.trim()).filter(Boolean), country: form.get("country"), locale: form.get("locale"), priority: form.get("priority") })} className="management-form">
       <label>App<select name="appId">{apps.map((app) => <option key={app.id} value={app.id}>{app.name}</option>)}</select></label>
       <label>Keywords (comma or line separated)<textarea name="terms" required /></label>
       <label>Storefront<input name="country" defaultValue="us" maxLength={2} required /></label>
+      <label>Exact listing locale<input name="locale" placeholder="Unknown (for example en-US)" /></label>
       <label>Priority<select name="priority" defaultValue="medium"><option>high</option><option>medium</option><option>low</option></select></label>
       <button className="primary" disabled={pending}>{pending ? "Saving..." : "Start tracking"}</button>
     </form>}
@@ -181,14 +183,14 @@ export function KeywordManager({ apps, rows, contestedTerms = [], insights = [],
     <details className="column-controls"><summary>Columns</summary><div>{columns.map((column) => <label key={column.key}><input type="checkbox" checked={visibleColumns.has(column.key)} onChange={() => toggleColumn(column.key)} /> {column.label}</label>)}</div></details>
     <div className="table-wrap keyword-table"><table>
       <thead><tr>{visibleColumnList.map((column) => <th key={column.key}><button className="table-sort" type="button" onClick={() => changeSort(column.key)}>{column.label}{sortKey === column.key ? ` ${sortDirection === "asc" ? "↑" : "↓"}` : ""}</button></th>)}<th>Actions</th></tr></thead>
-      <tbody>{sortedRows.length ? sortedRows.map((row) => <KeywordLine key={row.linkId} row={row} columns={visibleColumnList} editing={mode === row.linkId} pending={pending} onOpen={() => setSelected(row)} onEdit={() => setMode(row.linkId)} onCancel={() => setMode(null)} onSave={(form) => request(`/api/keywords/${row.linkId}`, "PATCH", { term: form.get("term"), country: form.get("country"), priority: form.get("priority"), status: form.get("status") })} onDelete={() => { if (confirm(`Stop tracking "${row.term}" for ${row.appName}?`)) request(`/api/keywords/${row.linkId}`, "DELETE"); }} />) : <tr><td colSpan={visibleColumnList.length + 1}>No keyword records match these filters.</td></tr>}</tbody>
+      <tbody>{sortedRows.length ? sortedRows.map((row) => <KeywordLine key={row.linkId} row={row} columns={visibleColumnList} editing={mode === row.linkId} pending={pending} onOpen={() => setSelected(row)} onEdit={() => setMode(row.linkId)} onCancel={() => setMode(null)} onSave={(form) => request(`/api/keywords/${row.linkId}`, "PATCH", { term: form.get("term"), country: form.get("country"), locale: form.get("locale"), priority: form.get("priority"), status: form.get("status") })} onDelete={() => { if (confirm(`Stop tracking "${row.term}" for ${row.appName}?`)) request(`/api/keywords/${row.linkId}`, "DELETE"); }} />) : <tr><td colSpan={visibleColumnList.length + 1}>No keyword records match these filters.</td></tr>}</tbody>
     </table></div>
     {selected ? <KeywordDetailDrawer row={selected} contestedTerms={contestedTerms} insights={insights} changes={changes} onClose={() => setSelected(null)} /> : null}
   </>;
 }
 
 function KeywordLine({ row, columns, editing, pending, onOpen, onEdit, onCancel, onSave, onDelete }: { row: KeywordRow; columns: KeywordColumn[]; editing: boolean; pending: boolean; onOpen: () => void; onEdit: () => void; onCancel: () => void; onSave: (form: FormData) => void; onDelete: () => void }) {
-  if (editing) return <tr><td colSpan={columns.length + 1}><form action={onSave} className="inline-form"><input name="term" defaultValue={row.term} required /><input name="country" defaultValue={row.country} maxLength={2} required /><select name="priority" defaultValue={row.priority}><option>high</option><option>medium</option><option>low</option></select><select name="status" defaultValue={row.status}><option>active</option><option>paused</option></select><button disabled={pending}>Save</button><button type="button" onClick={onCancel}>Cancel</button></form></td></tr>;
+  if (editing) return <tr><td colSpan={columns.length + 1}><form action={onSave} className="inline-form"><input name="term" defaultValue={row.term} required /><input name="country" defaultValue={row.country} maxLength={2} required /><input name="locale" defaultValue={row.locale ?? ""} placeholder="Locale unknown" /><select name="priority" defaultValue={row.priority}><option>high</option><option>medium</option><option>low</option></select><select name="status" defaultValue={row.status}><option>active</option><option>paused</option></select><button disabled={pending}>Save</button><button type="button" onClick={onCancel}>Cancel</button></form></td></tr>;
   return <tr className="clickable-row" onClick={onOpen}>
     {columns.map((column) => <td key={column.key}>{column.value(row)}</td>)}<td><button onClick={(event) => { event.stopPropagation(); onEdit(); }}>Edit</button> <button onClick={(event) => { event.stopPropagation(); onDelete(); }}>Delete</button></td>
   </tr>;
@@ -209,6 +211,7 @@ function KeywordDetailDrawer({ row, contestedTerms, insights, changes, onClose }
     </section>
     <dl className="drawer-details">
       <div><dt>Priority</dt><dd>{row.priority}</dd></div>
+      <div><dt>Listing locale</dt><dd>{row.locale ?? "Unknown"}</dd></div>
       <div><dt>Metadata presence</dt><dd>{row.metadataPresence}</dd></div>
       <div><dt>Apple Ads status</dt><dd>{row.adsStatus}</dd></div>
       <div><dt>Tracking status</dt><dd>{row.status}</dd></div>
