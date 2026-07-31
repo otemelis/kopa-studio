@@ -3,7 +3,7 @@ import type { InsightRow } from "@/types/domain";
 
 export async function listActiveInsights({ appId, country, priority, limit = 100 }: { appId?: string; country?: string; priority?: string; limit?: number } = {}): Promise<InsightRow[]> {
   const db = createAdminClient();
-  let query = db.from("aso_insights").select("id,app_id,country,locale,title,observation,recommendation,priority,confidence,impact,effort,rule_id,evidence,comparison_window,created_at").eq("status", "active");
+  let query = db.from("aso_insights").select("id,app_id,country,locale,title,observation,recommendation,priority,confidence,impact,effort,rule_id,dedupe_key,evidence,comparison_window,created_at").eq("status", "active");
   if (appId) query = query.eq("app_id", appId);
   if (country && country.toLowerCase() !== "all") query = query.eq("country", country.toLowerCase());
   if (priority && ["high", "medium", "low"].includes(priority)) query = query.eq("priority", priority);
@@ -27,6 +27,7 @@ export async function listActiveInsights({ appId, country, priority, limit = 100
     impact: row.impact,
     effort: row.effort,
     ruleId: row.rule_id,
+    dedupeKey: row.dedupe_key,
     evidence: Array.isArray(row.evidence) ? row.evidence.filter((item): item is { label: string; value: string; source: string } =>
       Boolean(item) &&
       typeof item === "object" &&

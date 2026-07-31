@@ -27,6 +27,7 @@ export type AppleAdsRecommendationRow = {
   storefront: string | null;
   targetType: string | null;
   targetText: string | null;
+  dedupeKey: string | null;
   createdAt: string;
   appId: string | null;
   appName: string | null;
@@ -66,7 +67,7 @@ export async function getAppleAdsRecommendationData(ownerUserId: string, filters
 
   let query = db
     .from("apple_ads_recommendations")
-    .select("id,recommendation_type,status,priority,confidence,financial_risk,title,evidence_summary,deterministic_rationale,observation,diagnosis,proposed_action,review_condition,evidence,evidence_quality,evidence_window,storefront,target_type,target_text,generated_at,app_id,snapshot_id")
+    .select("id,recommendation_type,status,priority,confidence,financial_risk,title,evidence_summary,deterministic_rationale,observation,diagnosis,proposed_action,review_condition,evidence,evidence_quality,evidence_window,storefront,target_type,target_text,dedupe_key,generated_at,app_id,snapshot_id")
     .in("connection_id", ids)
     .eq("status", "active");
   if (filters.appId) query = query.eq("app_id", filters.appId);
@@ -102,6 +103,7 @@ export async function getAppleAdsRecommendationData(ownerUserId: string, filters
     storefront: row.storefront,
     targetType: row.target_type,
     targetText: row.target_text,
+    dedupeKey: row.dedupe_key,
     createdAt: row.generated_at,
     appId: row.app_id ?? null,
     appName: row.app_id ? names.get(row.app_id) ?? null : null,

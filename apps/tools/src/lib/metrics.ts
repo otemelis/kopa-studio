@@ -10,7 +10,25 @@ export type StorefrontTrend = {
   previous: { impressions: number; pageViews: number; downloads: number };
   changes: { impressions: number | null; pageViews: number | null; downloads: number | null };
 };
-export type StorefrontOpportunity = { title: string; detail: string; severity: "attention" | "opportunity" | "waiting"; appId?: string; appName?: string | null; country?: string };
+export type StorefrontOpportunityKind =
+  | "evidence_not_ready"
+  | "waiting_for_report"
+  | "weak_page_view_pull"
+  | "weak_conversion"
+  | "strongest_source"
+  | "page_views_down"
+  | "page_views_rising"
+  | "waiting_for_downloads";
+export type StorefrontOpportunity = {
+  kind: StorefrontOpportunityKind;
+  title: string;
+  detail: string;
+  severity: "attention" | "opportunity" | "waiting";
+  appId?: string;
+  appName?: string | null;
+  country?: string;
+  identityTarget?: string;
+};
 
 function normalizedEvent(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, "_");
@@ -89,17 +107,19 @@ export function discoveryOpportunities(input: {
 }): StorefrontOpportunity[] {
   if (!input.sufficiency.decisionReady) {
     return [{
+      kind: "evidence_not_ready",
       severity: "waiting",
       title: input.sufficiency.waitingTitle ?? "Waiting for sufficient Discovery evidence",
       detail: input.sufficiency.waitingExplanation ?? "The scoped evidence is not ready for a directional conclusion.",
     }];
   }
-  if (!input.hasDiscoveryRows) return [{ severity: "waiting", title: "Waiting for Discovery report data", detail: "Retry the Discovery report import after Apple has generated at least one daily segment." }];
+  if (!input.hasDiscoveryRows) return [{ kind: "waiting_for_report", severity: "waiting", title: "Waiting for Discovery report data", detail: "Retry the Discovery report import after Apple has generated at least one daily segment." }];
 
   const opportunities: StorefrontOpportunity[] = [];
   const bestExposure = input.countries.find((row) => row.impressions >= 50 && row.impressionToPageRate !== null);
   if (bestExposure && bestExposure.impressionToPageRate !== null && bestExposure.impressionToPageRate < 0.05) {
     opportunities.push({
+      kind: "weak_page_view_pull",
       severity: "attention",
       title: `${formatCountry(bestExposure.country)} has weak page-view pull`,
       detail: `${bestExposure.appName ?? "Tracked app"} received ${bestExposure.impressions.toLocaleString("en-US")} impressions, but only ${formatPercent(bestExposure.impressionToPageRate)} became product page views.`,
@@ -112,6 +132,7 @@ export function discoveryOpportunities(input: {
   const conversionCandidate = input.countries.find((row) => row.pageViews >= 20 && row.downloadRate !== null && row.downloadRate < 0.08);
   if (conversionCandidate && conversionCandidate.downloadRate !== null) {
     opportunities.push({
+      kind: "weak_conversion",
       severity: "attention",
       title: `${formatCountry(conversionCandidate.country)} page views are not converting`,
       detail: `${conversionCandidate.appName ?? "Tracked app"} has ${conversionCandidate.pageViews.toLocaleString("en-US")} product page views with ${formatPercent(conversionCandidate.downloadRate)} download conversion.`,
@@ -124,27 +145,31 @@ export function discoveryOpportunities(input: {
   const growingSource = input.sourceTypes.find((source) => source.pageViews > 0);
   if (growingSource) {
     opportunities.push({
+      kind: "strongest_source",
       severity: "opportunity",
       title: `${growingSource.sourceType} is the strongest discovery source`,
       detail: `${growingSource.pageViews.toLocaleString("en-US")} product page views came from this source in the selected window. Use it as context before interpreting keyword or ad changes.`,
+      identityTarget: growingSource.sourceType,
     });
   }
 
   if (input.trend.changes.pageViews !== null && input.trend.changes.pageViews <= -0.2) {
     opportunities.push({
+      kind: "page_views_down",
       severity: "attention",
       title: "Product page views are down",
       detail: `The latest half of the window has ${formatPercent(Math.abs(input.trend.changes.pageViews))} fewer product page views than the previous half.`,
     });
   } else if (input.trend.changes.pageViews !== null && input.trend.changes.pageViews >= 0.2) {
     opportunities.push({
+      kind: "page_views_rising",
       severity: "opportunity",
       title: "Product page views are rising",
       detail: `The latest half of the window has ${formatPercent(input.trend.changes.pageViews)} more product page views than the previous half.`,
     });
   }
 
-  if (!input.hasDailyRows) opportunities.push({ severity: "waiting", title: "Waiting for download import", detail: "Discovery can show exposure now; download conversion becomes reliable after the sales/download import stores daily rows." });
+  if (!input.hasDailyRows) opportunities.push({ kind: "waiting_for_downloads", severity: "waiting", title: "Waiting for download import", detail: "Discovery can show exposure now; download conversion becomes reliable after the sales/download import stores daily rows." });
 
   return opportunities.slice(0, 4);
 }

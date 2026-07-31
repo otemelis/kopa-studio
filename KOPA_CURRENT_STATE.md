@@ -3986,3 +3986,181 @@ Trust and Data Correctness — current source-status integrity
 ## Next exact task
 
 Implement deterministic cross-source recommendation identity for the InnerType GB feed so unchanged ASO, Discovery, and Apple Ads conclusions retain one stable identity across reloads and recomputes, without changing recommendation lifecycle actions.
+
+---
+
+# Checkpoint 55 — Cross-source recommendation identity audit
+
+## Current milestone
+
+Trust and Data Correctness — stable recommendation identity
+
+## Completed
+
+- Audited recommendation generation, persistence, feed mapping, and rendering for ASO, Discovery, and Apple Ads.
+- Compared the existing deduplication contracts with the active-roadmap requirement for one stable conclusion identity.
+- Confirmed that lifecycle actions must continue using the stored ASO insight row ID and are outside this slice.
+
+## Verified
+
+- ASO:
+  - stores recommendations in `aso_insights`;
+  - uses rule-specific `dedupe_key` values;
+  - retains a stable row ID for unchanged dedupe keys;
+  - exposes only the row ID to the combined feed.
+- Apple Ads:
+  - stores recommendations and immutable evidence snapshots;
+  - currently includes evidence window and rule version in `dedupe_key`;
+  - therefore treats the same scoped action over a later reporting window as a new recommendation row instead of updated evidence for one conclusion.
+- Discovery:
+  - is derived read-only during the Recommendations-page load;
+  - is not persisted;
+  - currently builds its feed ID from period, array position, and title;
+  - therefore reordering otherwise unchanged opportunities can change their identity.
+- The React feed key is currently a source plus provider-specific row/derived ID, not one common identity contract.
+- Evidence fingerprints are already separate from Apple Ads dedupe keys, but do not currently include rule version.
+
+## Known issues
+
+- The three sources do not share normalized app, market, conclusion-kind, and target semantics.
+- Discovery needs a stable semantic opportunity kind rather than array position.
+- Apple Ads evidence-window movement must update evidence under the same conclusion identity.
+- Existing persisted Apple Ads hash keys will transition once to the new stable contract on the first recompute, after which unchanged recomputes remain idempotent.
+
+## Database changes
+
+- None planned.
+- Existing Apple Ads `dedupe_key` uniqueness and evidence fingerprint fields can support stable identity without a migration.
+- Existing ASO dedupe and lifecycle storage remain intact.
+
+## Deployment status
+
+- Audit only; production is unchanged.
+
+## Remaining in this milestone
+
+- Add one deterministic identity builder shared by all three feed sources.
+- Give Discovery opportunities stable semantic kinds.
+- Remove evidence window and rule version from Apple Ads conclusion identity while retaining them in evidence fingerprinting.
+- Keep stored row IDs separate for ASO lifecycle actions.
+- Add identity normalization, scope isolation, target isolation, reordered Discovery, and advancing-window Apple Ads tests.
+- Run release gates, deploy, recompute twice, and verify the active feed remains stable.
+
+## Next exact task
+
+Implement the shared identity contract and focused regression tests.
+
+---
+
+# Checkpoint 56 — Shared recommendation identity implemented
+
+## Current milestone
+
+Trust and Data Correctness — stable recommendation identity
+
+## Completed
+
+- Added one versioned deterministic recommendation identity builder for ASO, Discovery, and Apple Ads.
+- Normalized source, app, market, locale, conclusion kind, target type, target resource, and target text before hashing.
+- Added stable semantic kinds to every Discovery opportunity.
+- Removed Discovery period and array position from feed identity.
+- Separated the common feed identity from the stored ASO row ID used by lifecycle actions.
+- Updated Apple Ads persistence identity to exclude evidence window and rule version.
+- Added Apple Ads rule version to the evidence fingerprint so changed calculation provenance still refreshes the immutable snapshot and stored evidence.
+- Updated the combined Recommendations feed to use the shared identity as its render key.
+
+## Verified
+
+- Focused suites: 13 tests passed across 3 files.
+- Tools typecheck: passed.
+- Tests prove:
+  - equivalent case and whitespace normalize to one identity;
+  - source, app, market, conclusion kind, and target remain isolated;
+  - reordered Discovery conclusions retain the same identity set;
+  - an advancing Apple Ads evidence window retains conclusion identity;
+  - a changed evidence window changes the evidence fingerprint;
+  - a changed Apple Ads rule version retains conclusion identity but changes the evidence fingerprint;
+  - the six current Apple Ads conclusions remain six distinct identities.
+- Only the combined Recommendations page constructs `RecommendationFeedItem` records, so every source now supplies the required identity.
+- ASO lifecycle API calls still use the persisted `aso_insights.id`; no lifecycle behavior changed.
+
+## Known issues
+
+- Existing active Apple Ads rows use the previous window-bound hash and will transition once on the first production recompute.
+- Discovery remains intentionally derived and read-only rather than persisted.
+- Full release gates and production repeat-run acceptance remain.
+
+## Database changes
+
+- None.
+- Existing columns and indexes support the new contract.
+
+## Deployment status
+
+- Implementation is local only.
+- Focused tests and typecheck pass.
+
+## Remaining in this milestone
+
+- Run the full Tools and repository release gates.
+- Commit and deploy the exact verified source.
+- Recompute Apple Ads once to transition legacy identity keys.
+- Recompute again and confirm all six conclusions are unchanged rather than inserted or duplicated.
+- Verify the InnerType GB feed retains the same ASO, Discovery, and Apple Ads conclusions across reloads.
+
+## Next exact task
+
+Run the full release gates and review the final identity diff.
+
+---
+
+# Checkpoint 57 — Recommendation identity release gates passed
+
+## Current milestone
+
+Trust and Data Correctness — stable recommendation identity
+
+## Completed
+
+- Reviewed the final shared identity, provider mapping, persistence, and test changes.
+- Added a non-visual identity attribute to recommendation cards so signed-in acceptance can compare exact feed identities across reloads.
+- Broadened Apple Ads stale-row reconciliation across rule versions within the same exact connection, app, campaign, and storefront scope.
+- Ran the complete Tools and root repository release gates after the final changes.
+
+## Verified
+
+- Tools tests: 124 passed across 29 files.
+- Tools typecheck: passed.
+- Tools production build: passed.
+- Root repository check: passed across 10 levels.
+- `git diff --check`: passed.
+- Existing unrelated 2048 Run Merge files remain untracked and outside this slice.
+- No Apple Ads provider mutation method or write route was added.
+- Attribution remains unchanged and deferred.
+
+## Known issues
+
+- The first production recompute is an intentional one-time identity transition for existing Apple Ads rows.
+- Signed-in repeat-run acceptance remains required after deployment.
+
+## Database changes
+
+- None.
+
+## Deployment status
+
+- Release gates passed.
+- Ready to commit and deploy the exact verified source.
+
+## Remaining in this milestone
+
+- Commit the verified identity slice.
+- Deploy the exact commit to production.
+- Capture the scoped feed identities.
+- Recompute Apple Ads twice.
+- Confirm the second run creates no duplicate active recommendations and the feed identity set remains unchanged across reloads.
+- Update the active roadmap and final handover.
+
+## Next exact task
+
+Commit, deploy, and complete signed-in repeat-run acceptance.

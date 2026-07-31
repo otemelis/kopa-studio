@@ -9,6 +9,7 @@ import {
   type DataCompleteness,
   type DataFreshness,
 } from "../lib/apple-ads/evidence-assessment";
+import { recommendationIdentity } from "../lib/recommendation-identity";
 import { createAdminClient } from "../lib/supabase/admin";
 
 const FRESHNESS_HOURS = 48;
@@ -30,23 +31,25 @@ export function appleAdsRecommendationDedupeKey(
   assessment: AppleAdsEvidenceAssessment,
   recommendation: AppleAdsEvidenceRecommendation,
 ) {
-  return hash({
-    connectionId,
+  return recommendationIdentity({
+    source: "apple_ads",
+    scopeId: connectionId,
     appId: assessment.appId,
-    storefront: assessment.storefront,
-    type: recommendation.type,
+    market: assessment.storefront,
+    kind: recommendation.type,
     targetType: recommendation.targetType,
-    campaignId: recommendation.campaignId,
-    adGroupId: recommendation.adGroupId ?? null,
-    keywordId: recommendation.keywordId ?? null,
+    targetId: [
+      recommendation.campaignId,
+      recommendation.adGroupId ?? null,
+      recommendation.keywordId ?? null,
+    ].filter(Boolean).join(":"),
     targetText: normalizeAppleAdsText(recommendation.targetText),
-    evidenceWindow: assessment.evidenceWindow,
-    ruleVersion: assessment.ruleVersion,
   });
 }
 
 export function appleAdsEvidenceFingerprint(assessment: AppleAdsEvidenceAssessment) {
   return hash({
+    ruleVersion: assessment.ruleVersion,
     evidenceWindow: assessment.evidenceWindow,
     dataFreshness: assessment.dataFreshness,
     dataCompleteness: assessment.dataCompleteness,
@@ -182,7 +185,6 @@ async function persistAssessment(connectionId: string, assessment: AppleAdsEvide
       .eq("app_id", assessment.appId)
       .eq("campaign_id", assessment.campaignId)
       .eq("storefront", assessment.storefront)
-      .eq("rule_version", assessment.ruleVersion)
       .eq("status", "active");
     if (activeError) throw new Error(`Could not inspect obsolete Apple Ads recommendations: ${activeError.message}`);
     const ids = (activeRows ?? []).map((row) => row.id);
@@ -287,7 +289,6 @@ async function persistAssessment(connectionId: string, assessment: AppleAdsEvide
     .eq("app_id", assessment.appId)
     .eq("campaign_id", assessment.campaignId)
     .eq("storefront", assessment.storefront)
-    .eq("rule_version", assessment.ruleVersion)
     .eq("status", "active");
   if (olderError) throw new Error(`Could not inspect superseded Apple Ads recommendations: ${olderError.message}`);
   const currentKeys = new Set(entries.map((entry) => entry.dedupeKey));

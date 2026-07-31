@@ -81,6 +81,7 @@ export interface InsightRow {
   impact: string;
   effort: string;
   ruleId: string;
+  dedupeKey: string;
   evidence: InsightEvidenceItem[];
   comparisonWindow: string;
   createdAt: string;

@@ -14,13 +14,24 @@ describe("Apple Ads assessment persistence identity", () => {
     expect(new Set(first.recommendations.map((item) => appleAdsRecommendationDedupeKey("connection", first, item))).size).toBe(6);
   });
 
-  it("changes identity when the evidence window or storefront changes", () => {
+  it("keeps conclusion identity across an advancing evidence window and isolates storefronts", () => {
     const assessment = assessAppleAdsEvidence(fixture as AssessmentInput);
     const changedWindow = { ...assessment, evidenceWindow: { ...assessment.evidenceWindow, end: "2026-07-28" } };
     const changedStorefront = { ...assessment, storefront: "DE" };
     expect(appleAdsRecommendationDedupeKey("connection", assessment, assessment.recommendations[0]))
-      .not.toBe(appleAdsRecommendationDedupeKey("connection", changedWindow, changedWindow.recommendations[0]));
+      .toBe(appleAdsRecommendationDedupeKey("connection", changedWindow, changedWindow.recommendations[0]));
     expect(appleAdsRecommendationDedupeKey("connection", assessment, assessment.recommendations[0]))
       .not.toBe(appleAdsRecommendationDedupeKey("connection", changedStorefront, changedStorefront.recommendations[0]));
+    expect(appleAdsRecommendationDedupeKey("connection", assessment, assessment.recommendations[0]))
+      .not.toBe(appleAdsRecommendationDedupeKey("other-connection", assessment, assessment.recommendations[0]));
+    expect(appleAdsEvidenceFingerprint(assessment)).not.toBe(appleAdsEvidenceFingerprint(changedWindow));
+  });
+
+  it("keeps rule version in evidence fingerprinting without changing conclusion identity", () => {
+    const assessment = assessAppleAdsEvidence(fixture as AssessmentInput);
+    const changedRule = { ...assessment, ruleVersion: "uk-evidence-v-next" };
+    expect(appleAdsRecommendationDedupeKey("connection", assessment, assessment.recommendations[0]))
+      .toBe(appleAdsRecommendationDedupeKey("connection", changedRule, changedRule.recommendations[0]));
+    expect(appleAdsEvidenceFingerprint(assessment)).not.toBe(appleAdsEvidenceFingerprint(changedRule));
   });
 });

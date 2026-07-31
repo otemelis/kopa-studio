@@ -65,11 +65,17 @@ describe("storefront metric summaries", () => {
       "Product page views are down",
     ]);
     expect(opportunities[0]).toMatchObject({ appId: "a", appName: "InnerType", country: "gb" });
+    expect(opportunities.map((item) => item.kind)).toEqual([
+      "weak_page_view_pull",
+      "weak_conversion",
+      "strongest_source",
+      "page_views_down",
+    ]);
   });
 
   it("labels missing Discovery rows as waiting", () => {
     expect(discoveryOpportunities({ countries: [], sourceTypes: [], trend: compareStorefrontWindows([]), hasDiscoveryRows: false, hasDailyRows: false, sufficiency: freshSufficiency })).toEqual([
-      { severity: "waiting", title: "Waiting for Discovery report data", detail: "Retry the Discovery report import after Apple has generated at least one daily segment." },
+      { kind: "waiting_for_report", severity: "waiting", title: "Waiting for Discovery report data", detail: "Retry the Discovery report import after Apple has generated at least one daily segment." },
     ]);
   });
 
@@ -91,7 +97,7 @@ describe("storefront metric summaries", () => {
       hasDailyRows: true,
       sufficiency: partialSufficiency,
     })).toEqual([
-      { severity: "waiting", title: "Discovery import is partial", detail: "One source row was rejected." },
+      { kind: "evidence_not_ready", severity: "waiting", title: "Discovery import is partial", detail: "One source row was rejected." },
     ]);
   });
 });
