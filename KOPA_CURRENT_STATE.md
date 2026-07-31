@@ -4246,3 +4246,170 @@ Trust and Data Correctness — stable recommendation identity
 ## Next exact task
 
 Complete the final Milestone 1 production/source parity and access-boundary acceptance, including documented owner and unauthorized-account behavior, without making additional product changes unless the audit finds a concrete blocker.
+
+---
+
+# Checkpoint 59 — Milestone 1 parity and access-boundary audit
+
+## Current milestone
+
+Trust and Data Correctness — milestone exit acceptance
+
+## Completed
+
+- Audited the deployed-source record, authenticated page guard, owner-only API guard, login callback, middleware session refresh, and unauthorized page.
+- Compared the production code commit with repository HEAD.
+- Performed a read-only aggregate audit of production authentication users and approved memberships.
+
+## Verified
+
+- The production product-code deployment was built from exact commit `e64eca4f`.
+- Repository HEAD differs from that product commit only by the documentation-only acceptance commit `e5d90f92`; there is no undeployed Tools code.
+- Protected pages call `requireUser`.
+- Owner-only mutation routes call `requireOwner`.
+- `requireUser`:
+  - redirects a missing session to `/login`;
+  - checks the signed-in user ID against `analytics_admins`;
+  - fails closed to `/unauthorized` on membership lookup error or missing membership.
+- The unauthorized page states that the signed-in account is not approved.
+- Production aggregate access state:
+  - 1 auth user;
+  - 1 approved membership;
+  - 0 non-member auth users.
+
+## Known issues
+
+- Production has no existing non-member auth account, so a real signed-in unauthorized-account redirect cannot be exercised without creating or changing an account.
+- Creating a disposable production auth user would be an unnecessary access-control mutation and is outside this read-only acceptance task.
+- There are no automated regression tests for the login/allowlist/fail-closed access decision.
+
+## Database changes
+
+- None.
+- No user or membership record was created, changed, or deleted.
+
+## Deployment status
+
+- Audit only in this checkpoint.
+- Production remains on `dpl_7XRfjjFuy5euYmYWzdpVL57Dnsbb`.
+
+## Remaining in this milestone
+
+- Add pure regression tests for unauthenticated, approved-member, non-member, and membership-error decisions without changing production behavior.
+- Verify the unauthenticated production redirect.
+- Reconfirm signed-in owner access and deployed feature fingerprints.
+- Inspect the production deployment record.
+- Run final release gates and reconcile Milestone 1 exit status.
+
+## Next exact task
+
+Add the missing fail-closed access-decision regression tests, then complete live parity and owner acceptance.
+
+---
+
+# Checkpoint 60 — Access decision regression boundary added
+
+## Current milestone
+
+Trust and Data Correctness — milestone exit acceptance
+
+## Completed
+
+- Extracted the existing login, membership-check, allow, and unauthorized decisions into a pure deterministic access resolver.
+- Kept `requireUser` as the production enforcement point.
+- Added regression tests for every decision path without changing the approved membership model.
+- Tested the production protected-page response without browser cookies.
+
+## Verified
+
+- Focused access suite: 5 tests passed.
+- Tools typecheck: passed.
+- Tests prove:
+  - no session requires login;
+  - a signed-in session requires membership verification;
+  - a matching approved membership is allowed;
+  - no membership is unauthorized;
+  - mismatched membership is unauthorized;
+  - membership lookup failure is unauthorized and therefore fails closed.
+- Production unauthenticated `/insights` response contains the Next server redirect contract:
+  - destination `/login`;
+  - redirect status `307`;
+  - replace navigation.
+- No production user, session, or membership was created or changed.
+
+## Known issues
+
+- Production owner acceptance must be repeated after deploying this no-behavior-change access refactor.
+- A real signed-in non-member remains unavailable because production has no non-member auth account.
+
+## Database changes
+
+- None.
+
+## Deployment status
+
+- Access tests and refactor are local only.
+- Production remains on `dpl_7XRfjjFuy5euYmYWzdpVL57Dnsbb`.
+
+## Remaining in this milestone
+
+- Run all release gates.
+- Commit and deploy the access-boundary regression slice.
+- Verify unauthenticated redirect and signed-in owner access on the new deployment.
+- Inspect exact deployment state and product fingerprints.
+- Reconcile Milestone 1 acceptance and exit status.
+
+## Next exact task
+
+Run final release gates, deploy the exact commit, and complete owner/parity acceptance.
+
+---
+
+# Checkpoint 61 — Milestone exit release gates passed
+
+## Current milestone
+
+Trust and Data Correctness — milestone exit acceptance
+
+## Completed
+
+- Ran the complete Tools and root repository release gates after adding the access-decision regression boundary.
+- Reviewed the final code diff and confirmed it preserves the existing access model.
+
+## Verified
+
+- Tools tests: 129 passed across 30 files.
+- Tools typecheck: passed.
+- Tools production build: passed.
+- Root repository check: passed across 10 levels.
+- `git diff --check`: passed.
+- Final implementation changes are limited to:
+  - the pure access-decision resolver;
+  - five access-decision tests;
+  - wiring `requireUser` through the resolver without changing destinations or membership storage.
+- Existing unrelated 2048 Run Merge files remain untracked and outside this slice.
+
+## Known issues
+
+- Production remains on the previous code until this verified access-boundary commit is deployed.
+- Live owner and unauthenticated acceptance must be repeated on the new deployment.
+
+## Database changes
+
+- None.
+
+## Deployment status
+
+- Release gates passed.
+- Ready for exact-commit production deployment.
+
+## Remaining in this milestone
+
+- Commit and deploy the verified access-boundary slice.
+- Inspect the deployment record.
+- Verify cookie-free login redirect and signed-in owner access.
+- Reconcile every Milestone 1 exit criterion and mark the milestone complete or precisely blocked.
+
+## Next exact task
+
+Commit, deploy, and perform the final production acceptance.
