@@ -8,6 +8,7 @@ import { listRecentRuns } from "@/repositories/overview-repository";
 import { loadAppStoreConnectStatus } from "@/services/appstore-connect-service";
 import { loadStorefrontMetricSummaries } from "@/services/storefront-metrics-service";
 import { resolveDiscoveryPeriod } from "@/lib/discovery-period";
+import { resolvePublicSourceStatus } from "@/lib/public-source-status";
 
 export const dynamic = "force-dynamic";
 
@@ -41,8 +42,10 @@ export default async function AppStoreConnectPage({ searchParams }: { searchPara
     listRecentRuns(),
   ]);
   const attributionReady = attribution.endpointConfigured && attribution.secretConfigured && attribution.mappedAppCount > 0;
-  const latestPublicRun = recentRuns[0] ?? null;
-  const failedPublicRun = recentRuns.find((run) => run.status === "failed" || run.status === "partial");
+  const publicStatus = resolvePublicSourceStatus(recentRuns);
+  const publicFailureDetail = publicStatus.lastFailureRun
+    ? `${date(publicStatus.lastFailureRun.startedAt)} · ${publicStatus.lastFailureRun.error ?? `${publicStatus.lastFailureRun.failed} item(s) failed`}${publicStatus.lastFailureRecovered ? " · Recovered by a later successful run" : ""}`
+    : "-";
   const scopedAscRequests = filters.app ? connection.reportRequests.filter((request) => request.appId === filters.app) : connection.reportRequests;
   const failedAscRequest = scopedAscRequests.find((request) => request.lastError || request.lastResultState === "error" || /failed|error/i.test(request.status));
   const partialAscRequest = scopedAscRequests.find((request) => request.lastResultState === "partial");
@@ -59,10 +62,14 @@ export default async function AppStoreConnectPage({ searchParams }: { searchPara
   const sources: SourceCard[] = [
     {
       name: "Public App Store",
-      status: failedPublicRun ? "error" : latestPublicRun ? "configured" : "waiting",
+      status: publicStatus.status,
       configuration: "Collector configured",
-      freshness: latestPublicRun?.finishedAt ? date(latestPublicRun.finishedAt) : latestPublicRun ? date(latestPublicRun.startedAt) : "Waiting for first run",
-      lastFailure: failedPublicRun?.error ?? (failedPublicRun ? `${failedPublicRun.failed} item(s) failed` : "-"),
+      freshness: publicStatus.lastSuccessfulRun?.finishedAt
+        ? date(publicStatus.lastSuccessfulRun.finishedAt)
+        : publicStatus.lastSuccessfulRun
+          ? date(publicStatus.lastSuccessfulRun.startedAt)
+          : "Waiting for first successful run",
+      lastFailure: publicFailureDetail,
       href: "/collection",
       detail: "Public metadata, ranking snapshots, competitors, and reviews.",
     },

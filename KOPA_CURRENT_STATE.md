@@ -3749,3 +3749,178 @@ Trust and Data Correctness — exact-window cross-source agreement
 ## Next exact task
 
 Correct the Public App Store source-status recency rule: derive current status from the latest relevant collection outcome, retain older failures as history without presenting the source as currently failed, and prove success-after-failure plus failure-after-success behavior with tests.
+
+---
+
+# Checkpoint 51 — Public source-status recency audit
+
+## Current milestone
+
+Trust and Data Correctness — current source-status integrity
+
+## Completed
+
+- Audited the public collection run repository, run ordering, collection-history presentation, and Sources page status derivation.
+- Inspected the signed-in production collection history and current Sources status.
+- Confirmed that the stored run history is correctly ordered and retained; the defect is limited to current-status selection.
+
+## Verified
+
+- Production public collection history:
+  - latest run: 2026-07-31 07:28 Europe/Berlin;
+  - latest run status: `ok`;
+  - latest run processed: 54 records;
+  - prior failure: 2026-07-31 00:52 Europe/Berlin;
+  - prior failure: `metadataMismatchDedupeKey is not defined`;
+  - recovery runs: successful at 00:57 and again at 07:28.
+- Production Jobs page correctly retains and orders the failed run between later and earlier successful history.
+- Production Sources page incorrectly shows Public App Store as `error`.
+- Root cause:
+  - `latestPublicRun` correctly selects the newest run;
+  - `failedPublicRun` independently finds any failed or partial run in visible history;
+  - current source status becomes error whenever that historical failure exists, regardless of later success.
+
+## Known issues
+
+- Current status, current freshness, and historical failure are not modeled as separate concepts.
+- A running newest collection needs a Waiting state while the last successful data timestamp remains visible.
+- A newest partial or failed collection must remain Error even if an older success exists.
+- Historical failure detail should remain visible after recovery without marking the source currently failed.
+
+## Database changes
+
+- None.
+- Stored run ordering and history are already sufficient.
+
+## Deployment status
+
+- Audit only; no code or production state changed in this checkpoint.
+
+## Remaining in this milestone
+
+- Add a deterministic public source-status resolver.
+- Separate current outcome, last successful freshness, and most recent failure history.
+- Prove success-after-failure, failure-after-success, partial, running, empty, unrelated-provider, and input-order behavior.
+- Integrate the resolver into the existing Sources page.
+- Run release gates, commit, deploy, and complete signed-in production acceptance.
+
+## Next exact task
+
+Implement the pure current-status resolver and replace the Sources page's any-failure logic.
+
+---
+
+# Checkpoint 52 — Public source-status resolver implemented
+
+## Current milestone
+
+Trust and Data Correctness — current source-status integrity
+
+## Completed
+
+- Added a deterministic Public App Store source-status resolver.
+- Filtered current status to relevant `apple_public` runs only.
+- Sorted by stored run time rather than trusting caller order.
+- Separated:
+  - current collection outcome;
+  - last successful data freshness;
+  - most recent failed or partial run;
+  - whether that failure was recovered by a later success.
+- Replaced the Sources page's any-failure logic with the resolver.
+- Kept the prior failure visible in `Last failure` and added an explicit recovery label after later success.
+
+## Verified
+
+- Focused status suite: 6 tests passed.
+- Tools typecheck: passed.
+- Tests prove:
+  - success after failure produces Configured and retains recovered failure history;
+  - failure after success produces Error and retains older successful freshness;
+  - partial after success produces Error;
+  - running after success produces Waiting and retains last successful freshness;
+  - empty or unrelated-provider history produces Waiting;
+  - input order cannot change the selected current run.
+- No run row is updated, deleted, hidden from Jobs history, or reclassified.
+
+## Known issues
+
+- Production still runs the prior any-failure presentation until deployment.
+- The Sources page uses the ten most recent stored public sync runs supplied by the existing repository.
+- Full release gates and production acceptance remain.
+
+## Database changes
+
+- None.
+
+## Deployment status
+
+- Implementation is local only.
+- Focused tests and typecheck pass.
+
+## Remaining in this milestone
+
+- Run the full Tools test suite, production build, root checks, and diff validation.
+- Commit only the source-status slice and checkpoints.
+- Deploy the exact committed Tools source.
+- Confirm production Public App Store becomes Configured with Jul 31 07:28 freshness.
+- Confirm the 00:52 failure remains visible as recovered history.
+- Confirm Jobs history is unchanged.
+
+## Next exact task
+
+Run the full release gates and review the status presentation before committing.
+
+---
+
+# Checkpoint 53 — Public source-status release gates passed
+
+## Current milestone
+
+Trust and Data Correctness — current source-status integrity
+
+## Completed
+
+- Reviewed the complete source-status change set.
+- Ran the full Tools verification suite and production build.
+- Ran the root repository integrity check and whitespace validation.
+- Confirmed the release contains only the resolver, its tests, the existing Sources-page integration, and milestone handover updates.
+
+## Verified
+
+- Tools tests: 119 passed across 28 files.
+- Tools typecheck: passed.
+- Tools production build: passed.
+- Root repository check: passed across 10 levels.
+- `git diff --check`: passed.
+- The resolver has no persistence side effects and does not modify collection history.
+- The Public App Store presentation uses:
+  - the latest relevant run for current status;
+  - the latest successful run for freshness;
+  - the latest failed or partial run for historical failure detail;
+  - an explicit recovered label when a later successful run exists.
+
+## Known issues
+
+- Production still shows the superseded any-history-failed status until this commit is deployed.
+- Signed-in production acceptance remains required.
+
+## Database changes
+
+- None.
+
+## Deployment status
+
+- Release gates passed.
+- Ready to commit and deploy the exact committed Tools source.
+
+## Remaining in this milestone
+
+- Commit the verified source-status slice.
+- Deploy the exact commit to the production Tools project.
+- Verify Public App Store is Configured after the latest successful run.
+- Verify the older failure remains visible as recovered history.
+- Verify Jobs history remains unchanged.
+
+## Next exact task
+
+Commit, deploy, and complete signed-in production acceptance.
