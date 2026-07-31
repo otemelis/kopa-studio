@@ -217,5 +217,8 @@ export function formatCrossSourceAgreement(value: CrossSourceAgreement) {
   const overlapText = value.overlapWindow
     ? ` Compared overlap: ${value.overlapWindow.start} to ${value.overlapWindow.end}.`
     : "";
-  return `${value.label} — ${value.explanation}${overlapText}`;
+  const scopeGuard = value.state === "unknown"
+    ? ""
+    : " This is app/market scope context; it does not validate this card's specific target or change its action eligibility.";
+  return `${value.label} — ${value.explanation}${scopeGuard}${overlapText}`;
 }

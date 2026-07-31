@@ -35,6 +35,7 @@ describe("cross-source agreement", () => {
       overlapWindow: { start: "2026-07-25", end: "2026-07-28" },
       comparedQuestions: ["traffic_quality", "conversion_readiness"],
     });
+    expect(formatCrossSourceAgreement(result)).toContain("does not validate this card's specific target or change its action eligibility");
     expect(formatCrossSourceAgreement(result)).toContain("Compared overlap: 2026-07-25 to 2026-07-28.");
   });
 
