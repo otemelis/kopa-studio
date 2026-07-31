@@ -52,12 +52,15 @@ describe("storefront localization evidence", () => {
   it("keeps exact-country metadata Unknown when its listing locale is unavailable", () => {
     const assessment = assessStorefrontLocalization({
       country: "gb",
+      legacyMetadataLocalised: true,
+      legacyScreenshotsLocalised: true,
       metadataSnapshot: { ...gbSnapshot, locale: null },
     });
     expect(assessment.metadataLocale).toBeNull();
     expect(assessment.metadataEvidence).toMatchObject({ state: "unknown", source: null });
     expect(assessment.metadataEvidence.detail).toContain("locale is Unknown");
     expect(assessment.screenshotEvidence.state).toBe("unknown");
+    expect(assessment.screenshotEvidence.detail).toContain("locale is Unknown");
   });
 
   it("keeps storefront evidence isolated", () => {

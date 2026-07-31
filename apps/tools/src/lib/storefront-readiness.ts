@@ -68,10 +68,10 @@ export function assessStorefrontLocalization(input: StorefrontReadinessInput): S
         observedAt: exactCountrySnapshot?.capturedAt ?? null,
       }
     : unknown(
-        input.legacyMetadataLocalised
-          ? "A legacy localization flag exists, but it has no evidence source or verification time."
-          : exactCountrySnapshot && !metadataLocale
-            ? "An exact-country metadata snapshot is stored, but its App Store locale is Unknown."
+        exactCountrySnapshot && !metadataLocale
+          ? "An exact-country metadata snapshot is stored, but its App Store locale is Unknown."
+          : input.legacyMetadataLocalised
+            ? "A legacy localization flag exists, but it has no evidence source or verification time."
             : "No exact-country metadata snapshot is stored.",
       );
 
@@ -83,8 +83,10 @@ export function assessStorefrontLocalization(input: StorefrontReadinessInput): S
         observedAt: exactCountrySnapshot?.capturedAt ?? null,
       }
     : unknown(
-        input.legacyScreenshotsLocalised
-          ? "A legacy screenshot flag exists, but no exact-country screenshot evidence is stored."
+        exactCountrySnapshot && !metadataLocale
+          ? "An exact-country screenshot snapshot is stored, but its App Store locale is Unknown."
+          : input.legacyScreenshotsLocalised
+            ? "A legacy screenshot flag exists, but no exact-country screenshot evidence is stored."
           : "No exact-country screenshot evidence is stored.",
       );
 
