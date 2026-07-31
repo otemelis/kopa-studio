@@ -65,6 +65,12 @@ Metadata-version context slice:
 
 Implementation status on 2026-07-31: complete in production. Current-metadata keyword rules require exact-country snapshots, rank evidence begins at the observed metadata-version boundary, stored snapshot/version/change provenance is visible in Recommendations, the current US conclusion exposes its immutable evidence, and GB no longer borrows US listing metadata.
 
+Locale-context integrity slice:
+
+> Bind language-dependent public metadata and ASO conclusions to an explicit App Store locale, and represent unavailable locale evidence as Unknown.
+
+Implementation status on 2026-07-31: complete in production. Metadata snapshots, detected changes, tracked keywords, and persisted ASO conclusions now support exact locale context without inferring it from storefront country or Apple's app-wide supported-language list. Language-dependent rules require exact app, country, and locale matches. Current US and GB evidence correctly remains Unknown, the unsupported country-only US conclusion is preserved as superseded history, and a successful production collection did not recreate it.
+
 Acceptance:
 
 - Exclude `lovense`.

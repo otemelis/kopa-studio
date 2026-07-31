@@ -3058,3 +3058,109 @@ Trust and Data Correctness — public metadata locale-context integrity
 ## Next exact task
 
 Commit the verified locale-context slice, then apply the reviewed additive migration before deploying code that queries the new columns.
+
+---
+
+# Checkpoint 42 — Locale-context slice complete in production
+
+## Current milestone
+
+Trust and Data Correctness — public metadata locale-context integrity
+
+## Completed
+
+- Committed the verified locale-context implementation:
+  - `82071a1d fix(aso): enforce exact locale context`
+  - `1032bfed fix(markets): explain unknown listing locale`
+- Applied `20260731120000_aso_locale_context.sql` to the production Supabase project.
+- Deployed the exact committed collector source to production.
+- Deployed the exact committed Tools source to production.
+- Ran the normal owner-triggered public App Store collection after deployment.
+- Completed signed-in acceptance on Jobs, Markets, Keywords, and Recommendations.
+- Corrected one acceptance-only wording issue so the US Markets row explains that an exact-country snapshot exists while its App Store locale remains Unknown, instead of leading with an older legacy-flag warning.
+- Left the unrelated support note and 2048 Run Merge screenshots untouched and outside both commits and production archives.
+
+## Verified
+
+- Production schema:
+  - `aso_metadata_snapshots.locale` exists;
+  - `aso_metadata_change_events.locale` exists;
+  - `aso_insights.locale` exists.
+- Migration lifecycle:
+  - one unsupported active historical language-dependent finding was preserved as superseded history;
+  - zero unsupported language-dependent findings remain active.
+- Production source truth after collection:
+  - exact-locale owned metadata snapshots: 0;
+  - tracked keywords with exact locale: 0;
+  - active language-dependent ASO findings: 0;
+  - locale-superseded historical findings: 1;
+  - latest `apple_public` sync status: `ok`.
+- Production collection:
+  - started Jul 31, 2026 at 07:28 GMT+2;
+  - processed 54 public-source items;
+  - completed in about three minutes;
+  - queue job completed with no error.
+- Markets acceptance:
+  - US listing locale: Unknown;
+  - US metadata and screenshot evidence: Unknown because the exact-country snapshot has no exact App Store locale;
+  - GB listing locale: Unknown;
+  - GB metadata and screenshot evidence: Unknown because no exact-country snapshot exists;
+  - the app-wide supported-language list does not upgrade either market.
+- Keyword Intelligence acceptance:
+  - the existing page shows the Locale column;
+  - all 10 current US tracked keywords show Locale `Unknown`;
+  - metadata presence is `unknown`, not inferred from the app-level title/subtitle.
+- Recommendations acceptance:
+  - InnerType/US/source=ASO shows zero active cards;
+  - InnerType/GB/source=ASO shows zero active cards;
+  - the successful post-deployment collection did not recreate the unsupported country-only US metadata conclusion.
+- US/GB country-and-locale isolation is covered by deterministic tests.
+- No new page or navigation route was created.
+- No Apple Ads write action was added or executed.
+- Attribution remains deferred.
+- Local release gates remain:
+  - 43 collector/provider/rule tests passed;
+  - 93 Tools tests passed;
+  - typecheck passed;
+  - production build passed;
+  - root checks passed.
+
+## Known issues
+
+- Apple's current public iTunes lookup does not expose an exact listing locale, so public snapshots remain Unknown unless Apple supplies an explicit structured locale or another approved structured source is added.
+- Current keyword locales remain Unknown until an owner records exact language-region values through the existing Keyword Intelligence workflow.
+- The standalone lint script remains unavailable because the repository still lacks an ESLint 9 flat configuration; Next's production build validation passes.
+- The historical 12:52 collection failure remains visible in job history as retained operational evidence; later successful runs, including the new 07:28 acceptance run, confirm recovery.
+
+## Database changes
+
+- Applied `supabase/migrations/20260731120000_aso_locale_context.sql`.
+- Added nullable locale context to owned metadata snapshots, detected metadata change events, and ASO insights.
+- Replaced the active metadata-mismatch identity with app + country + locale scope.
+- Added the metadata snapshot locale lookup index.
+- Preserved unsupported prior evidence as superseded history; no evidence row was deleted and no locale was backfilled.
+
+## Deployment status
+
+- Production collector deployment:
+  - `dpl_AyqzCz587uW8GEeYTBLAmEd8uGrG`
+  - alias: `https://www.kopa.studio`
+- Initial production Tools deployment:
+  - `dpl_5UB5e41mMsq6YfXYeSMrSecC5AbT`
+- Current production Tools deployment after the acceptance wording fix:
+  - `dpl_55ddgwC9buCvz7bz5tZBuehUZfo5`
+  - alias: `https://tools.kopa.studio`
+- Vertical slice status: complete in production.
+- Acceptance test: passed.
+- Rollback remains available by promoting the prior Vercel deployments; nullable database columns can remain safely, and the superseded historical insight is retained.
+
+## Remaining in Milestone 1 — Trust and Data Correctness
+
+- Enforce the remaining requested-period and imported evidence-window context in recommendation conclusions.
+- Make freshness, completeness, evidence volume, relevance, and cross-source agreement separate visible qualities across recommendation sources.
+- Continue converging recommendation identity and lifecycle across ASO, Discovery, and Apple Ads.
+- Complete remaining production/source parity and authenticated-owner checks as each slice is delivered.
+
+## Next exact task
+
+Implement the smallest Discovery evidence-sufficiency slice for the InnerType GB feed: bind each Discovery card to its exact imported evidence window and requested period, expose freshness, completeness, and volume separately, mark stale/partial/out-of-window cards as Waiting, and prove 7-day versus 28-day isolation with tests.
