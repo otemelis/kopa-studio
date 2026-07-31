@@ -21,7 +21,7 @@ Open Kopa and understand what changed, why it matters, whether the evidence is t
 
 ## Active milestone order
 
-### 1. Trust and Data Correctness — ACTIVE
+### 1. Trust and Data Correctness — COMPLETE
 
 Goal: make existing evidence reliable enough to drive decisions.
 
@@ -82,9 +82,9 @@ Acceptance:
 - Exclude `lovense`.
 - Exclude `lovense remote`.
 - Exclude `y not`.
-- Pause or review broad `relationship test`.
+- Pause or review broad `relationship test` while that broad target is active; do not repeat the recommendation after it is paused.
 - Continue learning on `personality test`.
-- State that four taps are insufficient to judge store conversion.
+- State that fewer than 20 relevant taps are insufficient to judge store conversion; the current evidence has five taps.
 - Include explicit InnerType/GB/window/source/freshness evidence.
 - Perform no Apple Ads write.
 
@@ -96,7 +96,9 @@ Milestone exit:
 - every conclusion exposes scope and sufficiency;
 - no known inaccurate recommendation is presented as actionable.
 
-### 2. Today Page — PLANNED
+Milestone status on 2026-07-31: complete in production. All corrected rules have regression coverage, the current InnerType/GB evidence is scoped and explicit, Discovery incomplete-window behavior is honest, GB localization remains Unknown without exact-country evidence, recommendation identities are stable, production source parity is recorded, anonymous access redirects to login, and signed-in owner access passed. Production contains no non-member auth account, so the signed-in unauthorized path was verified through fail-closed deterministic tests without creating a disposable production identity.
+
+### 2. Today Page — ACTIVE
 
 Goal: make the default page answer what changed and what to do next.
 

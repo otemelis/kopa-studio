@@ -4413,3 +4413,97 @@ Trust and Data Correctness — milestone exit acceptance
 ## Next exact task
 
 Commit, deploy, and perform the final production acceptance.
+
+---
+
+# Checkpoint 62 — Milestone 1 complete in production
+
+## Current milestone
+
+Trust and Data Correctness — complete
+
+## Completed
+
+- Committed the access-boundary regression slice as `4343d43f`.
+- Deployed an archive of that exact commit to production.
+- Inspected the final Vercel deployment record.
+- Repeated the cookie-free protected-page request against the final deployment.
+- Completed signed-in owner acceptance across Recommendations, Sources, Markets, and Apple Ads evidence.
+- Reconciled the current production evidence with every Milestone 1 exit criterion.
+- Marked Milestone 1 complete and activated Milestone 2 in the active roadmap.
+- Updated the implementation inventory with current test, access, identity, and deployment evidence.
+
+## Verified
+
+- Production deployment:
+  - ID: `dpl_AJcmhnfbhcso8GNp3CfWQ2rZ2J5G`;
+  - target: production;
+  - state: Ready;
+  - exact product commit: `4343d43f`;
+  - alias: `https://tools.kopa.studio`;
+  - created: 2026-07-31 10:26:50 Europe/Berlin.
+- Production/source parity:
+  - the deployed archive was created from exact repository `HEAD`;
+  - the deployment build passed;
+  - production exposes the stable recommendation-identity fingerprint introduced by the committed source;
+  - no Tools code is ahead of the deployed product commit at acceptance time.
+- Access boundary:
+  - cookie-free `/insights` contains the server redirect to `/login` with status 307;
+  - the signed-in approved owner reaches protected pages and sees the sign-out shell;
+  - production contains 1 auth user, 1 approved member, and 0 non-member users;
+  - login, membership-check, allow, non-member, mismatch, and membership-error fail-closed decisions are covered by 5 tests;
+  - no disposable user or membership mutation was performed.
+- Recommendations:
+  - exact InnerType/GB/28-day scope is visible;
+  - 6 current cards are shown;
+  - `y not`, `lovense remote`, and `lovense` remain exact-negative conclusions;
+  - `personality test` remains Continue learning;
+  - 5 taps and 0 installs remain Insufficient conversion evidence;
+  - Discovery partial-window evidence is shown separately;
+  - the paused broad `relationship test` correctly has no redundant pause recommendation.
+- App Store Connect:
+  - parser provenance remains `discovery-v2`;
+  - import remains 244/244 rows;
+  - partial period coverage remains explicit;
+  - exact evidence windows remain visible.
+- Market readiness:
+  - GB listing locale remains Unknown;
+  - GB metadata remains Unknown with no exact-country snapshot;
+  - GB screenshots remain Unknown with no exact-country evidence;
+  - GB app-language evidence remains Unknown because the recorded language list is app-wide.
+- Automation boundary:
+  - Apple Ads page explicitly remains read-only;
+  - no negative, keyword, bid, budget, campaign, or ad-group write was performed;
+  - attribution remains deferred.
+- Final release gates:
+  - 129 tests passed across 30 files;
+  - typecheck passed;
+  - production build passed;
+  - root repository check passed;
+  - whitespace validation passed.
+
+## Known issues
+
+- A live signed-in non-member redirect was not exercised because production has no non-member auth account. The path is fail-closed in source and covered by deterministic tests.
+- Discovery recommendations remain derived and advisory rather than persisted.
+- ASO and Apple Ads still have different lifecycle capabilities despite stable shared feed identity; lifecycle consolidation belongs to the later Recommendations milestone.
+- Automated authenticated browser E2E and a lint configuration remain future engineering improvements.
+
+## Database changes
+
+- None.
+- No auth, membership, Apple Ads, attribution, or recommendation data was changed by this final acceptance task.
+
+## Deployment status
+
+- Milestone 1 is complete and live in production.
+- Acceptance test passed.
+- Rollback target before this final access-only deployment: `dpl_7XRfjjFuy5euYmYWzdpVL57Dnsbb`.
+
+## Remaining in this milestone
+
+- None.
+
+## Next exact task
+
+Build the first Today Page vertical slice by replacing the dashboard landing content with a read-only InnerType/GB/28-day decision brief that reuses the trusted scoped evidence and shows at most three highest-priority actions, without adding new recommendation logic.
