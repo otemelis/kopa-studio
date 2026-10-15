@@ -4,7 +4,7 @@ Source of truth: [docs/KOPA_ROADMAP.md](docs/KOPA_ROADMAP.md). This supersedes o
 
 | Milestone | Status | Evidence / exact next task |
 |---|---|---|
-| M0 | In progress | Manual Apple refresh passed 15 Oct 13:05 UTC, period 14 Sep–11 Oct; 52 series/1,036 daily values independently reconciled. Accepted static page and refresh currently outside repo. Carry them in unchanged, add attempt/failure freshness metadata and preserve the first validated regression snapshot. |
+| M0 | Done | Canonical accepted page at `npm run portfolio` / localhost:4340; refresh and first accepted regression CSV now in repo. Visible complete date, attempt, success and failed/stale state. Eleven reporting tests plus corrupt-publication test pass; canonical calculations replay official source and all 52 series/1,036 daily values reconcile. |
 | M1 | In progress — priority | PASSPORT isolated branch `codex/analytics-preflight-2026-10-15` from `f1894a7`. Inspect actual emitter/collector and run instrumented preflight before 23 Oct submission. |
 | M2 | Not started | POIS read-only verification and both original defect reproductions complete in prior task. Local fixes remain to prepare; do not delay M1 or touch submitted binary. |
 | M3 | Not started | Build one real Product Analytics view only after source contracts/preflight checks; no redesign. |

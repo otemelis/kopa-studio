@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self' data:; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Kopa Signal · Historical portfolio snapshot</title>
+  <link rel="icon" href="data:,"><link rel="stylesheet" href="signal.css"><link rel="stylesheet" href="portfolio.css">
+  <script type="module" src="portfolio.mjs"></script>
+</head>
+<body class="signal-app">
+  <div class="sig-review"><strong>HISTORICAL SNAPSHOT · NOT A LIVE FEED</strong><span>Read-only · validated official App Store Connect CSV</span></div>
+  <div class="portfolio-shell">
+    <header class="portfolio-header"><a class="portfolio-brand" href="./">KOPA <span>STUDIO / SIGNAL</span></a><label class="signal-theme">Appearance <select aria-label="Appearance"><option value="dark">Dark</option><option value="light">Light</option></select></label></header>
+    <main>
+      <div class="portfolio-heading"><div><p class="portfolio-eyebrow">PORTFOLIO</p><h1>Portfolio overview</h1><p>Acquisition and monetization, with the source boundaries intact.</p></div><div class="portfolio-period" role="group" aria-label="Reporting period"><button data-days="7" aria-pressed="false" disabled>7 days</button><button data-days="28" aria-pressed="true" disabled>28 days</button></div></div>
+      <div id="status" role="status">Verifying the historical CSV…</div>
+      <div id="report" hidden>
+        <div class="portfolio-scope"><strong id="period-label"></strong><span>All territories</span><span>Sales: Pacific dates · Analytics: UTC</span></div>
+        <p id="refresh-health" class="portfolio-comparison" role="status"></p>
+        <p id="comparison-note" class="portfolio-comparison"></p>
+        <section id="apps" class="portfolio-apps" aria-label="Reported apps"></section>
+        <section class="sig-panel portfolio-trends"><div class="sig-panel-head"><div><h2>Weekly trends</h2><p>Complete seven-day periods. Each metric retains its own source timezone and currency.</p></div></div><div id="trends" class="portfolio-trend-grid"></div></section>
+        <section class="portfolio-placeholders" aria-label="Apps awaiting a source"><article><span class="portfolio-app-icon muted">P</span><div><h2>POIS</h2><p>Not included in this snapshot. All metrics unavailable.</p></div></article><article><span class="portfolio-app-icon muted">P</span><div><h2>PASSPORT</h2><p>Not included in this snapshot. All metrics unavailable.</p></div></article></section>
+        <details class="portfolio-definitions"><summary>Source and measurement notes</summary><p>Impressions are icon impressions, excluding page views. Downloads are first-time app units. Paid purchases are Apple-reported IAP units, not unique paying people or individual receipt verification. Estimated proceeds retain the original Sales currencies and are not settled bank payments. LoveType’s missing Analytics figures remain unavailable.</p><p>Zero values are retained from the validated CSV’s supported zero statuses. No production service or client purchase telemetry is queried.</p><p id="source-stamp"></p><p class="portfolio-hash">CSV SHA-256: <code id="source-hash"></code></p><a href="daily-acquisition-monetization.csv" download>Download the source CSV</a></details>
+      </div>
+      <noscript><p>This read-only page requires JavaScript to verify and aggregate its local CSV.</p></noscript>
+    </main>
+    <footer><span>Kopa Studio · Historical reporting only</span><a href="RECONCILIATION.md">Reconciliation report</a></footer>
+  </div>
+</body>
+</html>

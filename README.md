@@ -1,3 +1,5 @@
+> **Current development direction:** [approved milestone roadmap](docs/KOPA_ROADMAP.md), [short status](STATUS.md). Canonical accepted portfolio: `npm run portfolio` → http://127.0.0.1:4340/. Earlier Signal/product prototypes are archived experiments, not the current reporting baseline.
+
 # Kopa Studio
 
 This repository currently hosts the public Kopa Studio website, its legacy hidden studio console, and a parking-escape prototype. The new, independent internal ASO migration application lives in [`apps/tools`](apps/tools).

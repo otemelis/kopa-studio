@@ -159,4 +159,4 @@ A milestone is done only if:
 
 ## Execution status — 15 October 2026
 
-The approved roadmap above is preserved verbatim. Current milestone evidence, tests, blockers and exact next tasks are maintained in [`../STATUS.md`](../STATUS.md). M0: In progress (bounded freshness/repository handoff gap). M1: In progress (calendar priority). M2–M8: Not started. Production, release, permission and cost gates remain in force.
+The approved roadmap above is preserved verbatim. Current milestone evidence, tests, blockers and exact next tasks are maintained in [`../STATUS.md`](../STATUS.md). M0: Done (canonical page, refresh/failure metadata and regression checks verified). M1: In progress (calendar priority). M2–M8: Not started. Production, release, permission and cost gates remain in force.
