@@ -1,0 +1,140 @@
+{
+  "period_start": "2026-10-11",
+  "period_end": "2026-10-11",
+  "timezone": "UTC",
+  "currency": "EUR",
+  "grain": "campaign totals for one explicit reporting day",
+  "campaign_count": 3,
+  "totals_in_cents_for_spend": {
+    "Spend": 0,
+    "Impressions": 13,
+    "Taps": 0,
+    "Installs (Total)": 0,
+    "Installs (Tap-Through)": 0,
+    "Installs (View-Through)": 0,
+    "New Downloads (Total)": 0,
+    "Redownloads (Total)": 0
+  },
+  "campaigns": [
+    {
+      "campaign_id": "2144314451",
+      "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+      "app": "InnerType Personality Test",
+      "market": "Germany",
+      "reported_status": "PAUSED",
+      "metrics": {
+        "Spend": 0,
+        "Impressions": 0,
+        "Taps": 0,
+        "Installs (Total)": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      }
+    },
+    {
+      "campaign_id": "2144366771",
+      "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+      "app": "InnerType Personality Test",
+      "market": "United Kingdom",
+      "reported_status": "RUNNING",
+      "metrics": {
+        "Spend": 0,
+        "Impressions": 13,
+        "Taps": 0,
+        "Installs (Total)": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      }
+    },
+    {
+      "campaign_id": "2144314113",
+      "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+      "app": "InnerType Personality Test",
+      "market": "United Kingdom",
+      "reported_status": "ON_HOLD",
+      "metrics": {
+        "Spend": 0,
+        "Impressions": 0,
+        "Taps": 0,
+        "Installs (Total)": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      }
+    }
+  ],
+  "validation": "PASS: campaign totals equal footer; install attribution and new/redownload components reconcile; footer excluded from campaign sums",
+  "source_sha256": "7260ff4bea2f632353833a1a65b9b4f597943a3a805b70dd4357b3d6b777ccab",
+  "reconciliation": {
+    "status": "SCOPE_OVERLAP_REQUIRES_TIMEZONE_AND_CAMPAIGN_RECONCILIATION",
+    "stored_rows": 1,
+    "stored_days": [
+      "2026-10-11"
+    ],
+    "missing_days": [],
+    "stored_spend_cents": 0,
+    "stored_impressions": 13,
+    "stored_taps": 0,
+    "last_sync": "2026-10-12 17:21:58.487+00",
+    "notes": [
+      "12 October was synced before that reporting day ended; later days are absent, not zero",
+      "Stored account timezone was not persisted; local v5 adapter requests UTC but deployed-request provenance remains unverified",
+      "This multi-day CSV cannot be split into observed daily values",
+      "No pass/fail metric delta is calculated across unequal coverage"
+    ]
+  },
+  "campaign_day_checks": [
+    {
+      "campaign_id": "2144314451",
+      "status": "NO_STORED_ROW",
+      "note": "Official zeros remain reported values; absent database rows are not imputed zeros."
+    },
+    {
+      "campaign_id": "2144366771",
+      "status": "NUMERICAL_MATCH_TIMEZONE_PROVENANCE_INCOMPLETE",
+      "metrics": [
+        {
+          "metric": "Spend",
+          "official": 0,
+          "stored": 0
+        },
+        {
+          "metric": "Impressions",
+          "official": 13,
+          "stored": 13
+        },
+        {
+          "metric": "Taps",
+          "official": 0,
+          "stored": 0
+        },
+        {
+          "metric": "Installs (Total)",
+          "official": 0,
+          "stored": 0
+        },
+        {
+          "metric": "Installs (Tap-Through)",
+          "official": 0,
+          "stored": 0
+        },
+        {
+          "metric": "Installs (View-Through)",
+          "official": 0,
+          "stored": 0
+        }
+      ],
+      "note": "Official UTC; legacy stored timezone not persisted. Zero install signals do not validate nonzero attribution mapping."
+    },
+    {
+      "campaign_id": "2144314113",
+      "status": "NO_STORED_ROW",
+      "note": "Official zeros remain reported values; absent database rows are not imputed zeros."
+    }
+  ]
+}

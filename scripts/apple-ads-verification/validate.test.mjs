@@ -1,0 +1,8 @@
+import test from'node:test';import assert from'node:assert/strict';import{validate}from'./validate.mjs';
+const header='\uFEFF"Start Date: 11.10.2026"\n"End Date: 14.10.2026"\nCurrency: EUR\nTime Zone: UTC\n\nCampaign ID,Campaign Name,Start Date,App Name,Country or Region,Status,Spend,Impressions,Taps,Installs (Total),Installs (Tap-Through),Installs (View-Through),New Downloads (Total),Redownloads (Total)\n';
+const row='123,Explicit synthetic campaign,01.09.2026,Fixture,UK,RUNNING,0.49,52,1,0,0,0,0,0\n',footer=',,N/A,,,,0.49,52,1,0,0,0,0,0';
+test('report metadata defines dates, not campaign lifecycle; footer never doubles counts',()=>{const x=validate(header+row+footer);assert.equal(x.period_start,'2026-10-11');assert.equal(x.period_end,'2026-10-14');assert.equal(x.campaign_count,1);assert.equal(x.totals_in_cents_for_spend.Spend,49);assert.equal(x.totals_in_cents_for_spend.Impressions,52);assert.match(x.grain,/not daily/);});
+test('missing source values cannot become zero',()=>{assert.throws(()=>validate(header+row.replace('0.49,52','0.49,')+footer));});
+test('duplicate IDs and mismatching total rows fail',()=>{assert.throws(()=>validate(header+row+row+footer));assert.throws(()=>validate(header+row+footer.replace('0.49,52','0.49,53')));});
+test('timezone and currency are required evidence',()=>{assert.throws(()=>validate((header+row+footer).replace('Time Zone: UTC','')));assert.throws(()=>validate((header+row+footer).replace('Currency: EUR','')));});
+test('tap-through and view-through cannot be collapsed incorrectly',()=>{assert.throws(()=>validate(header+row.replace('52,1,0,0,0','52,1,0,1,0')+footer.replace('52,1,0,0,0','52,1,0,1,0')));});

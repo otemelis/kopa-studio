@@ -1,0 +1,152 @@
+{
+  "mode": "historical_official_csv",
+  "imported_at": "2026-10-15T18:20:59.632Z",
+  "snapshots": [
+    {
+      "period_start": "2026-10-11",
+      "period_end": "2026-10-11",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "grain": "campaign totals for one explicit reporting day",
+      "campaign_count": 3,
+      "totals_in_cents_for_spend": {
+        "Spend": 0,
+        "Impressions": 13,
+        "Taps": 0,
+        "Installs (Total)": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Germany",
+          "reported_status": "PAUSED",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 0,
+            "Taps": 0,
+            "Installs (Total)": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          }
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "United Kingdom",
+          "reported_status": "RUNNING",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 13,
+            "Taps": 0,
+            "Installs (Total)": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          }
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "United Kingdom",
+          "reported_status": "ON_HOLD",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 0,
+            "Taps": 0,
+            "Installs (Total)": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          }
+        }
+      ],
+      "validation": "PASS: campaign totals equal footer; install attribution and new/redownload components reconcile; footer excluded from campaign sums",
+      "source_sha256": "7260ff4bea2f632353833a1a65b9b4f597943a3a805b70dd4357b3d6b777ccab"
+    },
+    {
+      "period_start": "2026-10-11",
+      "period_end": "2026-10-14",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "grain": "campaign totals over the complete selected period; not daily rows",
+      "campaign_count": 3,
+      "totals_in_cents_for_spend": {
+        "Spend": 49,
+        "Impressions": 52,
+        "Taps": 1,
+        "Installs (Total)": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Germany",
+          "reported_status": "PAUSED",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 0,
+            "Taps": 0,
+            "Installs (Total)": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          }
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "United Kingdom",
+          "reported_status": "RUNNING",
+          "metrics": {
+            "Spend": 49,
+            "Impressions": 52,
+            "Taps": 1,
+            "Installs (Total)": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          }
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "United Kingdom",
+          "reported_status": "ON_HOLD",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 0,
+            "Taps": 0,
+            "Installs (Total)": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          }
+        }
+      ],
+      "validation": "PASS: campaign totals equal footer; install attribution and new/redownload components reconcile; footer excluded from campaign sums",
+      "source_sha256": "004471bbba8df8c7603b0df1abd3b095fd5f60d6d7deef937da0ea64eeea9f02"
+    }
+  ]
+}
