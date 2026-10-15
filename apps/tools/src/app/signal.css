@@ -846,10 +846,9 @@
 }
 .signal-app .sig-funnel-row {
   display: grid;
-  grid-template-columns: 24px minmax(160px, 1fr) minmax(
-      120px,
-      2fr
-    ) 55px 80px 65px;
+  grid-template-columns:
+    24px minmax(160px, 1fr) minmax(120px, 2fr)
+    55px 80px 65px;
   gap: 12px;
   align-items: center;
   width: 100%;
@@ -1400,4 +1399,431 @@ body:has(.signal-app) {
 }
 .signal-app.signal-app tbody tr:hover td {
   background: var(--sig-soft);
+}
+
+/* Actual Product Analytics: semantic Signal tokens, shared across both themes. */
+.real-product .sig-panel {
+  margin-bottom: 18px;
+}
+.real-product .sig-top > span {
+  font-size: 11px;
+  color: var(--sig-muted);
+}
+.real-filters,
+.real-filters form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: end;
+}
+.real-filters {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--sig-line);
+}
+.real-filters label {
+  display: grid;
+  gap: 5px;
+  color: var(--sig-muted);
+  font-size: 10px;
+}
+.real-filters select,
+.real-filters input {
+  font-size: 11px;
+  padding: 6px 9px;
+}
+.real-secondary {
+  gap: 10px;
+}
+.real-secondary select {
+  max-width: 170px;
+}
+.real-warning {
+  display: flex;
+  gap: 13px;
+  padding: 14px 17px;
+  margin: 0 0 22px;
+  background: var(--sig-accent-soft);
+  border: 1px solid var(--sig-line);
+  border-radius: 7px;
+}
+.real-warning > span {
+  font-size: 22px;
+  color: var(--sig-accent);
+}
+.real-warning strong {
+  font-size: 12px;
+}
+.real-warning p {
+  margin-top: 3px;
+  font-size: 11px;
+}
+.real-warning .sig-link {
+  background: transparent;
+  border: 0;
+  color: var(--sig-accent);
+  padding: 0;
+  font-size: 11px;
+}
+.real-tabs {
+  display: flex;
+  gap: 24px;
+  border-bottom: 1px solid var(--sig-line);
+  margin-bottom: 20px;
+  overflow: auto;
+}
+.real-tabs button {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0 0 12px;
+  white-space: nowrap;
+  font-size: 12px;
+  color: var(--sig-muted);
+}
+.real-tabs button[aria-current] {
+  color: var(--sig-accent);
+  box-shadow: inset 0 -2px var(--sig-accent);
+}
+.real-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 0 18px 12px;
+  color: var(--sig-muted);
+  font-size: 10px;
+}
+.real-inline form {
+  display: flex;
+  gap: 8px;
+}
+.real-inline button,
+.real-inline select,
+.real-inline input {
+  font-size: 11px;
+}
+.real-inline button[aria-pressed="true"] {
+  background: var(--sig-accent-soft);
+  color: var(--sig-accent);
+}
+.real-chart {
+  height: 240px;
+  min-width: 0;
+}
+.real-tooltip {
+  background: var(--sig-tooltip);
+  color: var(--sig-tooltip-ink);
+  padding: 12px 15px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+.real-tooltip p {
+  color: var(--sig-tooltip-ink);
+  font-size: 11px;
+}
+.real-product .real-note {
+  padding: 10px 18px 16px;
+  font-size: 10px;
+}
+.real-journey {
+  display: grid;
+  grid-template-columns: minmax(140px, 0.65fr) minmax(240px, 1.2fr) minmax(
+      240px,
+      1.2fr
+    );
+  gap: 25px;
+  padding: 12px 20px 22px;
+  align-items: center;
+}
+.real-root {
+  border: 1px solid var(--sig-line);
+  border-radius: 7px;
+  padding: 20px 14px;
+  background: var(--sig-accent-soft);
+  position: relative;
+}
+.real-root::after {
+  content: "→";
+  position: absolute;
+  right: -21px;
+  top: 42%;
+  color: var(--sig-muted);
+}
+.real-root strong {
+  display: block;
+  font-size: 30px;
+  margin-top: 12px;
+  font-weight: 550;
+}
+.real-root h3 {
+  margin-top: 9px;
+}
+.real-branches {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+.real-branches button {
+  position: relative;
+  overflow: hidden;
+  padding: 11px 13px 15px;
+  text-align: left;
+  width: 100%;
+  border-radius: 6px;
+  font-size: 11px;
+}
+.real-branches button[aria-pressed="true"] {
+  border-color: var(--sig-accent);
+  background: var(--sig-accent-soft);
+}
+.real-branches button:disabled {
+  cursor: default;
+  opacity: 1;
+}
+.real-branches button small {
+  display: block;
+  font-size: 10px;
+  margin-top: 3px;
+}
+.real-branches i {
+  height: 4px;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  background: var(--series-1);
+}
+.real-branches .real-drop i {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--sig-muted),
+    var(--sig-muted) 3px,
+    var(--sig-soft) 3px,
+    var(--sig-soft) 6px
+  );
+}
+.real-funnel {
+  padding: 0 18px;
+}
+.real-funnel-row {
+  display: grid;
+  grid-template-columns:
+    22px minmax(130px, 1.3fr) minmax(100px, 2fr)
+    40px 80px minmax(100px, 1fr);
+  align-items: center;
+  gap: 14px;
+  border-top: 1px solid var(--sig-line);
+  padding: 18px 0;
+  font-size: 11px;
+}
+.real-funnel-row small {
+  display: block;
+  margin-top: 4px;
+}
+.real-funnel-track {
+  height: 30px;
+  background: var(--sig-soft);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.real-funnel-track i {
+  display: block;
+  height: 100%;
+  background: var(--series-1);
+}
+.real-state {
+  padding: 28px 22px;
+  background: var(--sig-surface);
+  border: 1px solid var(--sig-line);
+  border-radius: 7px;
+  margin-bottom: 18px;
+}
+.real-state h2,
+.real-state h3 {
+  margin-bottom: 10px;
+}
+.real-state p + p,
+.real-state button {
+  margin-top: 12px;
+}
+.real-panel .real-state,
+.sig-panel .real-state {
+  border: 0;
+  margin: 0;
+  padding-top: 12px;
+}
+.real-unavailable-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+.real-gate {
+  display: inline-block;
+  font-size: 9px;
+  color: var(--sig-warning);
+  background: var(--sig-soft);
+  padding: 4px 7px;
+  border-radius: 4px;
+  margin-bottom: 14px;
+}
+.real-definition {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 12px;
+  padding: 0 18px 18px;
+  margin: 0;
+  font-size: 11px;
+}
+.real-definition dt {
+  color: var(--sig-muted);
+}
+.real-definition dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.real-table {
+  overflow: auto;
+}
+.real-table table {
+  width: 100%;
+}
+.real-table small {
+  display: block;
+}
+.real-checklist {
+  margin: 0;
+  padding: 0 35px 22px;
+  display: grid;
+  gap: 10px;
+  font-size: 12px;
+}
+.real-footnote {
+  margin-top: 22px;
+  padding-top: 15px;
+  border-top: 1px solid var(--sig-line);
+}
+.real-footnote p {
+  font-size: 10px;
+  margin-top: 7px;
+}
+.real-command {
+  position: fixed;
+  inset: 0;
+  background: #0007;
+  display: grid;
+  place-items: center;
+  z-index: 90;
+  padding: 20px;
+}
+.real-command > div {
+  width: min(440px, 100%);
+  padding: 20px;
+  background: var(--sig-surface);
+  border: 1px solid var(--sig-line);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+}
+.real-command button {
+  text-align: left;
+}
+.real-command h2 {
+  margin: 10px 0;
+}
+@media (max-width: 1100px) {
+  .real-journey {
+    grid-template-columns: 140px 1fr;
+  }
+  .real-journey > div:last-child {
+    grid-column: 2;
+  }
+  .real-funnel-row {
+    gap: 8px;
+    grid-template-columns: 22px 140px 1fr 30px 65px;
+  }
+  .real-funnel-row > span:last-child {
+    grid-column: 2 / -1;
+  }
+  .real-unavailable-grid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 650px) {
+  .real-journey {
+    grid-template-columns: 1fr;
+  }
+  .real-journey > div:last-child {
+    grid-column: auto;
+  }
+  .real-root::after {
+    display: none;
+  }
+  .real-funnel-row {
+    grid-template-columns: 22px 1fr 40px;
+  }
+  .real-funnel-track {
+    grid-column: 2;
+    grid-row: auto;
+  }
+  .real-funnel-row > span:last-child {
+    grid-column: 2 / -1;
+  }
+  .real-definition {
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+  .real-definition dd {
+    margin-bottom: 8px;
+  }
+  .real-tabs {
+    gap: 18px;
+  }
+  .real-filters form {
+    width: 100%;
+  }
+}
+.real-command {
+  border: 0;
+  width: min(480px, calc(100% - 40px));
+  height: fit-content;
+  background: transparent;
+  color: var(--sig-ink);
+}
+.real-command::backdrop {
+  background: #0007;
+}
+.real-product .sig-main {
+  padding-top: 19px;
+}
+.real-product .sig-title {
+  margin-bottom: 12px;
+}
+.real-product .real-filters {
+  padding-block: 9px;
+}
+.real-product .sig-reliability {
+  margin: 9px 0 12px;
+}
+.real-product .real-warning {
+  padding: 9px 13px;
+  margin-bottom: 14px;
+}
+.real-product .sig-stats {
+  padding-bottom: 14px;
+  margin-bottom: 16px;
+}
+.real-product .sig-stats strong {
+  margin-top: 4px;
+}
+.real-product .real-tabs {
+  margin-bottom: 14px;
+}
+.real-daily summary {
+  color: var(--sig-accent);
+  font-size: 10px;
+  padding: 10px 18px;
+  cursor: pointer;
+}
+.real-daily summary:focus-visible {
+  outline: 2px solid var(--sig-accent);
+  outline-offset: -3px;
 }

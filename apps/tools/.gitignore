@@ -6,3 +6,5 @@ coverage/
 .vercel
 
 .next-dev/
+
+.next-real-dev/

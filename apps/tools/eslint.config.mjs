@@ -15,6 +15,14 @@ const config = [
     files: ["src/components/keyword-manager.tsx"],
     rules: { "react-hooks/set-state-in-effect": "off" },
   },
-  { ignores: [".next/**", ".next-dev/**", "node_modules/**", "next-env.d.ts"] },
+  {
+    ignores: [
+      ".next/**",
+      ".next-dev/**",
+      ".next-real-dev/**",
+      "node_modules/**",
+      "next-env.d.ts",
+    ],
+  },
 ];
 export default config;
