@@ -1,0 +1,25 @@
+{
+  "queried_at": "2026-10-15T14:10:25.664277+00:00",
+  "read_only": "on",
+  "schema": "passport_analytics",
+  "hosted_aggregate_rows": 0,
+  "deployed_collector_matches_repository": true,
+  "deployed_collector_sha256": "5e5f3241cb775b9dbbf8c562d2cfb5fe889a5616463401529a564621a0a7bebc",
+  "live_test_events_written": 0,
+  "simulator_analytics_tests": 11,
+  "simulator_test_result": "passed",
+  "emitter_result": "PASS: actual emitter dedup; 8 prior-day events; current day withheld; anonymous debug payload; strict acknowledgement checks",
+  "local_storage_preflight": {
+    "test_kind": "actual Swift emitter -> actual collector -> captured SQL functions in temporary local Postgres",
+    "real_supabase_writes": 0,
+    "events_per_payload": 8,
+    "stored_after_first": 8,
+    "stored_after_identical_retry": 16,
+    "retry_idempotent": false,
+    "rejection_before_storage": true,
+    "storage_failure_is_non_success": true,
+    "debug_testflight_separated": true,
+    "production_test_rows": 0,
+    "approval_gate": "exact aggregate counts require a privacy-reviewed per-batch deduplication contract; current protocol is additive"
+  }
+}

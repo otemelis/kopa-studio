@@ -1,0 +1,479 @@
+{
+  "live_population": "none observed",
+  "observed_scope": "isolated instrumented test only",
+  "events": [
+    {
+      "event": "app_opened",
+      "status": "observed",
+      "evidence": "real emitter -> local collector -> temporary Postgres"
+    },
+    {
+      "event": "app_backgrounded",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "cover_opened",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "cover_closed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "device_unfolded",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "device_folded",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "onboarding_presented",
+      "status": "observed",
+      "evidence": "real emitter -> local collector -> temporary Postgres"
+    },
+    {
+      "event": "onboarding_name_completed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "onboarding_name_skipped",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "language_selected",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "first_stamp_hint_dismissed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "journey_hint_shown",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "onboarding_completed",
+      "status": "observed",
+      "evidence": "real emitter -> local collector -> temporary Postgres"
+    },
+    {
+      "event": "first_stamp_completed",
+      "status": "observed",
+      "evidence": "real emitter -> local collector -> temporary Postgres"
+    },
+    {
+      "event": "stamp_editor_opened",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "stamp_collection_selected",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "stamp_search_used",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "stamp_destination_selected",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "stamp_date_precision_selected",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "stamp_date_field_opened",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "stamp_departure_toggled",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "stamp_mode_selected",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "stamp_confirm_tapped",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "stamp_editor_cancelled",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "stamp_animation_started",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "stamp_animation_completed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "stamp_animation_skipped",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "stamp_created",
+      "status": "observed",
+      "evidence": "real emitter -> local collector -> temporary Postgres"
+    },
+    {
+      "event": "stamps_bulk_created",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "stamp_create_failed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "stamp_milestone_reached",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "page_turned",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "page_turn_cancelled",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "bookmark_selected",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "journey_opened",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "index_opened",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "collection_filter_changed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "view_lens_changed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "journey_region_changed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "trip_opened",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "trip_closed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "trip_menu_opened",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "trip_edit_opened",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "trip_edit_saved",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "trip_edit_cancelled",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "trip_delete_requested",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "trip_delete_confirmed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "trip_delete_cancelled",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "overlay_dismissed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "backup_export_tapped",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "backup_export_finished",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "backup_restore_tapped",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "backup_restore_finished",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "note_editor_opened",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "note_saved",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "photo_picker_opened",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "photo_suggestions_requested",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "photo_suggestions_result",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "photo_suggestions_reviewed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "photos_attached",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "photo_replaced",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "photo_removed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "photo_menu_opened",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "photo_frame_changed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "share_opened",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "share_format_selected",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "share_option_toggled",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "share_image_generated",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "share_image_failed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "share_sheet_opened",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "review_prompt_eligible",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "review_prompt_suppressed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "review_prompt_requested",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "rate_tapped",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "feedback_tapped",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "atelier_opened",
+      "status": "observed",
+      "evidence": "real emitter -> local collector -> temporary Postgres"
+    },
+    {
+      "event": "atelier_closed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "edition_viewed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "edition_previewed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "edition_equipped",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "purchase_started",
+      "status": "observed",
+      "evidence": "real emitter -> local collector -> temporary Postgres"
+    },
+    {
+      "event": "purchase_completed",
+      "status": "observed",
+      "evidence": "real emitter -> local collector -> temporary Postgres"
+    },
+    {
+      "event": "purchase_cancelled",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "purchase_pending",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "purchase_failed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "restore_tapped",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "restore_completed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "atelier_products_unavailable",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "explorer_unlocked",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "edition_reveal_shown",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "app_icon_changed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "save_failed",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    },
+    {
+      "event": "navigation_fallback",
+      "status": "emitted-but-not-validated",
+      "evidence": "app emitter declaration and call sites; not validated end-to-end in this preflight"
+    }
+  ],
+  "absent": [
+    "installation_id",
+    "session_id",
+    "ordered_user_paths",
+    "distinct_active_installations",
+    "D1_D7_cohort_retention",
+    "verified_revenue"
+  ]
+}

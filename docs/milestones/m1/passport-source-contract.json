@@ -1,0 +1,35 @@
+{
+  "source": "passport_analytics.daily_counts",
+  "grain": [
+    "device_local_calendar_day",
+    "build_channel",
+    "app_version",
+    "event",
+    "dims"
+  ],
+  "identity": "none; counts are not distinct installations",
+  "data_status": "no_data_yet",
+  "supports": [
+    "app_open_event_count",
+    "first_open_first_use_event_count",
+    "onboarding_completed_event_count",
+    "first_stamp_completed_event_count",
+    "atelier_open_event_count",
+    "purchase_started_event_count",
+    "client_purchase_completed_event_count",
+    "days_since_last_open_bucket_counts"
+  ],
+  "unavailable": [
+    "distinct_active_installations",
+    "ordered_funnel_conversion",
+    "cohort_retention",
+    "verified_revenue"
+  ],
+  "boundaries": [
+    "do not normalize device-local calendar dates to UTC",
+    "do not combine build channels",
+    "do not infer paywall_viewed: Atelier is an edition shop",
+    "no real TestFlight data yet",
+    "retry duplicates are possible until an approved storage fix ships"
+  ]
+}
