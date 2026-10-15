@@ -10,3 +10,6 @@ describe('bounded read-only export',()=>{
  it('rejects wrong IDs, truncation, duplicate and outside dates',()=>{expect(()=>validateCampaignExport(raw(),'wrong',scope)).toThrow();const r=raw();r.pagination.totalResults=2;expect(()=>validateCampaignExport(r,'123',scope)).toThrow();const dup=raw();dup.data.reportingDataResponse.row[0].granularity.push(dup.data.reportingDataResponse.row[0].granularity[0]);expect(()=>validateCampaignExport(dup,'123',scope)).toThrow();expect(()=>validateCampaignExport(raw({date:'2026-10-12'}),'123',scope)).toThrow();});
  it('rejects missing money and inconsistent conversions',()=>{expect(()=>validateCampaignExport(raw({localSpend:{amount:'0.00'}}),'123',scope)).toThrow();expect(()=>validateCampaignExport(raw({totalInstalls:1}),'123',scope)).toThrow();});
 });
+
+it('preserves Apple API sub-cent spend strings without rounding',()=>{for(const amount of ['1.8153','0.2042','0.6526','0.916','0.4900'])expect(validateCampaignExport(raw({localSpend:{amount,currency:'EUR'}}),'123',scope).rows[0]).toMatchObject({spend:amount,currency:'EUR'});});
+it('rejects malformed and negative money rather than coercing it',()=>{for(const amount of ['-0.01','1e2','NaN','Infinity','', '0.', '.49',' 0.49'])expect(()=>validateCampaignExport(raw({localSpend:{amount,currency:'EUR'}}),'123',scope)).toThrow();});

@@ -1,3 +1,5 @@
+Latest correction: [EXPORTER_PRECISION_FIX.md](EXPORTER_PRECISION_FIX.md) records the owner-reported failure, proven precision defect, tested production correction and pending live reconciliation.
+
 # Deployment update · 15 October 2026
 
 The owner approved the scoped release. It is now deployed with all 304 baseline source files unchanged plus four approved additions. Production build and 23 tests pass; unauthenticated access redirects to login. Authenticated JSON data remains unvalidated because the in-app browser blocks response navigation. See [EXPORTER_DEPLOYMENT.md](EXPORTER_DEPLOYMENT.md) for evidence, usage and the exact next task. The proposal below is retained as rollout history, not a pending approval request.
