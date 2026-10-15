@@ -1,3 +1,7 @@
+# Deployment update · 15 October 2026
+
+The owner approved the scoped release. It is now deployed with all 304 baseline source files unchanged plus four approved additions. Production build and 23 tests pass; unauthenticated access redirects to login. Authenticated JSON data remains unvalidated because the in-app browser blocks response navigation. See [EXPORTER_DEPLOYMENT.md](EXPORTER_DEPLOYMENT.md) for evidence, usage and the exact next task. The proposal below is retained as rollout history, not a pending approval request.
+
 # Working deployed credentials · 15 October 2026
 
 **Verified:** `kopa-tools` has production/preview `APPLE_ADS_CLIENT_ID` and `APPLE_ADS_CLIENT_SECRET` stored as sensitive secrets. The separate `kopa.studio` project has no Apple Ads credential variables. Read-only Vercel metadata was inspected with the existing local CLI authentication; no plugin installation, environment updates, role changes or deployments occurred. Secret values were not returned or copied. Vercel's GET response explicitly reported `decrypted:false` for both; protected values were not bypassed.
