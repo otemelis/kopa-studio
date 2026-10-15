@@ -1,0 +1,4 @@
+import assert from 'node:assert/strict';import{spawn}from'node:child_process';import{once}from'node:events';
+const child=spawn(process.execPath,['scripts/product-analytics/server.mjs'],{env:{...process.env,PORT:'4342',KOPA_READER_CONFIG:'',KOPA_READER_CA:''},stdio:['ignore','pipe','pipe']});
+try{await once(child.stdout,'data');const base='http://127.0.0.1:4342';let r=await fetch(base+'/api/product?app=pois&environment=testflight&days=28');assert.equal(r.status,503);const body=await r.json();assert.equal(body.status,'unavailable');assert.equal(body.metrics,undefined);assert.equal(body.daily,undefined);
+r=await fetch(base+'/../kopa-private/reader.json');assert.equal(r.status,404);r=await fetch(base+'/product.html');assert.equal(r.status,200);console.log('PASS HTTP: missing credential fails closed without metrics or fixtures; private file inaccessible; page served');}finally{child.kill('SIGTERM');await once(child,'exit');}

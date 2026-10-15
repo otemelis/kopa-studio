@@ -8,6 +8,7 @@
     "check": "node ./scripts/check-levels.js",
     "portfolio": "python3 -m http.server 4340 --bind 127.0.0.1 --directory reporting/portfolio",
     "reports:refresh": "python3 scripts/app-store/refresh.py",
-    "test:reporting": "node --test scripts/reporting-tests/*.test.mjs"
+    "test:reporting": "node --test scripts/reporting-tests/*.test.mjs",
+    "product": "node scripts/product-analytics/server.mjs"
   }
 }
