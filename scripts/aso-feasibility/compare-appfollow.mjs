@@ -1,0 +1,19 @@
+// Read-only comparison. User export stays unchanged; no vendor metrics are inferred.
+import fs from'node:fs';import crypto from'node:crypto';import assert from'node:assert/strict';import{parseCSV}from'../../reporting/portfolio/model.mjs';
+const source=process.argv[2];if(!source)throw Error('Supply the original AppFollow CSV path');const bytes=fs.readFileSync(source),text=bytes.toString('utf8').replace(/^\uFEFF/,'');const lines=text.split(/\r?\n/);const header=lines.findIndex(x=>x.startsWith('Keyword,Position,'));assert(header>=0,'Missing AppFollow table header');const metadata=lines.slice(0,header).join('\n');assert(metadata.includes('Country: de')&&metadata.includes('Device: iphone'),'Comparison scope must be DE iPhone');assert(metadata.includes('InnerType: Persönlichkeitstest'),'Unexpected app title');
+const data=parseCSV(lines.slice(header).join('\n')),dates=Object.keys(data[0]).filter(k=>/^\d{4}-\d{2}-\d{2}$/.test(k));assert.equal(dates.length,7);assert.equal(new Set(data.map(r=>r.Keyword)).size,data.length);
+for(const r of data)for(const day of dates)assert(r[day]===''||r[day]==='-'||/^[1-9][0-9]*$/.test(r[day]),'Unexpected daily rank token');
+const retained=JSON.parse(fs.readFileSync(new URL('../../docs/milestones/m5a/retained-de-observations.json',import.meta.url))).rows;
+assert.equal(new Set(retained.map(r=>r.term+'|'+r.captured_on)).size,retained.length,'Duplicate catalog day key');
+const numeric=v=>/^\d+$/.test(v)&&Number(v)>0?Number(v):null;
+let agrees=0,differs=0,missing=0,vendorNull=0,catalogAbsent=0;const comparisons=[];
+for(const r of data){for(const day of dates){const af=numeric(r[day]),old=retained.find(o=>o.term===r.Keyword&&o.captured_on===day);let state;
+ if(!old){missing++;state='no_kopa_observation';}else if(af===null){vendorNull++;state='appfollow_no_numeric_rank';}else if(old.rank===null){catalogAbsent++;state='appfollow_numeric_kopa_not_found';}else if(old.rank===af){agrees++;state='numeric_agreement';}else{differs++;state='numeric_difference';}
+ comparisons.push({keyword:r.Keyword,day,appfollow_rank:af,kopa_catalog_position:old?.rank??null,kopa_state:old?old.found?'found':'not_found_within_recorded_depth':'missing_observation',kopa_depth:old?.result_depth??null,kopa_captured_at:old?.captured_at??null,state});
+}}
+// Independent row control: current position must match final daily value for numeric rows.
+for(const r of data)if(numeric(r.Position)!==null)assert.equal(numeric(r.Position),numeric(r[dates.at(-1)]));
+const result={source_sha256:crypto.createHash('sha256').update(bytes).digest('hex'),app:'InnerType: Persönlichkeitstest',store_id:'6785764991',mapping_evidence:'Apple DE lookup matches title and bundle com.innertype.app; export App_id/ItemId are vendor identifiers, not Apple IDs',country:'de',device:'iphone',language:'not specified in export; Kopa keyword language null',source_dates:dates,appfollow_keywords:data.length,appfollow_daily_cells:data.length*dates.length,kopa_rows:retained.length,controls:{numeric_agreements:agrees,numeric_differences:differs,kopa_missing_cells:missing,appfollow_no_numeric_rank_where_kopa_present:vendorNull,appfollow_numeric_kopa_not_found:catalogAbsent},limitations:['AppFollow date-level history versus Kopa capture around 17:37 UTC; no synchronous native comparison','AppFollow depth and sponsored-slot treatment not specified in export; dash preserved as nonnumeric, not asserted as rank zero','No paid search-download values available: upgrade text is unavailable, not zero','This is evidence comparing two source series, not independent native ground truth'],comparisons};
+assert.equal(agrees+differs+missing+vendorNull+catalogAbsent,result.appfollow_daily_cells);
+if(process.argv[3])fs.writeFileSync(process.argv[3],JSON.stringify(result,null,2)+'\n');
+console.log(JSON.stringify(result,null,2));

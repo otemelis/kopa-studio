@@ -1,0 +1,1016 @@
+{
+  "source_sha256": "64ef7b4affaedce8a1c4bc22d5781da397f9ed9817e44ef2d7763d7ce720e5f7",
+  "app": "InnerType: Persönlichkeitstest",
+  "store_id": "6785764991",
+  "mapping_evidence": "Apple DE lookup matches title and bundle com.innertype.app; export App_id/ItemId are vendor identifiers, not Apple IDs",
+  "country": "de",
+  "device": "iphone",
+  "language": "not specified in export; Kopa keyword language null",
+  "source_dates": [
+    "2026-10-09",
+    "2026-10-10",
+    "2026-10-11",
+    "2026-10-12",
+    "2026-10-13",
+    "2026-10-14",
+    "2026-10-15"
+  ],
+  "appfollow_keywords": 14,
+  "appfollow_daily_cells": 98,
+  "kopa_rows": 30,
+  "controls": {
+    "numeric_agreements": 2,
+    "numeric_differences": 13,
+    "kopa_missing_cells": 68,
+    "appfollow_no_numeric_rank_where_kopa_present": 5,
+    "appfollow_numeric_kopa_not_found": 10
+  },
+  "limitations": [
+    "AppFollow date-level history versus Kopa capture around 17:37 UTC; no synchronous native comparison",
+    "AppFollow depth and sponsored-slot treatment not specified in export; dash preserved as nonnumeric, not asserted as rank zero",
+    "No paid search-download values available: upgrade text is unavailable, not zero",
+    "This is evidence comparing two source series, not independent native ground truth"
+  ],
+  "comparisons": [
+    {
+      "keyword": "persönlichkeitstyp",
+      "day": "2026-10-09",
+      "appfollow_rank": 3,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "persönlichkeitstyp",
+      "day": "2026-10-10",
+      "appfollow_rank": 3,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "persönlichkeitstyp",
+      "day": "2026-10-11",
+      "appfollow_rank": 3,
+      "kopa_catalog_position": null,
+      "kopa_state": "not_found_within_recorded_depth",
+      "kopa_depth": 3,
+      "kopa_captured_at": "2026-10-11 17:34:49.449+00",
+      "state": "appfollow_numeric_kopa_not_found"
+    },
+    {
+      "keyword": "persönlichkeitstyp",
+      "day": "2026-10-12",
+      "appfollow_rank": 3,
+      "kopa_catalog_position": null,
+      "kopa_state": "not_found_within_recorded_depth",
+      "kopa_depth": 3,
+      "kopa_captured_at": "2026-10-12 17:36:28.75+00",
+      "state": "appfollow_numeric_kopa_not_found"
+    },
+    {
+      "keyword": "persönlichkeitstyp",
+      "day": "2026-10-13",
+      "appfollow_rank": 3,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "persönlichkeitstyp",
+      "day": "2026-10-14",
+      "appfollow_rank": 3,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "persönlichkeitstyp",
+      "day": "2026-10-15",
+      "appfollow_rank": 5,
+      "kopa_catalog_position": null,
+      "kopa_state": "not_found_within_recorded_depth",
+      "kopa_depth": 3,
+      "kopa_captured_at": "2026-10-15 17:35:27.706+00",
+      "state": "appfollow_numeric_kopa_not_found"
+    },
+    {
+      "keyword": "16 persönlichkeitstyp test",
+      "day": "2026-10-09",
+      "appfollow_rank": 4,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "16 persönlichkeitstyp test",
+      "day": "2026-10-10",
+      "appfollow_rank": 4,
+      "kopa_catalog_position": null,
+      "kopa_state": "not_found_within_recorded_depth",
+      "kopa_depth": 1,
+      "kopa_captured_at": "2026-10-10 17:37:13.091+00",
+      "state": "appfollow_numeric_kopa_not_found"
+    },
+    {
+      "keyword": "16 persönlichkeitstyp test",
+      "day": "2026-10-11",
+      "appfollow_rank": 4,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "16 persönlichkeitstyp test",
+      "day": "2026-10-12",
+      "appfollow_rank": 4,
+      "kopa_catalog_position": null,
+      "kopa_state": "not_found_within_recorded_depth",
+      "kopa_depth": 1,
+      "kopa_captured_at": "2026-10-12 17:36:12.846+00",
+      "state": "appfollow_numeric_kopa_not_found"
+    },
+    {
+      "keyword": "16 persönlichkeitstyp test",
+      "day": "2026-10-13",
+      "appfollow_rank": 4,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "16 persönlichkeitstyp test",
+      "day": "2026-10-14",
+      "appfollow_rank": 4,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "16 persönlichkeitstyp test",
+      "day": "2026-10-15",
+      "appfollow_rank": 8,
+      "kopa_catalog_position": null,
+      "kopa_state": "not_found_within_recorded_depth",
+      "kopa_depth": 1,
+      "kopa_captured_at": "2026-10-15 17:35:11.655+00",
+      "state": "appfollow_numeric_kopa_not_found"
+    },
+    {
+      "keyword": "charaktertest",
+      "day": "2026-10-09",
+      "appfollow_rank": 2,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "charaktertest",
+      "day": "2026-10-10",
+      "appfollow_rank": 2,
+      "kopa_catalog_position": 74,
+      "kopa_state": "found",
+      "kopa_depth": 76,
+      "kopa_captured_at": "2026-10-10 17:37:17.974+00",
+      "state": "numeric_difference"
+    },
+    {
+      "keyword": "charaktertest",
+      "day": "2026-10-11",
+      "appfollow_rank": 2,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "charaktertest",
+      "day": "2026-10-12",
+      "appfollow_rank": 6,
+      "kopa_catalog_position": 69,
+      "kopa_state": "found",
+      "kopa_depth": 76,
+      "kopa_captured_at": "2026-10-12 17:36:17.543+00",
+      "state": "numeric_difference"
+    },
+    {
+      "keyword": "charaktertest",
+      "day": "2026-10-13",
+      "appfollow_rank": 6,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "charaktertest",
+      "day": "2026-10-14",
+      "appfollow_rank": 5,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "charaktertest",
+      "day": "2026-10-15",
+      "appfollow_rank": 21,
+      "kopa_catalog_position": null,
+      "kopa_state": "not_found_within_recorded_depth",
+      "kopa_depth": 76,
+      "kopa_captured_at": "2026-10-15 17:35:16.412+00",
+      "state": "appfollow_numeric_kopa_not_found"
+    },
+    {
+      "keyword": "bindungsstil test",
+      "day": "2026-10-09",
+      "appfollow_rank": 2,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "bindungsstil test",
+      "day": "2026-10-10",
+      "appfollow_rank": 2,
+      "kopa_catalog_position": 1,
+      "kopa_state": "found",
+      "kopa_depth": 7,
+      "kopa_captured_at": "2026-10-10 17:37:19.754+00",
+      "state": "numeric_difference"
+    },
+    {
+      "keyword": "bindungsstil test",
+      "day": "2026-10-11",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "bindungsstil test",
+      "day": "2026-10-12",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": 1,
+      "kopa_state": "found",
+      "kopa_depth": 7,
+      "kopa_captured_at": "2026-10-12 17:36:19.284+00",
+      "state": "numeric_agreement"
+    },
+    {
+      "keyword": "bindungsstil test",
+      "day": "2026-10-13",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "bindungsstil test",
+      "day": "2026-10-14",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "bindungsstil test",
+      "day": "2026-10-15",
+      "appfollow_rank": 3,
+      "kopa_catalog_position": 3,
+      "kopa_state": "found",
+      "kopa_depth": 7,
+      "kopa_captured_at": "2026-10-15 17:35:18.141+00",
+      "state": "numeric_agreement"
+    },
+    {
+      "keyword": "selbstfindung",
+      "day": "2026-10-09",
+      "appfollow_rank": 22,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "selbstfindung",
+      "day": "2026-10-10",
+      "appfollow_rank": 24,
+      "kopa_catalog_position": 25,
+      "kopa_state": "found",
+      "kopa_depth": 48,
+      "kopa_captured_at": "2026-10-10 17:37:23.872+00",
+      "state": "numeric_difference"
+    },
+    {
+      "keyword": "selbstfindung",
+      "day": "2026-10-11",
+      "appfollow_rank": 28,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "selbstfindung",
+      "day": "2026-10-12",
+      "appfollow_rank": 27,
+      "kopa_catalog_position": 25,
+      "kopa_state": "found",
+      "kopa_depth": 47,
+      "kopa_captured_at": "2026-10-12 17:36:23.215+00",
+      "state": "numeric_difference"
+    },
+    {
+      "keyword": "selbstfindung",
+      "day": "2026-10-13",
+      "appfollow_rank": 25,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "selbstfindung",
+      "day": "2026-10-14",
+      "appfollow_rank": 26,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "selbstfindung",
+      "day": "2026-10-15",
+      "appfollow_rank": 36,
+      "kopa_catalog_position": 34,
+      "kopa_state": "found",
+      "kopa_depth": 50,
+      "kopa_captured_at": "2026-10-15 17:35:22.071+00",
+      "state": "numeric_difference"
+    },
+    {
+      "keyword": "persönlichkeitstest",
+      "day": "2026-10-09",
+      "appfollow_rank": 17,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "persönlichkeitstest",
+      "day": "2026-10-10",
+      "appfollow_rank": 18,
+      "kopa_catalog_position": 76,
+      "kopa_state": "found",
+      "kopa_depth": 97,
+      "kopa_captured_at": "2026-10-10 17:37:12.145+00",
+      "state": "numeric_difference"
+    },
+    {
+      "keyword": "persönlichkeitstest",
+      "day": "2026-10-11",
+      "appfollow_rank": 16,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "persönlichkeitstest",
+      "day": "2026-10-12",
+      "appfollow_rank": null,
+      "kopa_catalog_position": null,
+      "kopa_state": "not_found_within_recorded_depth",
+      "kopa_depth": 97,
+      "kopa_captured_at": "2026-10-12 17:36:11.454+00",
+      "state": "appfollow_no_numeric_rank"
+    },
+    {
+      "keyword": "persönlichkeitstest",
+      "day": "2026-10-13",
+      "appfollow_rank": null,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "persönlichkeitstest",
+      "day": "2026-10-14",
+      "appfollow_rank": null,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "persönlichkeitstest",
+      "day": "2026-10-15",
+      "appfollow_rank": null,
+      "kopa_catalog_position": null,
+      "kopa_state": "not_found_within_recorded_depth",
+      "kopa_depth": 96,
+      "kopa_captured_at": "2026-10-15 17:35:10.708+00",
+      "state": "appfollow_no_numeric_rank"
+    },
+    {
+      "keyword": "mbti test",
+      "day": "2026-10-09",
+      "appfollow_rank": null,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "mbti test",
+      "day": "2026-10-10",
+      "appfollow_rank": null,
+      "kopa_catalog_position": null,
+      "kopa_state": "not_found_within_recorded_depth",
+      "kopa_depth": 84,
+      "kopa_captured_at": "2026-10-10 17:37:27.381+00",
+      "state": "appfollow_no_numeric_rank"
+    },
+    {
+      "keyword": "mbti test",
+      "day": "2026-10-11",
+      "appfollow_rank": null,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "mbti test",
+      "day": "2026-10-12",
+      "appfollow_rank": null,
+      "kopa_catalog_position": null,
+      "kopa_state": "not_found_within_recorded_depth",
+      "kopa_depth": 89,
+      "kopa_captured_at": "2026-10-12 17:36:26.956+00",
+      "state": "appfollow_no_numeric_rank"
+    },
+    {
+      "keyword": "mbti test",
+      "day": "2026-10-13",
+      "appfollow_rank": null,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "mbti test",
+      "day": "2026-10-14",
+      "appfollow_rank": null,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "mbti test",
+      "day": "2026-10-15",
+      "appfollow_rank": null,
+      "kopa_catalog_position": null,
+      "kopa_state": "not_found_within_recorded_depth",
+      "kopa_depth": 89,
+      "kopa_captured_at": "2026-10-15 17:35:26.327+00",
+      "state": "appfollow_no_numeric_rank"
+    },
+    {
+      "keyword": "beziehungstest",
+      "day": "2026-10-09",
+      "appfollow_rank": 20,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "beziehungstest",
+      "day": "2026-10-10",
+      "appfollow_rank": 18,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "beziehungstest",
+      "day": "2026-10-11",
+      "appfollow_rank": 17,
+      "kopa_catalog_position": 34,
+      "kopa_state": "found",
+      "kopa_depth": 41,
+      "kopa_captured_at": "2026-10-11 17:34:53.258+00",
+      "state": "numeric_difference"
+    },
+    {
+      "keyword": "beziehungstest",
+      "day": "2026-10-12",
+      "appfollow_rank": 18,
+      "kopa_catalog_position": 35,
+      "kopa_state": "found",
+      "kopa_depth": 42,
+      "kopa_captured_at": "2026-10-12 17:36:32.674+00",
+      "state": "numeric_difference"
+    },
+    {
+      "keyword": "beziehungstest",
+      "day": "2026-10-13",
+      "appfollow_rank": 19,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "beziehungstest",
+      "day": "2026-10-14",
+      "appfollow_rank": 18,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "beziehungstest",
+      "day": "2026-10-15",
+      "appfollow_rank": 60,
+      "kopa_catalog_position": 35,
+      "kopa_state": "found",
+      "kopa_depth": 40,
+      "kopa_captured_at": "2026-10-15 17:35:31.732+00",
+      "state": "numeric_difference"
+    },
+    {
+      "keyword": "kommunikationsstil test",
+      "day": "2026-10-09",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "kommunikationsstil test",
+      "day": "2026-10-10",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "kommunikationsstil test",
+      "day": "2026-10-11",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "not_found_within_recorded_depth",
+      "kopa_depth": 0,
+      "kopa_captured_at": "2026-10-11 17:34:55.613+00",
+      "state": "appfollow_numeric_kopa_not_found"
+    },
+    {
+      "keyword": "kommunikationsstil test",
+      "day": "2026-10-12",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "not_found_within_recorded_depth",
+      "kopa_depth": 0,
+      "kopa_captured_at": "2026-10-12 17:36:35.207+00",
+      "state": "appfollow_numeric_kopa_not_found"
+    },
+    {
+      "keyword": "kommunikationsstil test",
+      "day": "2026-10-13",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "kommunikationsstil test",
+      "day": "2026-10-14",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "kommunikationsstil test",
+      "day": "2026-10-15",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "not_found_within_recorded_depth",
+      "kopa_depth": 0,
+      "kopa_captured_at": "2026-10-15 17:35:33.916+00",
+      "state": "appfollow_numeric_kopa_not_found"
+    },
+    {
+      "keyword": "big five persönlichkeitstest",
+      "day": "2026-10-09",
+      "appfollow_rank": 3,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "big five persönlichkeitstest",
+      "day": "2026-10-10",
+      "appfollow_rank": 5,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "big five persönlichkeitstest",
+      "day": "2026-10-11",
+      "appfollow_rank": 5,
+      "kopa_catalog_position": 4,
+      "kopa_state": "found",
+      "kopa_depth": 12,
+      "kopa_captured_at": "2026-10-11 17:34:59.102+00",
+      "state": "numeric_difference"
+    },
+    {
+      "keyword": "big five persönlichkeitstest",
+      "day": "2026-10-12",
+      "appfollow_rank": 5,
+      "kopa_catalog_position": 4,
+      "kopa_state": "found",
+      "kopa_depth": 12,
+      "kopa_captured_at": "2026-10-12 17:36:38.736+00",
+      "state": "numeric_difference"
+    },
+    {
+      "keyword": "big five persönlichkeitstest",
+      "day": "2026-10-13",
+      "appfollow_rank": 4,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "big five persönlichkeitstest",
+      "day": "2026-10-14",
+      "appfollow_rank": 6,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "big five persönlichkeitstest",
+      "day": "2026-10-15",
+      "appfollow_rank": 49,
+      "kopa_catalog_position": 10,
+      "kopa_state": "found",
+      "kopa_depth": 13,
+      "kopa_captured_at": "2026-10-15 17:35:37.471+00",
+      "state": "numeric_difference"
+    },
+    {
+      "keyword": "innertype",
+      "day": "2026-10-09",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "innertype",
+      "day": "2026-10-10",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "innertype",
+      "day": "2026-10-11",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "innertype",
+      "day": "2026-10-12",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "innertype",
+      "day": "2026-10-13",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "innertype",
+      "day": "2026-10-14",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "innertype",
+      "day": "2026-10-15",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "innertype persönlichkeitstest",
+      "day": "2026-10-09",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "innertype persönlichkeitstest",
+      "day": "2026-10-10",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "innertype persönlichkeitstest",
+      "day": "2026-10-11",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "innertype persönlichkeitstest",
+      "day": "2026-10-12",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "innertype persönlichkeitstest",
+      "day": "2026-10-13",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "innertype persönlichkeitstest",
+      "day": "2026-10-14",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "innertype persönlichkeitstest",
+      "day": "2026-10-15",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "bindung stärken wachstum",
+      "day": "2026-10-09",
+      "appfollow_rank": null,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "bindung stärken wachstum",
+      "day": "2026-10-10",
+      "appfollow_rank": null,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "bindung stärken wachstum",
+      "day": "2026-10-11",
+      "appfollow_rank": null,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "bindung stärken wachstum",
+      "day": "2026-10-12",
+      "appfollow_rank": null,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "bindung stärken wachstum",
+      "day": "2026-10-13",
+      "appfollow_rank": null,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "bindung stärken wachstum",
+      "day": "2026-10-14",
+      "appfollow_rank": null,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "bindung stärken wachstum",
+      "day": "2026-10-15",
+      "appfollow_rank": null,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "persönlichkeitstest bindung wachstum",
+      "day": "2026-10-09",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "persönlichkeitstest bindung wachstum",
+      "day": "2026-10-10",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "persönlichkeitstest bindung wachstum",
+      "day": "2026-10-11",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "persönlichkeitstest bindung wachstum",
+      "day": "2026-10-12",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "persönlichkeitstest bindung wachstum",
+      "day": "2026-10-13",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "persönlichkeitstest bindung wachstum",
+      "day": "2026-10-14",
+      "appfollow_rank": 1,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    },
+    {
+      "keyword": "persönlichkeitstest bindung wachstum",
+      "day": "2026-10-15",
+      "appfollow_rank": 2,
+      "kopa_catalog_position": null,
+      "kopa_state": "missing_observation",
+      "kopa_depth": null,
+      "kopa_captured_at": null,
+      "state": "no_kopa_observation"
+    }
+  ]
+}

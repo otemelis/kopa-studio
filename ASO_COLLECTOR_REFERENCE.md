@@ -1,3 +1,5 @@
+> Historical implementation reference. M5a verification (15 October 2026): keyword positions below are **iTunes catalog positions**, not validated native organic ranks. Do not run this legacy writing collector for the new roadmap pilot. See `docs/milestones/m5a/DECISION.md`.
+
 # ASO collector reference
 
 This document explains what the public ASO scraper collects when the Jobs page runs **Rerun keyword ranking scrape** or when the daily Vercel cron calls `/api/aso/collect`.
