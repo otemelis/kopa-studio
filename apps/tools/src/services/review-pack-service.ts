@@ -12,8 +12,8 @@ export async function createReviewPack(input: ReviewPackInput) {
   const { data: app, error: appError } = await db.from("aso_apps").select("id,name,subtitle,description,primary_country,current_version,release_notes,store_url,updated_at").eq("id", input.appId).maybeSingle();
   if (appError || !app) throw new Error("Selected app was not found.");
   const market = input.market.toLowerCase();
-  const applyMarket = (query: any, field = "country"): any => input.includeComparisonMarkets || market === "all" ? query : query.eq(field, market);
-  const dateRange = (query: any, field: string): any => query.gte(field, input.startDate).lte(field, input.endDate);
+  const applyMarket = <T,>(query: T, field = "country"): T => input.includeComparisonMarkets || market === "all" ? query : (query as unknown as { eq(field: string, value: string): T }).eq(field, market);
+  const dateRange = <T,>(query: T, field: string): T => (query as unknown as { gte(field: string, value: string): { lte(field: string, value: string): T } }).gte(field, input.startDate).lte(field, input.endDate);
   const [campaigns, adGroups, appleKeywords, searchTerms, appKeywords, ranks, storefronts, ascMetrics, dailyMetrics, metadata, changes, insights, recommendations] = await Promise.all([
     db.from("apple_ads_campaigns").select("id,app_id,apple_campaign_id,name,status,serving_status,daily_budget_amount,currency,countries_or_regions,source_synced_at,raw_payload").eq("app_id", input.appId),
     db.from("apple_ads_ad_groups").select("id,campaign_id,apple_ad_group_id,name,status,serving_status,default_bid_amount,currency,source_synced_at,raw_payload"),

@@ -14,7 +14,7 @@ export async function loadProductEvents(days: number, appId?: string) {
   if (appId) catalogQuery = catalogQuery.eq("app_id", appId);
   const [{ data, error }, { data: catalogData }] = await Promise.all([query, catalogQuery]);
   if (error) throw new Error("Could not read product event analytics.");
-  const events: ProductEvent[] = (data ?? []).map((row) => ({ appId: row.app_id, environment: row.environment ?? "prod", eventName: row.event_name, anonymousId: row.anonymous_id, sessionId: row.session_id, platform: row.platform, appVersion: row.app_version, country: row.country, occurredAt: row.client_event_time ?? row.received_at, properties: (row.properties && typeof row.properties === "object" && !Array.isArray(row.properties)) ? row.properties as Record<string, unknown> : {} }));
+  const events: ProductEvent[] = (data ?? []).map((row) => ({ appId: row.app_id, environment: row.environment ?? "unknown", eventName: row.event_name, anonymousId: row.anonymous_id, sessionId: row.session_id, platform: row.platform, appVersion: row.app_version, country: row.country, occurredAt: row.client_event_time ?? row.received_at, properties: (row.properties && typeof row.properties === "object" && !Array.isArray(row.properties)) ? row.properties as Record<string, unknown> : {} }));
   const catalog: EventCatalogEntry[] = (catalogData ?? []).map((row) => ({ appId: row.app_id, eventName: row.event_name }));
   const appIds = [...new Set([...events.map((event) => event.appId), ...catalog.map((entry) => entry.appId)])].sort();
   const apps = appIds.map((id) => ({ id, name: friendlyName(id) }));
