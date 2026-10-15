@@ -1,0 +1,24 @@
+{
+  "checkedAt": "2026-10-15T07:24:59.916020+00:00",
+  "typecheck": "passed",
+  "lint": {
+    "errors": 0,
+    "preExistingWarnings": 1
+  },
+  "tests": {
+    "passed": 181,
+    "files": 36,
+    "newTests": 14
+  },
+  "productionBuild": "passed",
+  "runtimeAdvisories": 0,
+  "remainingDevHighAdvisories": 5,
+  "sqlScopesReconciled": 8,
+  "productionWrites": 0,
+  "productionDeployment": false,
+  "codeCommits": [
+    "03f3b780",
+    "1b89559c"
+  ],
+  "branch": "codex/signal-product-analytics"
+}

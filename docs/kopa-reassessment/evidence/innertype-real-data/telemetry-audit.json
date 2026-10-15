@@ -1,0 +1,649 @@
+{
+  "sourceAsOf": "2026-10-15T06:40:58.000Z",
+  "rows": 9184,
+  "environments": {
+    "dev": 1,
+    "prod": 9183
+  },
+  "productionRows": 9183,
+  "distinctRecordedInstallations": 322,
+  "recordedSessions": 234,
+  "missingInstallIds": 0,
+  "missingSessionIds": 0,
+  "sessionsWithMultipleInstallations": 107,
+  "invalidClientTimes": 0,
+  "earliestEvent": "2026-07-12T08:41:06.886+00:00",
+  "latestEvent": "2026-10-15T01:19:19.458+00:00",
+  "latestReceived": "2026-10-15T01:19:23.752414+00:00",
+  "schemaVersionColumn": false,
+  "exactPayloadDuplicateRows": 281,
+  "installationsWithObservedFirstOpen": 108,
+  "installationsWithoutRecordedFirstOpen": 214,
+  "repeatedFirstOpenInstallations": 9,
+  "eventNames": {
+    "session_start": 277,
+    "app_opened": 264,
+    "app_first_open": 119,
+    "language_changed": 29,
+    "result_viewed": 242,
+    "assessment_started": 248,
+    "question_answered": 7007,
+    "assessment_completed": 191,
+    "session_end": 374,
+    "assessment_exited": 36,
+    "premium_screen_viewed": 35,
+    "paywall_viewed": 35,
+    "paywall_product_loaded": 35,
+    "price_seen": 35,
+    "first_result_aha_reached": 63,
+    "rating_prompt_shown": 63,
+    "rating_selected": 16,
+    "private_feedback_started": 2,
+    "rating_prompt_dismissed": 59,
+    "assessment_abandoned": 28,
+    "share_card_viewed": 3,
+    "share_card_shared": 2,
+    "premium_unlock_tapped": 6,
+    "purchase_tapped": 6,
+    "purchase_cancelled": 1,
+    "purchase_success": 5,
+    "rating_prompt_positive_tap": 1,
+    "app_store_review_requested": 1
+  },
+  "versions": {
+    "1.1.0": 803,
+    "1.1.1": 8380
+  },
+  "countries": {
+    "DE": 1064,
+    "US": 4877,
+    "CN": 64,
+    "TW": 87,
+    "MG": 45,
+    "CA": 14,
+    "KR": 89,
+    "HK": 83,
+    "GB": 2043,
+    "PL": 189,
+    "MX": 111,
+    "LT": 93,
+    "FR": 98,
+    "IT": 3,
+    "MA": 37,
+    "ZA": 166,
+    "NL": 39,
+    "ID": 10,
+    "PF": 38,
+    "CH": 22,
+    "ES": 11
+  },
+  "platforms": {
+    "ios": 9183
+  },
+  "propertyKeyCounts": {
+    "source": 9183,
+    "language": 9183,
+    "to": 29,
+    "from": 29,
+    "result_name": 584,
+    "assessment_type": 7962,
+    "question_id": 7007,
+    "question_number": 7007,
+    "duration_seconds": 374,
+    "questions_total": 64,
+    "last_question_number": 64,
+    "product_id": 75,
+    "price": 40,
+    "currency": 40,
+    "price_string": 40,
+    "rating": 19,
+    "minutes_since_last_answer": 28
+  },
+  "missingRequiredProperties": {},
+  "lagSeconds": {
+    "median": 11.450109,
+    "p99": 128212.956877,
+    "max": 589379.856348,
+    "negative": 0,
+    "over7days": 0
+  },
+  "purchaseEvents": {
+    "purchase_tapped": 6,
+    "purchase_cancelled": 1,
+    "purchase_success": 5
+  },
+  "purchasePropertyKeys": [
+    "currency",
+    "language",
+    "price",
+    "price_string",
+    "product_id",
+    "source"
+  ],
+  "assessmentTypes": {
+    "personality": 108,
+    "relationship": 111,
+    "type": 191,
+    "communication": 93
+  },
+  "daily": [
+    {
+      "date": "2026-07-12",
+      "events": 65,
+      "installations": 1,
+      "firstOpens": 1,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-07-13",
+      "events": 21,
+      "installations": 4,
+      "firstOpens": 1,
+      "sessionStarts": 2
+    },
+    {
+      "date": "2026-07-14",
+      "events": 47,
+      "installations": 3,
+      "firstOpens": 1,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-07-15",
+      "events": 3,
+      "installations": 3,
+      "firstOpens": 1,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-07-20",
+      "events": 11,
+      "installations": 3,
+      "firstOpens": 1,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-07-22",
+      "events": 87,
+      "installations": 6,
+      "firstOpens": 2,
+      "sessionStarts": 3
+    },
+    {
+      "date": "2026-07-25",
+      "events": 14,
+      "installations": 7,
+      "firstOpens": 2,
+      "sessionStarts": 3
+    },
+    {
+      "date": "2026-07-26",
+      "events": 199,
+      "installations": 7,
+      "firstOpens": 2,
+      "sessionStarts": 5
+    },
+    {
+      "date": "2026-07-28",
+      "events": 357,
+      "installations": 4,
+      "firstOpens": 1,
+      "sessionStarts": 7
+    },
+    {
+      "date": "2026-07-30",
+      "events": 5,
+      "installations": 1,
+      "firstOpens": 0,
+      "sessionStarts": 2
+    },
+    {
+      "date": "2026-07-31",
+      "events": 5,
+      "installations": 3,
+      "firstOpens": 1,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-08-01",
+      "events": 160,
+      "installations": 1,
+      "firstOpens": 0,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-08-04",
+      "events": 48,
+      "installations": 3,
+      "firstOpens": 1,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-08-05",
+      "events": 205,
+      "installations": 3,
+      "firstOpens": 1,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-08-06",
+      "events": 21,
+      "installations": 2,
+      "firstOpens": 0,
+      "sessionStarts": 2
+    },
+    {
+      "date": "2026-08-07",
+      "events": 46,
+      "installations": 4,
+      "firstOpens": 1,
+      "sessionStarts": 2
+    },
+    {
+      "date": "2026-08-08",
+      "events": 97,
+      "installations": 9,
+      "firstOpens": 3,
+      "sessionStarts": 4
+    },
+    {
+      "date": "2026-08-09",
+      "events": 143,
+      "installations": 4,
+      "firstOpens": 1,
+      "sessionStarts": 2
+    },
+    {
+      "date": "2026-08-11",
+      "events": 8,
+      "installations": 2,
+      "firstOpens": 0,
+      "sessionStarts": 2
+    },
+    {
+      "date": "2026-08-13",
+      "events": 47,
+      "installations": 9,
+      "firstOpens": 3,
+      "sessionStarts": 4
+    },
+    {
+      "date": "2026-08-14",
+      "events": 6,
+      "installations": 1,
+      "firstOpens": 0,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-08-15",
+      "events": 211,
+      "installations": 7,
+      "firstOpens": 2,
+      "sessionStarts": 4
+    },
+    {
+      "date": "2026-08-17",
+      "events": 6,
+      "installations": 3,
+      "firstOpens": 1,
+      "sessionStarts": 2
+    },
+    {
+      "date": "2026-08-18",
+      "events": 206,
+      "installations": 4,
+      "firstOpens": 1,
+      "sessionStarts": 8
+    },
+    {
+      "date": "2026-08-19",
+      "events": 8,
+      "installations": 1,
+      "firstOpens": 0,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-08-20",
+      "events": 7,
+      "installations": 1,
+      "firstOpens": 0,
+      "sessionStarts": 2
+    },
+    {
+      "date": "2026-08-22",
+      "events": 133,
+      "installations": 5,
+      "firstOpens": 1,
+      "sessionStarts": 4
+    },
+    {
+      "date": "2026-08-24",
+      "events": 223,
+      "installations": 12,
+      "firstOpens": 4,
+      "sessionStarts": 5
+    },
+    {
+      "date": "2026-08-26",
+      "events": 3,
+      "installations": 3,
+      "firstOpens": 1,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-08-27",
+      "events": 151,
+      "installations": 6,
+      "firstOpens": 2,
+      "sessionStarts": 5
+    },
+    {
+      "date": "2026-08-28",
+      "events": 2,
+      "installations": 1,
+      "firstOpens": 0,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-08-29",
+      "events": 149,
+      "installations": 3,
+      "firstOpens": 1,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-08-30",
+      "events": 92,
+      "installations": 6,
+      "firstOpens": 2,
+      "sessionStarts": 2
+    },
+    {
+      "date": "2026-09-01",
+      "events": 85,
+      "installations": 6,
+      "firstOpens": 2,
+      "sessionStarts": 2
+    },
+    {
+      "date": "2026-09-02",
+      "events": 164,
+      "installations": 3,
+      "firstOpens": 1,
+      "sessionStarts": 2
+    },
+    {
+      "date": "2026-09-03",
+      "events": 13,
+      "installations": 3,
+      "firstOpens": 1,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-09-04",
+      "events": 267,
+      "installations": 6,
+      "firstOpens": 2,
+      "sessionStarts": 3
+    },
+    {
+      "date": "2026-09-05",
+      "events": 208,
+      "installations": 4,
+      "firstOpens": 1,
+      "sessionStarts": 6
+    },
+    {
+      "date": "2026-09-07",
+      "events": 2,
+      "installations": 1,
+      "firstOpens": 0,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-09-09",
+      "events": 44,
+      "installations": 3,
+      "firstOpens": 1,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-09-10",
+      "events": 48,
+      "installations": 3,
+      "firstOpens": 1,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-09-11",
+      "events": 105,
+      "installations": 8,
+      "firstOpens": 2,
+      "sessionStarts": 4
+    },
+    {
+      "date": "2026-09-12",
+      "events": 77,
+      "installations": 6,
+      "firstOpens": 2,
+      "sessionStarts": 3
+    },
+    {
+      "date": "2026-09-13",
+      "events": 125,
+      "installations": 6,
+      "firstOpens": 2,
+      "sessionStarts": 6
+    },
+    {
+      "date": "2026-09-15",
+      "events": 265,
+      "installations": 8,
+      "firstOpens": 2,
+      "sessionStarts": 4
+    },
+    {
+      "date": "2026-09-16",
+      "events": 218,
+      "installations": 6,
+      "firstOpens": 2,
+      "sessionStarts": 3
+    },
+    {
+      "date": "2026-09-17",
+      "events": 425,
+      "installations": 13,
+      "firstOpens": 4,
+      "sessionStarts": 6
+    },
+    {
+      "date": "2026-09-18",
+      "events": 432,
+      "installations": 9,
+      "firstOpens": 3,
+      "sessionStarts": 4
+    },
+    {
+      "date": "2026-09-19",
+      "events": 92,
+      "installations": 3,
+      "firstOpens": 1,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-09-20",
+      "events": 363,
+      "installations": 10,
+      "firstOpens": 3,
+      "sessionStarts": 14
+    },
+    {
+      "date": "2026-09-21",
+      "events": 480,
+      "installations": 14,
+      "firstOpens": 4,
+      "sessionStarts": 14
+    },
+    {
+      "date": "2026-09-22",
+      "events": 392,
+      "installations": 12,
+      "firstOpens": 3,
+      "sessionStarts": 9
+    },
+    {
+      "date": "2026-09-23",
+      "events": 443,
+      "installations": 13,
+      "firstOpens": 3,
+      "sessionStarts": 10
+    },
+    {
+      "date": "2026-09-24",
+      "events": 59,
+      "installations": 5,
+      "firstOpens": 1,
+      "sessionStarts": 9
+    },
+    {
+      "date": "2026-09-25",
+      "events": 177,
+      "installations": 5,
+      "firstOpens": 1,
+      "sessionStarts": 4
+    },
+    {
+      "date": "2026-09-26",
+      "events": 34,
+      "installations": 1,
+      "firstOpens": 0,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-09-27",
+      "events": 115,
+      "installations": 9,
+      "firstOpens": 3,
+      "sessionStarts": 9
+    },
+    {
+      "date": "2026-09-28",
+      "events": 35,
+      "installations": 4,
+      "firstOpens": 1,
+      "sessionStarts": 2
+    },
+    {
+      "date": "2026-09-29",
+      "events": 241,
+      "installations": 8,
+      "firstOpens": 2,
+      "sessionStarts": 4
+    },
+    {
+      "date": "2026-09-30",
+      "events": 211,
+      "installations": 7,
+      "firstOpens": 1,
+      "sessionStarts": 13
+    },
+    {
+      "date": "2026-10-01",
+      "events": 1,
+      "installations": 1,
+      "firstOpens": 0,
+      "sessionStarts": 0
+    },
+    {
+      "date": "2026-10-02",
+      "events": 170,
+      "installations": 6,
+      "firstOpens": 2,
+      "sessionStarts": 4
+    },
+    {
+      "date": "2026-10-03",
+      "events": 265,
+      "installations": 12,
+      "firstOpens": 4,
+      "sessionStarts": 4
+    },
+    {
+      "date": "2026-10-04",
+      "events": 54,
+      "installations": 5,
+      "firstOpens": 1,
+      "sessionStarts": 4
+    },
+    {
+      "date": "2026-10-05",
+      "events": 351,
+      "installations": 13,
+      "firstOpens": 4,
+      "sessionStarts": 9
+    },
+    {
+      "date": "2026-10-06",
+      "events": 37,
+      "installations": 2,
+      "firstOpens": 0,
+      "sessionStarts": 2
+    },
+    {
+      "date": "2026-10-08",
+      "events": 40,
+      "installations": 6,
+      "firstOpens": 2,
+      "sessionStarts": 9
+    },
+    {
+      "date": "2026-10-09",
+      "events": 2,
+      "installations": 1,
+      "firstOpens": 0,
+      "sessionStarts": 1
+    },
+    {
+      "date": "2026-10-10",
+      "events": 71,
+      "installations": 10,
+      "firstOpens": 3,
+      "sessionStarts": 6
+    },
+    {
+      "date": "2026-10-12",
+      "events": 50,
+      "installations": 9,
+      "firstOpens": 3,
+      "sessionStarts": 12
+    },
+    {
+      "date": "2026-10-13",
+      "events": 47,
+      "installations": 4,
+      "firstOpens": 1,
+      "sessionStarts": 3
+    },
+    {
+      "date": "2026-10-14",
+      "events": 186,
+      "installations": 4,
+      "firstOpens": 1,
+      "sessionStarts": 2
+    },
+    {
+      "date": "2026-10-15",
+      "events": 3,
+      "installations": 1,
+      "firstOpens": 0,
+      "sessionStarts": 1
+    }
+  ],
+  "recordedSessionCoverage": {
+    "maxSpanHours": 2.0732280555555556,
+    "sessionsOver24Hours": 0,
+    "sessionsOver2Hours": 1,
+    "sessionsWithMultipleAppVersions": 0,
+    "sessionsWithMultipleCapturedCountries": 0
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "project": "dsjgbxkerucutrjltgws",
+  "app": "innertype",
+  "cutoff": "2026-10-15T06:40:58.000Z",
+  "startedAt": "2026-10-15T06:40:59.813Z",
+  "scope": "InnerType events/catalog/installs; separate legacy analytics_events archive; not a full cluster backup",
+  "sourceMethods": [
+    "GET"
+  ],
+  "tables": {
+    "events": {
+      "rows": 9184,
+      "pages": 10,
+      "sha256": "32ff2ac8c4259f3002f3140bafd12608558ffa139daf4af57dc8c273d64d2fa9",
+      "secondReadMatched": true
+    },
+    "event_catalog": {
+      "rows": 32,
+      "pages": 1,
+      "sha256": "6e0c4a7e30c8852ef671afe967b3f6fc7aac1ec742cc66175ee369ba81e3e124",
+      "secondReadMatched": true
+    },
+    "installs": {
+      "rows": 109,
+      "pages": 1,
+      "sha256": "5d775b7dba578c861d97c7fcce1d434f38c7bc4f35acfb39e0c679444c06f496",
+      "secondReadMatched": true
+    },
+    "analytics_events": {
+      "rows": 38,
+      "pages": 1,
+      "sha256": "cc7ebe29901aadf23bc11f8d44c62b199f19d9a298f50014fe7ebee05919946f",
+      "secondReadMatched": true
+    }
+  },
+  "verifiedStableRead": true,
+  "finishedAt": "2026-10-15T06:41:06.520Z"
+}

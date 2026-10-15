@@ -15,13 +15,15 @@ See [14 feasibility](14_OPEN_SOURCE_FEASIBILITY.md), [15 Product Analytics](15_S
 
 ## Next vertical slices
 
-1. Complete M0 backup/restore, deployed writer/schema/cron and ownership evidence. Preserve original history and method identities.
-2. Validate one permitted rank method and complete ASC/Ads daily source partitions. Native endpoint feasibility must precede a provider purchase conclusion.
-3. Validate stable identity, event UUIDs, schema versions and complete partitions for one InnerType funnel. Trial a scoped PostHog EU integration before expanding the engine.
-4. Wire each validated contract behind the existing Signal flag and reconcile UI/export/API against source evidence. Real gaps remain unavailable.
-5. Run owner operating tasks and reversible release checks. Source parity, auth isolation and historical preservation precede cutover. No deployment is included in this checkpoint.
+The owner-approved next priority is InnerType actual-data integration. Its read-only snapshot checkpoint now includes observed-session paths/funnels, real event exploration and comparisons, with unavailable user retention/cohorts. See [16 integration and evidence](16_INNERTYPE_REAL_DATA_INTEGRATION.md) and [executed verification](INNERTYPE_VERIFICATION.md).
 
-Prototype-only gaps remain explicit: no live source adapter, production notes/saved-view synchronization, verified monetization, arbitrary segment builder or full analytics warehouse. First-class Product Analytics does not mean cloning PostHog.
+1. Complete the remaining M0 managed-schema, deployed writer/cron and full-project backup inventory. Scoped telemetry restoration has passed; it is not a full-project recovery proof.
+2. Stage a versioned, retry-safe and concurrency-safe identity/event contract for InnerType. Preserve all historical rows. No person identities may be inferred from fragmented anonymous IDs.
+3. Evaluate PostHog for future analysis after identity repair; no account activation, data transfer or new cost in this checkpoint.
+4. Extend only validated read-only contracts to other apps. Prepare separate ASC download/sales/proceeds and Ads attribution/daily-report imports with official export reconciliation.
+5. Complete owner operating tasks, source parity and reversible authenticated production rollout checks before cutover.
+
+Remaining gaps include continuous authenticated production reads, verified user/device retention, transaction-backed monetization, synced saved views and the full managed recovery/deployment inventory. The local actual-data snapshot and explicit sample mode are separate.
 
 ## UX3 owner comparison protocol — not yet conducted
 

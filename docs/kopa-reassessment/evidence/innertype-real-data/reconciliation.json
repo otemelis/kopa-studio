@@ -1,0 +1,385 @@
+{
+  "verifiedAt": "2026-10-15T07:19:48.899Z",
+  "sourceAsOf": "2026-10-15T06:40:58.000Z",
+  "method": "Independent PostgreSQL SELECT aggregates versus real API/plot/export DTO",
+  "productionWrites": 0,
+  "quality": {
+    "rows": 9183,
+    "sessions": 234,
+    "anonymous_ids": 322,
+    "fragmented_sessions": 107,
+    "possible_duplicates": 281
+  },
+  "scopes": [
+    {
+      "scope": {
+        "app": "innertype",
+        "start": "2026-09-17",
+        "end": "2026-10-14",
+        "country": "ALL",
+        "version": "ALL",
+        "language": "ALL",
+        "source": "ALL",
+        "assessment": "ALL",
+        "funnel": "assessment",
+        "journey": "assessment_started",
+        "tab": "journeys",
+        "query": ""
+      },
+      "sqlMetrics": {
+        "events": 4773,
+        "sessions": 123,
+        "purchases": 4
+      },
+      "apiMetrics": {
+        "events": 4773,
+        "sessions": 123,
+        "purchaseSignals": 4,
+        "observedDays": 26
+      },
+      "sqlFunnel": [
+        63,
+        45,
+        45
+      ],
+      "apiFunnel": [
+        63,
+        45,
+        45
+      ],
+      "journeyEntries": 63,
+      "eventRowsMatch": true,
+      "trendPointsMatch": true,
+      "journeyConserved": true,
+      "firstJourneyBranchesMatchSQL": true,
+      "previousPeriodMatchesSQL": true,
+      "noRawIds": true
+    },
+    {
+      "scope": {
+        "app": "innertype",
+        "start": "2026-07-12",
+        "end": "2026-10-15",
+        "country": "ALL",
+        "version": "ALL",
+        "language": "ALL",
+        "source": "ALL",
+        "assessment": "ALL",
+        "funnel": "assessment",
+        "journey": "assessment_started",
+        "tab": "journeys",
+        "query": ""
+      },
+      "sqlMetrics": {
+        "events": 9183,
+        "sessions": 234,
+        "purchases": 5
+      },
+      "apiMetrics": {
+        "events": 9183,
+        "sessions": 234,
+        "purchaseSignals": 5,
+        "observedDays": 73
+      },
+      "sqlFunnel": [
+        125,
+        92,
+        92
+      ],
+      "apiFunnel": [
+        125,
+        92,
+        92
+      ],
+      "journeyEntries": 125,
+      "eventRowsMatch": true,
+      "trendPointsMatch": true,
+      "journeyConserved": true,
+      "firstJourneyBranchesMatchSQL": true,
+      "previousPeriodMatchesSQL": true,
+      "noRawIds": true
+    },
+    {
+      "scope": {
+        "app": "innertype",
+        "start": "2026-09-17",
+        "end": "2026-10-14",
+        "country": "US",
+        "version": "ALL",
+        "language": "ALL",
+        "source": "ALL",
+        "assessment": "ALL",
+        "funnel": "assessment",
+        "journey": "assessment_started",
+        "tab": "journeys",
+        "query": ""
+      },
+      "sqlMetrics": {
+        "events": 3042,
+        "sessions": 68,
+        "purchases": 3
+      },
+      "apiMetrics": {
+        "events": 3042,
+        "sessions": 68,
+        "purchaseSignals": 3,
+        "observedDays": 24
+      },
+      "sqlFunnel": [
+        36,
+        27,
+        27
+      ],
+      "apiFunnel": [
+        36,
+        27,
+        27
+      ],
+      "journeyEntries": 36,
+      "eventRowsMatch": true,
+      "trendPointsMatch": true,
+      "journeyConserved": true,
+      "firstJourneyBranchesMatchSQL": true,
+      "previousPeriodMatchesSQL": true,
+      "noRawIds": true
+    },
+    {
+      "scope": {
+        "app": "innertype",
+        "start": "2026-09-17",
+        "end": "2026-10-14",
+        "country": "ALL",
+        "version": "ALL",
+        "language": "de",
+        "source": "ALL",
+        "assessment": "ALL",
+        "funnel": "assessment",
+        "journey": "assessment_started",
+        "tab": "journeys",
+        "query": ""
+      },
+      "sqlMetrics": {
+        "events": 309,
+        "sessions": 10,
+        "purchases": 0
+      },
+      "apiMetrics": {
+        "events": 309,
+        "sessions": 10,
+        "purchaseSignals": 0,
+        "observedDays": 5
+      },
+      "sqlFunnel": [
+        6,
+        3,
+        3
+      ],
+      "apiFunnel": [
+        6,
+        3,
+        3
+      ],
+      "journeyEntries": 6,
+      "eventRowsMatch": true,
+      "trendPointsMatch": true,
+      "journeyConserved": true,
+      "firstJourneyBranchesMatchSQL": true,
+      "previousPeriodMatchesSQL": true,
+      "noRawIds": true
+    },
+    {
+      "scope": {
+        "app": "innertype",
+        "start": "2026-09-17",
+        "end": "2026-10-14",
+        "country": "ALL",
+        "version": "1.1.0",
+        "language": "ALL",
+        "source": "ALL",
+        "assessment": "ALL",
+        "funnel": "assessment",
+        "journey": "assessment_started",
+        "tab": "journeys",
+        "query": ""
+      },
+      "sqlMetrics": {
+        "events": 0,
+        "sessions": 0,
+        "purchases": 0
+      },
+      "apiMetrics": {
+        "events": 0,
+        "sessions": 0,
+        "purchaseSignals": 0,
+        "observedDays": 0
+      },
+      "sqlFunnel": [
+        0,
+        0,
+        0
+      ],
+      "apiFunnel": [
+        0,
+        0,
+        0
+      ],
+      "journeyEntries": 0,
+      "eventRowsMatch": true,
+      "trendPointsMatch": true,
+      "journeyConserved": true,
+      "firstJourneyBranchesMatchSQL": true,
+      "previousPeriodMatchesSQL": true,
+      "noRawIds": true
+    },
+    {
+      "scope": {
+        "app": "innertype",
+        "start": "2026-09-17",
+        "end": "2026-10-14",
+        "country": "ALL",
+        "version": "ALL",
+        "language": "ALL",
+        "source": "ALL",
+        "assessment": "relationship",
+        "funnel": "assessment",
+        "journey": "assessment_started",
+        "tab": "journeys",
+        "query": ""
+      },
+      "sqlMetrics": {
+        "events": 963,
+        "sessions": 35,
+        "purchases": 0
+      },
+      "apiMetrics": {
+        "events": 963,
+        "sessions": 35,
+        "purchaseSignals": 0,
+        "observedDays": 15
+      },
+      "sqlFunnel": [
+        27,
+        21,
+        21
+      ],
+      "apiFunnel": [
+        27,
+        21,
+        21
+      ],
+      "journeyEntries": 27,
+      "eventRowsMatch": true,
+      "trendPointsMatch": true,
+      "journeyConserved": true,
+      "firstJourneyBranchesMatchSQL": true,
+      "previousPeriodMatchesSQL": true,
+      "noRawIds": true
+    },
+    {
+      "scope": {
+        "app": "innertype",
+        "start": "2026-09-17",
+        "end": "2026-10-14",
+        "country": "ALL",
+        "version": "ALL",
+        "language": "ALL",
+        "source": "ALL",
+        "assessment": "ALL",
+        "funnel": "purchase",
+        "journey": "assessment_started",
+        "tab": "journeys",
+        "query": ""
+      },
+      "sqlMetrics": {
+        "events": 4773,
+        "sessions": 123,
+        "purchases": 4
+      },
+      "apiMetrics": {
+        "events": 4773,
+        "sessions": 123,
+        "purchaseSignals": 4,
+        "observedDays": 26
+      },
+      "sqlFunnel": [
+        12,
+        4,
+        4
+      ],
+      "apiFunnel": [
+        12,
+        4,
+        4
+      ],
+      "journeyEntries": 63,
+      "eventRowsMatch": true,
+      "trendPointsMatch": true,
+      "journeyConserved": true,
+      "firstJourneyBranchesMatchSQL": true,
+      "previousPeriodMatchesSQL": true,
+      "noRawIds": true
+    },
+    {
+      "scope": {
+        "app": "innertype",
+        "start": "2026-01-01",
+        "end": "2026-01-07",
+        "country": "ALL",
+        "version": "ALL",
+        "language": "ALL",
+        "source": "ALL",
+        "assessment": "ALL",
+        "funnel": "assessment",
+        "journey": "assessment_started",
+        "tab": "journeys",
+        "query": ""
+      },
+      "sqlMetrics": {
+        "events": 0,
+        "sessions": 0,
+        "purchases": 0
+      },
+      "apiMetrics": {
+        "events": 0,
+        "sessions": 0,
+        "purchaseSignals": 0,
+        "observedDays": 0
+      },
+      "sqlFunnel": [
+        0,
+        0,
+        0
+      ],
+      "apiFunnel": [
+        0,
+        0,
+        0
+      ],
+      "journeyEntries": 0,
+      "eventRowsMatch": true,
+      "trendPointsMatch": true,
+      "journeyConserved": true,
+      "firstJourneyBranchesMatchSQL": true,
+      "previousPeriodMatchesSQL": true,
+      "noRawIds": true
+    }
+  ],
+  "failureGuards": [
+    {
+      "query": "app=pois",
+      "expectedStatus": 503,
+      "passed": true
+    },
+    {
+      "query": "data=sample",
+      "expectedStatus": 400,
+      "passed": true
+    },
+    {
+      "query": "",
+      "expectedStatus": 403,
+      "passed": true
+    }
+  ],
+  "passed": true
+}

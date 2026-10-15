@@ -1,0 +1,78 @@
+{
+  "method": "Four source-session traces inspected independently of the UI; identity values, row IDs, result names and absolute event times omitted",
+  "traces": [
+    {
+      "trace": 1,
+      "assessmentType": "personality",
+      "anonymousIdentityFragmented": false,
+      "qualifiedSteps": [
+        {
+          "event": "assessment_started",
+          "secondsAfterEntry": 0.0
+        },
+        {
+          "event": "assessment_completed",
+          "secondsAfterEntry": 68.01
+        },
+        {
+          "event": "result_viewed",
+          "secondsAfterEntry": 70.58
+        }
+      ],
+      "reachedSteps": 3,
+      "unit": "recorded session, not a person",
+      "identityJoinApplied": false
+    },
+    {
+      "trace": 2,
+      "assessmentType": "personality",
+      "anonymousIdentityFragmented": true,
+      "qualifiedSteps": [
+        {
+          "event": "assessment_started",
+          "secondsAfterEntry": 0.0
+        }
+      ],
+      "reachedSteps": 1,
+      "unit": "recorded session, not a person",
+      "identityJoinApplied": false
+    },
+    {
+      "trace": 3,
+      "assessmentType": "type",
+      "anonymousIdentityFragmented": true,
+      "qualifiedSteps": [
+        {
+          "event": "assessment_started",
+          "secondsAfterEntry": 0.0
+        },
+        {
+          "event": "assessment_completed",
+          "secondsAfterEntry": 41.507
+        },
+        {
+          "event": "result_viewed",
+          "secondsAfterEntry": 44.995
+        }
+      ],
+      "reachedSteps": 3,
+      "unit": "recorded session, not a person",
+      "identityJoinApplied": false
+    },
+    {
+      "trace": 4,
+      "assessmentType": "personality",
+      "anonymousIdentityFragmented": false,
+      "qualifiedSteps": [
+        {
+          "event": "assessment_started",
+          "secondsAfterEntry": 0.0
+        }
+      ],
+      "reachedSteps": 1,
+      "unit": "recorded session, not a person",
+      "identityJoinApplied": false
+    }
+  ],
+  "passed": true
+}

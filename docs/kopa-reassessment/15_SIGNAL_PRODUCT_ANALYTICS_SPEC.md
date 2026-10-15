@@ -1,5 +1,8 @@
 # 15 — Signal Product Analytics contract and implementation
 
+> **Actual-data amendment — 15 October 2026:** The owner approved the Signal appearance. The InnerType read-only snapshot integration is implemented in the existing app; see [16](16_INNERTYPE_REAL_DATA_INTEGRATION.md). The fixture definitions below remain demo definitions, not historical InnerType facts. Current real telemetry supports recorded-session analysis only: identity continuity and first-open coverage fail the user/retention gates. The real endpoint never supplies fixtures after source failure.
+
+
 Owner decision: **B · Signal, 15 October 2026**. Implementation is authorized on `codex/signal-product-analytics`, based on `189d42b6`. This specification supersedes the earlier direction-choice gate. The current milestone is a real Next.js development implementation with synthetic data and tested definitions. It does not claim complete live ingestion, production readiness or owner preference over AppFollow.
 
 ## What is built
@@ -89,9 +92,9 @@ Proposed operational policy for review, **not applied**: retain raw normalized e
 | Actual Next Signal UI / themes | Development implementation complete for review; flag off by default | Owner laptop task review; automated cross-browser/screen-reader coverage still pending |
 | Fixture Product Analytics definitions | Implemented and unit/API tested | Manual live one-app funnel parity before activation |
 | OSS feasibility | Actual source inspected; no candidate code imported | Permitted native rank evidence and PostHog account/identity/cost trial |
-| M0 preservation / writers | Partial: original checkout/history untouched; GET-only event metadata audit | Verified backup restore, deployed schema/writers/cron and ownership inventory; no live migration until these pass |
+| M0 preservation / writers | Scoped backup and two isolated restores passed; actual REST schema/events audited | Full managed schema, deployed writers/cron and recovery inventory still pending; no live migration until verified |
 | Dependency baseline | Runtime audit zero; dev lint chain risks recorded | Resolve/accept development tooling advisories before release; no forced downgrade |
-| Live source vertical slices | Not connected to Signal; no backend rebuild claimed | Known non-empty rank contract; official ASC/Ads parity; complete typed partitions |
+| Actual source vertical slices | InnerType observed-session snapshot connected and reconciled; no continuous live backend or user-retention claim | Repair identity/coverage; then validate other apps and official ASC/Ads partitions |
 | UX3 owner comparison | Not conducted | Same-app/market/date tasks against AppFollow; record interpretation errors, scope loss, time and owner preference |
 
 Further approval is needed only for a concrete destructive production action, new cost or live advertising/App Store operation. Current missing technical evidence is not a request to select a direction again. No production deployment, schema write, account purchase, source-data transfer to PostHog or live operational change occurred.

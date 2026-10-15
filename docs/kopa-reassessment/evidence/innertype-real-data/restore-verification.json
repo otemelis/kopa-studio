@@ -1,0 +1,54 @@
+{
+  "scope": "InnerType events/catalog/installs; separate legacy analytics_events archive; not a full cluster backup",
+  "cutoff": "2026-10-15T06:40:58.000Z",
+  "restoreEngine": "PostgreSQL 16.15",
+  "sourceWrites": 0,
+  "tcpEnabled": false,
+  "tables": {
+    "events": {
+      "sourceRows": 9184,
+      "restoredRows": 9184,
+      "sourceLogicalSha256": "f8f6e4dd0e4891d06cb90c8bb4b1711b845e28ee42f5e51522f985564217b922",
+      "restoredLogicalSha256": "f8f6e4dd0e4891d06cb90c8bb4b1711b845e28ee42f5e51522f985564217b922",
+      "secondRestoreLogicalSha256": "f8f6e4dd0e4891d06cb90c8bb4b1711b845e28ee42f5e51522f985564217b922",
+      "match": true
+    },
+    "event_catalog": {
+      "sourceRows": 32,
+      "restoredRows": 32,
+      "sourceLogicalSha256": "6e0c4a7e30c8852ef671afe967b3f6fc7aac1ec742cc66175ee369ba81e3e124",
+      "restoredLogicalSha256": "6e0c4a7e30c8852ef671afe967b3f6fc7aac1ec742cc66175ee369ba81e3e124",
+      "secondRestoreLogicalSha256": "6e0c4a7e30c8852ef671afe967b3f6fc7aac1ec742cc66175ee369ba81e3e124",
+      "match": true
+    },
+    "installs": {
+      "sourceRows": 109,
+      "restoredRows": 109,
+      "sourceLogicalSha256": "8bfe71233fc0fbb51bc3eb24eae1b859ad56688491f58ef4218fc7ab8348a017",
+      "restoredLogicalSha256": "8bfe71233fc0fbb51bc3eb24eae1b859ad56688491f58ef4218fc7ab8348a017",
+      "secondRestoreLogicalSha256": "8bfe71233fc0fbb51bc3eb24eae1b859ad56688491f58ef4218fc7ab8348a017",
+      "match": true
+    },
+    "analytics_events": {
+      "sourceRows": 38,
+      "restoredRows": 38,
+      "sourceLogicalSha256": "d7f56a463ed0e247d24ad21222c735c84521dab594bbf7542cb1fa65d5e80c00",
+      "restoredLogicalSha256": "d7f56a463ed0e247d24ad21222c735c84521dab594bbf7542cb1fa65d5e80c00",
+      "secondRestoreLogicalSha256": "d7f56a463ed0e247d24ad21222c735c84521dab594bbf7542cb1fa65d5e80c00",
+      "match": true
+    }
+  },
+  "fullClusterBackupVerified": false,
+  "limitations": [
+    "No production PostgreSQL or Management API credential available; this is a scoped logical telemetry backup, not a full database/roles/RLS/function recovery proof.",
+    "Two source reads at the same received-time cutoff matched; a cross-table transactional snapshot was not available through REST.",
+    "Legacy analytics_events archived separately; identities are not merged."
+  ],
+  "dashboardRolePrivileges": {
+    "select": true,
+    "insert": false,
+    "update": false,
+    "delete": false
+  },
+  "passed": true
+}

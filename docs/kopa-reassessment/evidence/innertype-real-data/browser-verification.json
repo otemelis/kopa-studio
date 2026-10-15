@@ -1,0 +1,178 @@
+{
+  "verifiedAt": "2026-10-15T07:21:25.724955+00:00",
+  "browser": "Codex in-app browser",
+  "actualSource": "restored InnerType snapshot 2026-10-15T06:40:58.000Z",
+  "checks": [
+    {
+      "name": "Default real metrics",
+      "result": "passed",
+      "sessions": 123,
+      "eventRows": 4773
+    },
+    {
+      "name": "Both Signal themes",
+      "result": "passed",
+      "method": "Appearance control; screenshots"
+    },
+    {
+      "name": "Assessment session funnel",
+      "result": "passed",
+      "steps": [
+        63,
+        45,
+        45
+      ],
+      "conversion": 0.7142857142857143
+    },
+    {
+      "name": "Linked exit path",
+      "result": "passed",
+      "exitSessions": 3,
+      "noNextRecordedStep": 2,
+      "laterCompletions": 1
+    },
+    {
+      "name": "Event search / captured DE",
+      "result": "passed",
+      "sessions": 7,
+      "eventRows": 249,
+      "matchingPurchaseRows": 0
+    },
+    {
+      "name": "Retention / cohort quality gates",
+      "result": "passed",
+      "fabricatedPercentages": false
+    },
+    {
+      "name": "Date form / empty range",
+      "result": "passed",
+      "start": "2026-01-01",
+      "end": "2026-01-07",
+      "eventRows": 0,
+      "coverageClaim": "unknown"
+    },
+    {
+      "name": "Unvalidated app source",
+      "result": "passed",
+      "metricsSubstituted": false,
+      "exportDisabled": true
+    },
+    {
+      "name": "Pending request",
+      "result": "passed",
+      "previousMetricsHidden": true
+    },
+    {
+      "name": "Analysis modal",
+      "result": "passed for open and Escape",
+      "focusWrapAndScreenReaderAudit": "not verified"
+    },
+    {
+      "name": "Daily chart table",
+      "result": "passed",
+      "firstPoint": {
+        "date": "2026-09-17",
+        "events": 425,
+        "sessions": 6,
+        "priorDate": "2026-08-20",
+        "priorEvents": 7,
+        "priorSessions": 1
+      },
+      "missingDates": "Gap / unknown coverage"
+    },
+    {
+      "name": "Mobile width",
+      "result": "passed",
+      "viewport": 390,
+      "documentWidth": 390
+    },
+    {
+      "name": "Browser export",
+      "result": "passed",
+      "exactApiReportMatch": true
+    },
+    {
+      "name": "Source navigation",
+      "result": "passed",
+      "observed": "Sources shows explicit unvalidated state; return link restores actual InnerType; theme retained"
+    }
+  ],
+  "limits": [
+    "One browser; no full cross-browser or screen-reader acceptance",
+    "No production deployment or collector changes",
+    "User identity and retention remain unavailable",
+    "Backend outage path unit-tested; no source outage induced"
+  ],
+  "screenshots": [
+    {
+      "file": "screenshots/empty-dark.jpg",
+      "bytes": 175068,
+      "sha256": "276d90c7e7a77f70283a3f6ebac900da4f79fd2bdb9e2830aa24d7a480dc82fa"
+    },
+    {
+      "file": "screenshots/events-purchases-dark.jpg",
+      "bytes": 142297,
+      "sha256": "84717dc8db95fe660ba457cb4b80383d38308c82c2a60d9e4aa5c6bb7f906946"
+    },
+    {
+      "file": "screenshots/events-region-DE-dark.jpg",
+      "bytes": 139999,
+      "sha256": "6e134ec979e500332031ee15b26c456f64d736e00d458155d20814130138fc95"
+    },
+    {
+      "file": "screenshots/funnels-dark.jpg",
+      "bytes": 188477,
+      "sha256": "6bcbe578d68fa443fdef83eccc99c6363eee98c91ac689b755ebcc783f3c11d6"
+    },
+    {
+      "file": "screenshots/funnels-light.jpg",
+      "bytes": 182973,
+      "sha256": "138cccb8283a93629be56bab01ff144aeb27730ef3ad343d143f2832cdf4d8d4"
+    },
+    {
+      "file": "screenshots/journey-exit-branch-dark.jpg",
+      "bytes": 184441,
+      "sha256": "eed26adea02164664ecdd23f95c4a1f9fbaf8b794eecd56d296e7c0134d4474e"
+    },
+    {
+      "file": "screenshots/journeys-dark.jpg",
+      "bytes": 164651,
+      "sha256": "555645b07f15d4c9e447e3739a4a1537d67d4ff1b540172a3e45712729a6befd"
+    },
+    {
+      "file": "screenshots/journeys-light.jpg",
+      "bytes": 175956,
+      "sha256": "5e87f6f8eb42d86b0269fc3e83ed9a096cfa1dacb8d45ad56b182e1496dca8c3"
+    },
+    {
+      "file": "screenshots/journeys-mobile-dark.jpg",
+      "bytes": 142971,
+      "sha256": "ae0824d83041bb2007b54e010778525f660f8306dd41c49005b9f27024557861"
+    },
+    {
+      "file": "screenshots/quality-dark.jpg",
+      "bytes": 168210,
+      "sha256": "18e074a4a9e83d81dff24e370fbeaba56c95b98ff98beaad049739202aef7f2f"
+    },
+    {
+      "file": "screenshots/retention-gates-dark.jpg",
+      "bytes": 143232,
+      "sha256": "0fb4d78cce00051f1526c198d08ac47effd46a5540a59fd19614c62b64c679ed"
+    },
+    {
+      "file": "screenshots/retention-gates-light.jpg",
+      "bytes": 137353,
+      "sha256": "e09072f1c7d4f4c23a0caae004ed1eaab15297ff58577608da10e9b320d66093"
+    },
+    {
+      "file": "screenshots/sources-unvalidated-dark.jpg",
+      "bytes": 41920,
+      "sha256": "1f1950b76ab62ca8e1e63020d5aa4d46e1326e07ab252c2cb0812a2887255437"
+    },
+    {
+      "file": "screenshots/unavailable-dark.jpg",
+      "bytes": 49035,
+      "sha256": "befbfa9a0e3a4c434807ec8df0811442bc7eee3d64de6b51a012cdff6092b3a4"
+    }
+  ]
+}

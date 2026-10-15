@@ -1,0 +1,626 @@
+{
+  "checkedAt": "2026-10-15T06:38:31.580Z",
+  "project": "dsjgbxkerucutrjltgws",
+  "separateInnerTypeProject": "not configured as a valid URL",
+  "tables": {
+    "events": {
+      "status": 206,
+      "range": "0-0/21039",
+      "columns": {
+        "id": {
+          "type": "integer",
+          "format": "bigint",
+          "description": "Note:\nThis is a Primary Key.<pk/>"
+        },
+        "app_id": {
+          "type": "string",
+          "format": "text"
+        },
+        "environment": {
+          "type": "string",
+          "format": "text",
+          "default": "prod"
+        },
+        "event_name": {
+          "type": "string",
+          "format": "text"
+        },
+        "anonymous_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "session_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "platform": {
+          "type": "string",
+          "format": "text"
+        },
+        "app_version": {
+          "type": "string",
+          "format": "text"
+        },
+        "os_version": {
+          "type": "string",
+          "format": "text"
+        },
+        "country": {
+          "type": "string",
+          "format": "text"
+        },
+        "client_event_time": {
+          "type": "string",
+          "format": "timestamp with time zone"
+        },
+        "received_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "default": "now()"
+        },
+        "properties": {
+          "format": "jsonb"
+        }
+      },
+      "rowKeys": [
+        "id",
+        "app_id",
+        "environment",
+        "event_name",
+        "anonymous_id",
+        "session_id",
+        "platform",
+        "app_version",
+        "os_version",
+        "country",
+        "client_event_time",
+        "received_at",
+        "properties"
+      ]
+    },
+    "analytics_events": {
+      "status": 206,
+      "range": "0-0/38",
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "default": "gen_random_uuid()"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "default": "now()"
+        },
+        "anonymous_user_id": {
+          "type": "string",
+          "format": "text"
+        },
+        "session_id": {
+          "type": "string",
+          "format": "text"
+        },
+        "event_name": {
+          "type": "string",
+          "format": "text"
+        },
+        "assessment_type": {
+          "type": "string",
+          "format": "text"
+        },
+        "result_name": {
+          "type": "string",
+          "format": "text"
+        },
+        "rating": {
+          "type": "integer",
+          "format": "integer"
+        },
+        "screen_name": {
+          "type": "string",
+          "format": "text"
+        },
+        "metadata": {
+          "format": "jsonb"
+        },
+        "app_version": {
+          "type": "string",
+          "format": "text"
+        },
+        "platform": {
+          "type": "string",
+          "format": "text"
+        }
+      },
+      "rowKeys": [
+        "id",
+        "created_at",
+        "anonymous_user_id",
+        "session_id",
+        "event_name",
+        "assessment_type",
+        "result_name",
+        "rating",
+        "screen_name",
+        "metadata",
+        "app_version",
+        "platform"
+      ]
+    },
+    "event_catalog": {
+      "status": 206,
+      "range": "0-0/113",
+      "columns": {
+        "app_id": {
+          "type": "string",
+          "format": "text",
+          "description": "Note:\nThis is a Primary Key.<pk/>"
+        },
+        "event_name": {
+          "type": "string",
+          "format": "text",
+          "description": "Note:\nThis is a Primary Key.<pk/>"
+        },
+        "description": {
+          "type": "string",
+          "format": "text"
+        },
+        "required_properties": {
+          "type": "array",
+          "format": "text[]"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "default": "now()"
+        }
+      },
+      "rowKeys": [
+        "app_id",
+        "event_name",
+        "description",
+        "required_properties",
+        "created_at"
+      ]
+    },
+    "installs": {
+      "status": 206,
+      "range": "0-0/109",
+      "columns": {
+        "app_id": {
+          "type": "string",
+          "format": "text",
+          "description": "Note:\nThis is a Primary Key.<pk/>"
+        },
+        "anonymous_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Note:\nThis is a Primary Key.<pk/>"
+        },
+        "source": {
+          "type": "string",
+          "format": "text",
+          "default": "unknown"
+        },
+        "campaign_id": {
+          "type": "integer",
+          "format": "bigint"
+        },
+        "ad_group_id": {
+          "type": "integer",
+          "format": "bigint"
+        },
+        "keyword_id": {
+          "type": "integer",
+          "format": "bigint"
+        },
+        "attribution": {
+          "format": "jsonb"
+        },
+        "first_seen_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "default": "now()"
+        },
+        "resolved_at": {
+          "type": "string",
+          "format": "timestamp with time zone"
+        }
+      },
+      "rowKeys": [
+        "app_id",
+        "anonymous_id",
+        "source",
+        "campaign_id",
+        "ad_group_id",
+        "keyword_id",
+        "attribution",
+        "first_seen_at",
+        "resolved_at"
+      ]
+    },
+    "aso_sync_runs": {
+      "status": 206,
+      "range": "0-0/128",
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "default": "gen_random_uuid()"
+        },
+        "provider": {
+          "type": "string",
+          "format": "text"
+        },
+        "trigger": {
+          "type": "string",
+          "format": "text",
+          "default": "manual"
+        },
+        "started_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "default": "now()"
+        },
+        "finished_at": {
+          "type": "string",
+          "format": "timestamp with time zone"
+        },
+        "status": {
+          "type": "string",
+          "format": "text",
+          "default": "running"
+        },
+        "processed": {
+          "type": "integer",
+          "format": "integer",
+          "default": 0
+        },
+        "succeeded": {
+          "type": "integer",
+          "format": "integer",
+          "default": 0
+        },
+        "failed": {
+          "type": "integer",
+          "format": "integer",
+          "default": 0
+        },
+        "warnings": {
+          "type": "integer",
+          "format": "integer",
+          "default": 0
+        },
+        "retries": {
+          "type": "integer",
+          "format": "integer",
+          "default": 0
+        },
+        "summary": {
+          "format": "jsonb"
+        },
+        "error": {
+          "type": "string",
+          "format": "text"
+        }
+      },
+      "rowKeys": [
+        "id",
+        "provider",
+        "trigger",
+        "started_at",
+        "finished_at",
+        "status",
+        "processed",
+        "succeeded",
+        "failed",
+        "warnings",
+        "retries",
+        "summary",
+        "error"
+      ]
+    },
+    "aso_jobs": {
+      "status": 206,
+      "range": "0-0/37",
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "default": "gen_random_uuid()"
+        },
+        "job_type": {
+          "type": "string",
+          "format": "text"
+        },
+        "app_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Note:\nThis is a Foreign Key to `aso_apps.id`.<fk table='aso_apps' column='id'/>"
+        },
+        "country": {
+          "type": "string",
+          "format": "text"
+        },
+        "status": {
+          "type": "string",
+          "format": "text",
+          "default": "queued"
+        },
+        "trigger_source": {
+          "type": "string",
+          "format": "text",
+          "default": "tools"
+        },
+        "progress": {
+          "type": "integer",
+          "format": "integer",
+          "default": 0
+        },
+        "retry_count": {
+          "type": "integer",
+          "format": "integer",
+          "default": 0
+        },
+        "error_message": {
+          "type": "string",
+          "format": "text"
+        },
+        "sync_run_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Note:\nThis is a Foreign Key to `aso_sync_runs.id`.<fk table='aso_sync_runs' column='id'/>"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "default": "now()"
+        },
+        "started_at": {
+          "type": "string",
+          "format": "timestamp with time zone"
+        },
+        "completed_at": {
+          "type": "string",
+          "format": "timestamp with time zone"
+        }
+      },
+      "rowKeys": [
+        "id",
+        "job_type",
+        "app_id",
+        "country",
+        "status",
+        "trigger_source",
+        "progress",
+        "retry_count",
+        "error_message",
+        "sync_run_id",
+        "created_at",
+        "started_at",
+        "completed_at"
+      ]
+    },
+    "apple_ads_sync_runs": {
+      "status": 206,
+      "range": "0-0/19",
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "default": "gen_random_uuid()"
+        },
+        "connection_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Note:\nThis is a Foreign Key to `apple_ads_connections.id`.<fk table='apple_ads_connections' column='id'/>"
+        },
+        "resource_type": {
+          "type": "string",
+          "format": "text"
+        },
+        "status": {
+          "type": "string",
+          "format": "text",
+          "default": "queued"
+        },
+        "rows_inserted": {
+          "type": "integer",
+          "format": "integer",
+          "default": 0
+        },
+        "rows_updated": {
+          "type": "integer",
+          "format": "integer",
+          "default": 0
+        },
+        "pagination_count": {
+          "type": "integer",
+          "format": "integer",
+          "default": 0
+        },
+        "error_message": {
+          "type": "string",
+          "format": "text"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "default": "now()"
+        },
+        "started_at": {
+          "type": "string",
+          "format": "timestamp with time zone"
+        },
+        "completed_at": {
+          "type": "string",
+          "format": "timestamp with time zone"
+        }
+      },
+      "rowKeys": [
+        "id",
+        "connection_id",
+        "resource_type",
+        "status",
+        "rows_inserted",
+        "rows_updated",
+        "pagination_count",
+        "error_message",
+        "created_at",
+        "started_at",
+        "completed_at"
+      ]
+    },
+    "aso_apps": {
+      "status": 200,
+      "range": "0-0/1",
+      "columns": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Note:\nThis is a Primary Key.<pk/>",
+          "default": "gen_random_uuid()"
+        },
+        "platform": {
+          "type": "string",
+          "format": "text",
+          "default": "ios"
+        },
+        "store_app_id": {
+          "type": "string",
+          "format": "text"
+        },
+        "bundle_id": {
+          "type": "string",
+          "format": "text"
+        },
+        "name": {
+          "type": "string",
+          "format": "text"
+        },
+        "subtitle": {
+          "type": "string",
+          "format": "text"
+        },
+        "developer": {
+          "type": "string",
+          "format": "text"
+        },
+        "description": {
+          "type": "string",
+          "format": "text"
+        },
+        "icon_url": {
+          "type": "string",
+          "format": "text"
+        },
+        "category": {
+          "type": "string",
+          "format": "text"
+        },
+        "primary_country": {
+          "type": "string",
+          "format": "text",
+          "default": "us"
+        },
+        "current_version": {
+          "type": "string",
+          "format": "text"
+        },
+        "release_notes": {
+          "type": "string",
+          "format": "text"
+        },
+        "rating": {
+          "type": "number",
+          "format": "numeric"
+        },
+        "rating_count": {
+          "type": "integer",
+          "format": "integer"
+        },
+        "price": {
+          "type": "number",
+          "format": "numeric"
+        },
+        "currency": {
+          "type": "string",
+          "format": "text"
+        },
+        "store_url": {
+          "type": "string",
+          "format": "text"
+        },
+        "languages": {
+          "format": "jsonb"
+        },
+        "screenshot_urls": {
+          "format": "jsonb"
+        },
+        "last_store_update_at": {
+          "type": "string",
+          "format": "timestamp with time zone"
+        },
+        "source": {
+          "type": "string",
+          "format": "text",
+          "default": "public_store"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "default": "now()"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "timestamp with time zone",
+          "default": "now()"
+        },
+        "appstore_connect_id": {
+          "type": "string",
+          "format": "text"
+        }
+      },
+      "rowKeys": [
+        "id",
+        "platform",
+        "store_app_id",
+        "bundle_id",
+        "name",
+        "subtitle",
+        "developer",
+        "description",
+        "icon_url",
+        "category",
+        "primary_country",
+        "current_version",
+        "release_notes",
+        "rating",
+        "rating_count",
+        "price",
+        "currency",
+        "store_url",
+        "languages",
+        "screenshot_urls",
+        "last_store_update_at",
+        "source",
+        "created_at",
+        "updated_at",
+        "appstore_connect_id"
+      ]
+    }
+  },
+  "trackGetStatus": 405,
+  "vercel": {
+    "kopa.studio": {
+      "status": 403
+    },
+    "kopa-tools": {
+      "status": 403
+    }
+  }
+}
