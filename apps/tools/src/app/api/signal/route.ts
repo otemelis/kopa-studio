@@ -34,7 +34,15 @@ export async function GET(request: NextRequest) {
       },
     });
   return NextResponse.json(
-    { metadata: data.metadata, coverage: coverageForArea(data, area), rows },
+    {
+      metadata: {
+        ...data.metadata,
+        source: coverageForArea(data, area).source,
+        complete: coverageForArea(data, area).complete,
+      },
+      coverage: coverageForArea(data, area),
+      rows,
+    },
     { headers: { "Cache-Control": "no-store" } },
   );
 }

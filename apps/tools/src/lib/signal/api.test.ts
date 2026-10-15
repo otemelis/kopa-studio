@@ -37,4 +37,22 @@ describe("Signal sample read boundary", () => {
     expect(csv).toContain("assessment_started");
     expect(csv).toContain(String(json.rows[0].count));
   });
+  it("area metadata and rows identify the same report source", async () => {
+    vi.stubEnv("NODE_ENV", "development");
+    vi.stubEnv("KOPA_SIGNAL_FIXTURES", "1");
+    const result = await (
+      await GET(
+        new NextRequest(
+          "http://localhost/api/signal?data=sample&area=keywords",
+        ),
+      )
+    ).json();
+    expect(result.metadata.source).toBe("Synthetic rank observations");
+    expect(result.coverage.source).toBe(result.metadata.source);
+    expect(
+      result.rows.every(
+        (r: { source: string }) => r.source === result.metadata.source,
+      ),
+    ).toBe(true);
+  });
 });
