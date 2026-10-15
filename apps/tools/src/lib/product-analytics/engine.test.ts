@@ -123,6 +123,13 @@ describe("observed real telemetry contract", () => {
     expect(result.steps.map((s) => s.sessions)).toEqual([1, 1, 0]);
     expect(result.censored).toBe(1);
   });
+  it("marks a session provisional when a later qualifying entry still has an open horizon", () => {
+    const es = [
+      event("assessment_started", "01:00:00", { time: "2026-10-13T01:00:00Z" }),
+      event("assessment_started", "23:00:00", { time: "2026-10-14T23:00:00Z" }),
+    ];
+    expect(sessionFunnel(es, scope, ...w).censored).toBe(1);
+  });
   it("keeps prod/app scope isolated and treats absent days as gaps", () => {
     const es = [
       event("app_opened", "01:00:00"),

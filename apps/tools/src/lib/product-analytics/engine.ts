@@ -50,7 +50,7 @@ export function sessionFunnel(
     );
     if (!entries.length) continue;
     let best = 1;
-    if (entries.every((e) => time(e) + HORIZON_MS > cutoff)) censored++;
+    if (entries.some((e) => time(e) + HORIZON_MS > cutoff)) censored++;
     for (const entry of entries) {
       const type = prop(entry, "assessment_type");
       if (scope.funnel === "assessment" && type === "unknown") {
