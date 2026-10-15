@@ -21,6 +21,7 @@ Audit date: **2026-10-14**, Europe/Berlin. Repository: `/Users/otastemelis/Docum
 | [13 UX implementation plan](13_UX_IMPLEMENTATION_PLAN.md) | Signal selected; source-aligned implementation and owner comparison |
 | [14 OSS feasibility](14_OPEN_SOURCE_FEASIBILITY.md) | Six pinned source reviews and reuse/integration decisions |
 | [15 Product Analytics](15_SIGNAL_PRODUCT_ANALYTICS_SPEC.md) | Actual implementation, definitions and live-data gates |
+| [17 Purchase discrepancy](17_PURCHASE_RECONCILIATION.md) | Exact demo/legacy screenshot reproduction, row-cap fix and unverified purchase signals |
 | [16 InnerType real data](16_INNERTYPE_REAL_DATA_INTEGRATION.md) | Actual source audit, scoped restore proof, session metrics and identity blockers |
 | [InnerType verification](INNERTYPE_VERIFICATION.md) | SQL reconciliation, real-data UI checks, screenshots and local run instructions |
 | [Signal verification](SIGNAL_VERIFICATION.md) | Executed tests, screenshots, walkthrough and limits |

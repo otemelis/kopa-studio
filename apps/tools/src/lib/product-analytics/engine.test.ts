@@ -170,6 +170,25 @@ describe("observed real telemetry contract", () => {
       true,
     );
   });
+  it("keeps independent purchase frequencies and dates separate from closed funnel membership", () => {
+    const es = [event("purchase_success", "01:00:00")];
+    const report = buildProductReport(es, [], manifest, {
+      ...scope,
+      query: "nonmatching",
+      funnel: "purchase",
+    });
+    expect(report.eventRows).toHaveLength(0);
+    expect(
+      report.eventFrequencies.find((e) => e.name === "purchase_success")
+        ?.events,
+    ).toBe(1);
+    expect(report.purchaseEvidence.events).toBe(1);
+    expect(report.purchaseEvidence.days).toEqual([
+      { date: "2026-10-01", events: 1 },
+    ]);
+    expect(report.purchaseEvidence.verifiedAppleTransactions).toBeNull();
+    expect(report.funnel.steps.map((s) => s.sessions)).toEqual([0, 0, 0]);
+  });
   it("rejects invalid windows, other apps and production preview enablement", () => {
     expect(() =>
       parseProductScope(new URLSearchParams("start=2026-02-30"), cutoff),

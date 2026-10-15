@@ -2,6 +2,8 @@
 
 Verified 15 October 2026. Development branch: `codex/signal-product-analytics`. Signal appearance is owner-approved. This checkpoint implements a bounded, read-only **actual telemetry snapshot**, not continuously live ingestion or verified user analytics. No production deployment, migration, record mutation, paid integration, Apple Ads change or App Store operation occurred.
 
+> **Purchase trust follow-up:** [17](17_PURCHASE_RECONCILIATION.md) distinguishes the generated 24-success demo from actual events, reproduces the old report's 1,000-row cap and records the development pagination fix. Actual purchase events are not verified Apple transactions.
+
 ## What can be reviewed now
 
 Open `http://127.0.0.1:4339/analytics?app=innertype`. The existing Next application serves actual InnerType event aggregates through Signal's light/dark/system design system. The banner explicitly identifies a read-only snapshot. Date controls, previous-period comparisons, captured-field segments, ordered session funnels, linked journey branches, Event Explorer, source diagnostics and aggregate evidence export work against the restored database. Re-reading the snapshot queries that local database; it does not fetch newer production data.

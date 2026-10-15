@@ -241,6 +241,88 @@ function Journey({ root }: { root: JourneyNode }) {
     </div>
   );
 }
+function SourceFrequencies({ data }: { data: ProductReport }) {
+  const rows = [
+    ["First-open events", ["app_first_open"]],
+    ["Combined session-start signals", ["session_start", "app_opened"]],
+    ["Assessment starts", ["assessment_started"]],
+    ["Assessment completions", ["assessment_completed"]],
+    ["Result-view events", ["result_viewed"]],
+    ["Paywall-view events", ["paywall_viewed"]],
+    ["Price-render events", ["price_seen"]],
+    ["Purchase-tap events", ["purchase_tapped"]],
+    ["Purchase-success events · unverified", ["purchase_success"]],
+    ["Purchase-failure events", ["purchase_failed"]],
+  ] as const;
+  const total = (names: readonly string[], previous = false) =>
+    data.eventFrequencies
+      .filter((row) => names.includes(row.name))
+      .reduce((n, row) => n + (previous ? row.previousEvents : row.events), 0);
+  return (
+    <Panel
+      title="Recorded event totals · independent of funnel"
+      detail={`${data.scope.start} – ${data.scope.end} · UTC client-event dates · current segments apply`}
+    >
+      <div className="real-table">
+        <table>
+          <thead>
+            <tr>
+              <th>Recorded signal</th>
+              <th>Current event rows</th>
+              <th>Previous event rows</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map(([label, names]) => (
+              <tr key={label}>
+                <td>{label}</td>
+                <td>{number(total(names))}</td>
+                <td>{number(total(names, true))}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="real-note">
+        The legacy report filters receipt time; this view uses client-event
+        dates. Match the time basis and window before comparing. Each row is an
+        independent event frequency, without a required preceding funnel step.
+        Combined session-start signals may count both session_start and
+        app_opened; they are not a distinct-session total. Purchase-success
+        events are not verified Apple charges.
+      </p>
+    </Panel>
+  );
+}
+function PurchaseEvidence({ data }: { data: ProductReport }) {
+  return (
+    <div className="real-purchase-evidence">
+      <strong>
+        Source check: {number(data.purchaseEvidence.events)} app-reported
+        success events
+      </strong>
+      <p>
+        {number(data.purchaseEvidence.recordedSessions)} recorded sessions
+        contain these events, independently of whether they qualify for the
+        ordered funnel. Apple transaction reconciliation is pending.
+      </p>
+      <p>
+        Recorded on UTC dates:{" "}
+        {data.purchaseEvidence.days.length
+          ? data.purchaseEvidence.days
+              .map((d) => `${d.date} (${d.events})`)
+              .join(" · ")
+          : "None in this scope"}
+        .
+      </p>
+      <p>
+        StoreKit sandbox status and transaction IDs were not captured. These
+        events cannot establish the number of paid purchases in App Store
+        Connect.
+      </p>
+    </div>
+  );
+}
 export function RealProductWorkspace() {
   const router = useRouter(),
     search = useSearchParams(),
@@ -572,9 +654,9 @@ export function RealProductWorkspace() {
                     note="Missing dates have unverified coverage"
                   />
                   <Stat
-                    label="User retention"
-                    value="Unavailable"
-                    note="Identity and first-open quality gate"
+                    label="App-reported purchase events"
+                    value={number(data.purchaseEvidence.events)}
+                    note="Not verified charges · Apple reconciliation pending"
                   />
                 </div>
                 <nav className="real-tabs" aria-label="Product analysis">
@@ -736,6 +818,9 @@ export function RealProductWorkspace() {
                             </strong>
                           </span>
                         </div>
+                        {scope.funnel === "purchase" && (
+                          <PurchaseEvidence data={data} />
+                        )}
                         <div className="real-funnel">
                           {data.funnel.steps.map((step, i) => (
                             <div className="real-funnel-row" key={step.name}>
@@ -923,6 +1008,10 @@ export function RealProductWorkspace() {
                 )}
                 {scope.tab === "quality" && (
                   <>
+                    <SourceFrequencies data={data} />
+                    <Panel title="Purchase-event evidence">
+                      <PurchaseEvidence data={data} />
+                    </Panel>
                     <div className="real-unavailable-grid">
                       <Panel
                         title="Source-to-database reconciliation"

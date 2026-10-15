@@ -188,11 +188,11 @@ export function SignalWorkspace({
       kind: "note",
     });
   return (
-    <div className="signal-app">
+    <div className={"signal-app" + (sample ? " sig-sample" : "")}>
       <div className={"sig-review " + (!sample ? "sig-live" : "")}>
         <strong>
           {sample
-            ? "SAMPLE DATA · DEVELOPMENT PREVIEW"
+            ? "DEMO · SYNTHETIC DATA · NOT FROM SUPABASE"
             : "SIGNAL · SOURCE VALIDATION REQUIRED"}
         </strong>
         <span>Signal approved · no live operational actions</span>

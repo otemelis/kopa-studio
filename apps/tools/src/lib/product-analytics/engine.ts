@@ -301,8 +301,7 @@ export function buildProductReport(
     purchaseSignals: es.filter((e) => e.name === "purchase_success").length,
     observedDays: unique(es.map((e) => day(e.time))),
   });
-  const eventRows = names
-    .filter((name) => name.includes(scope.query.toLowerCase()))
+  const eventFrequencies = names
     .map((name) => {
       const es = current.filter((e) => e.name === name),
         ps = previous.filter((e) => e.name === name);
@@ -318,6 +317,22 @@ export function buildProductReport(
       };
     })
     .sort((a, b) => b.events - a.events || a.name.localeCompare(b.name));
+  const eventRows = eventFrequencies.filter((row) =>
+    row.name.includes(scope.query.toLowerCase()),
+  );
+  const successes = current.filter((e) => e.name === "purchase_success");
+  const purchaseEvidence = {
+    measurement: "unverified-client-success-events" as const,
+    verifiedAppleTransactions: null,
+    events: successes.length,
+    recordedSessions: unique(successes.map(sessionKey)),
+    days: [...new Set(successes.map((e) => day(e.time)))]
+      .sort()
+      .map((date) => ({
+        date,
+        events: successes.filter((e) => day(e.time) === date).length,
+      })),
+  };
   const days = Math.round((w.end - w.start) / HORIZON_MS);
   const trend = Array.from({ length: days }, (_, i) => {
     const date = offsetDay(scope.start, i),
@@ -375,6 +390,8 @@ export function buildProductReport(
     ),
     journey: sessionJourney(scoped, scope, w.start, w.end, cutoff),
     eventRows,
+    eventFrequencies,
+    purchaseEvidence,
     quality,
     segmentation:
       "Filters apply to individual captured events, including every funnel/path step. Session counts may overlap across segments. Region is a captured country/region code; source is an unverified client tag.",

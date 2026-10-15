@@ -65,6 +65,14 @@ try {
     assert.equal(counts.events, report.metrics.events);
     assert.equal(counts.sessions, report.metrics.sessions);
     assert.equal(counts.purchases, report.metrics.purchaseSignals);
+    assert.equal(report.purchaseEvidence.events, counts.purchases);
+    assert.equal(report.purchaseEvidence.verifiedAppleTransactions, null);
+    const { rows: purchaseDays } = await db.query(
+      base +
+        `SELECT to_char(client_event_time AT TIME ZONE 'UTC','YYYY-MM-DD') AS date,count(*)::int AS events FROM e WHERE event_name='purchase_success' AND client_event_time >= $2::timestamptz AND client_event_time < $3::timestamptz + interval '1 day' GROUP BY 1 ORDER BY 1`,
+      args,
+    );
+    assert.deepEqual(report.purchaseEvidence.days, purchaseDays);
     const steps =
       scope.funnel === "assessment"
         ? ["assessment_started", "assessment_completed", "result_viewed"]
@@ -129,7 +137,7 @@ try {
         ` SELECT event_name,count(*)::int AS count FROM e WHERE client_event_time >= $2::timestamptz AND client_event_time < $3::timestamptz + interval '1 day' GROUP BY event_name`,
       args,
     );
-    for (const row of report.eventRows)
+    for (const row of report.eventFrequencies)
       assert.equal(
         row.events,
         events.find((e) => e.event_name === row.name)?.count || 0,
@@ -204,6 +212,7 @@ try {
       apiFunnel: report.funnel.steps.map((s) => s.sessions),
       journeyEntries: report.journey.sessions,
       eventRowsMatch: true,
+      purchaseEvidenceMatchesSQL: true,
       trendPointsMatch: true,
       journeyConserved: true,
       firstJourneyBranchesMatchSQL: true,

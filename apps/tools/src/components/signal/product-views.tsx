@@ -47,6 +47,16 @@ export function ProductViews({
   });
   return (
     <>
+      <div className="sig-demo-explainer" role="note">
+        <strong>DEMO METRICS — GENERATED EXAMPLES</strong>
+        <p>
+          Every number below is synthetic. Use the actual InnerType dashboard to
+          inspect captured events.
+        </p>
+        <a href="http://127.0.0.1:4339/analytics?app=innertype">
+          Open actual InnerType snapshot →
+        </a>
+      </div>
       <div className="sig-stats">
         <Stat
           label="Active installations"
@@ -99,8 +109,8 @@ export function ProductViews({
           : "App-scoped sessions"}{" "}
         · UTC event time · {s.horizon}h conversion/path horizon ·{" "}
         {data.coverage.complete
-          ? "Complete fixture window"
-          : "Incomplete fixture coverage"}
+          ? "Synthetic demo window · not Supabase data"
+          : "Synthetic demo with incomplete coverage"}
         <span>
           {" "}
           ·{" "}
@@ -141,7 +151,10 @@ export function ProductViews({
         <section className="sig-panel">
           <div className="sig-panel-head">
             <div>
-              <h2>What happens after the first step?</h2>
+              <h2>
+                <span className="sig-demo-tag">DEMO · SYNTHETIC DATA</span>What
+                happens after the first step?
+              </h2>
               <p>
                 Observed event paths · click a node or connection to inspect the
                 evidence.
@@ -336,6 +349,7 @@ export function ProductViews({
           <div className="sig-panel-head">
             <div>
               <h2>
+                <span className="sig-demo-tag">DEMO · SYNTHETIC DATA</span>
                 {s.app === "pois"
                   ? "Activation to subscription"
                   : "Test to premium unlock"}
@@ -469,7 +483,10 @@ export function ProductViews({
         <section className="sig-panel">
           <div className="sig-panel-head">
             <div>
-              <h2>Do installations come back?</h2>
+              <h2>
+                <span className="sig-demo-tag">DEMO · SYNTHETIC DATA</span>Do
+                installations come back?
+              </h2>
               <p>
                 Selected-window {ENTRY_EVENTS[s.app]} cohorts →{" "}
                 {RETURN_EVENTS[s.app]} on exact D1, D7 or D30 · UTC ·
@@ -555,7 +572,10 @@ export function ProductViews({
         <section className="sig-panel">
           <div className="sig-panel-head">
             <div>
-              <h2>Inspect what was actually recorded</h2>
+              <h2>
+                <span className="sig-demo-tag">DEMO · SYNTHETIC DATA</span>
+                Inspect what was actually recorded
+              </h2>
               <p>
                 Whitelisted properties only · versions and country are captured
                 fixture fields · no inferred acquisition attribution
@@ -611,7 +631,10 @@ export function ProductViews({
         </section>
       ) : null}
       <div className="sig-section-head">
-        <h2>Continue the investigation</h2>
+        <h2>
+          <span className="sig-demo-tag">DEMO · SYNTHETIC DATA</span>Continue
+          the investigation
+        </h2>
         <span>Context stays with the view</span>
       </div>
       <div className="sig-insights">

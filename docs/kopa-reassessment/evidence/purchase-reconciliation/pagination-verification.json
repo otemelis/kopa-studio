@@ -1,0 +1,40 @@
+{
+  "checkedAt": "2026-10-15T07:49:40.707Z",
+  "methods": [
+    "GET"
+  ],
+  "sourceReceiptCutoff": "2026-10-15T06:40:58.000Z",
+  "receiptStart": "2026-09-17T06:40:58.000Z",
+  "returnedRows": 4694,
+  "pages": 5,
+  "distinctRows": 4694,
+  "sourceRowSetMatchesRestoredArchive": true,
+  "eventFrequencies": {
+    "session_start": 155,
+    "app_opened": 152,
+    "app_first_open": 58,
+    "assessment_started": 118,
+    "question_answered": 3594,
+    "assessment_completed": 96,
+    "result_viewed": 114,
+    "first_result_aha_reached": 26,
+    "rating_prompt_shown": 26,
+    "rating_prompt_dismissed": 25,
+    "session_end": 216,
+    "premium_screen_viewed": 19,
+    "paywall_viewed": 19,
+    "paywall_product_loaded": 19,
+    "price_seen": 19,
+    "premium_unlock_tapped": 4,
+    "purchase_tapped": 4,
+    "purchase_success": 4,
+    "share_card_viewed": 1,
+    "share_card_shared": 1,
+    "assessment_abandoned": 17,
+    "rating_selected": 2,
+    "assessment_exited": 5
+  },
+  "purchaseSuccessEvents": 4,
+  "verifiedAppleTransactions": null,
+  "passed": true
+}

@@ -1,0 +1,44 @@
+{
+  "verifiedOn": "2026-10-15",
+  "branch": "codex/signal-product-analytics",
+  "tests": {
+    "passed": 186,
+    "files": 38
+  },
+  "typecheck": "passed",
+  "lint": {
+    "errors": 0,
+    "warnings": 1,
+    "warning": "Pre-existing login navigation warning"
+  },
+  "productionBuild": "passed",
+  "independentSQLScopes": 8,
+  "liveSourceMethods": [
+    "GET"
+  ],
+  "completeReceiptWindow": {
+    "rows": 4694,
+    "pages": 5,
+    "distinctRows": 4694,
+    "matchesRestoredArchive": true
+  },
+  "demoFunnelReproduced": [
+    96,
+    96,
+    72,
+    48,
+    48,
+    24,
+    24
+  ],
+  "verifiedAppleTransactions": null,
+  "appleReconciliation": "pending",
+  "productionModified": false,
+  "deployed": false,
+  "screenshots": [
+    "actual-purchase-evidence-dark.jpg",
+    "actual-purchase-evidence-light.jpg",
+    "actual-source-totals-dark.jpg",
+    "archived-demo-labelled.jpg"
+  ]
+}

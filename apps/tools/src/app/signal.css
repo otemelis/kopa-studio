@@ -1827,3 +1827,60 @@ body:has(.signal-app) {
   outline: 2px solid var(--sig-accent);
   outline-offset: -3px;
 }
+/* Source identity remains visible when a report is scrolled or captured. */
+.sig-review {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+}
+.sig-sample .sig-review {
+  background: var(--sig-warning);
+  color: var(--sig-bg);
+}
+.sig-sample .sig-review > span {
+  color: inherit;
+}
+.sig-demo-tag {
+  display: inline-block;
+  color: var(--sig-warning);
+  border: 1px solid var(--sig-line);
+  border-radius: 4px;
+  padding: 3px 6px;
+  margin-right: 10px;
+  font-size: 9px;
+  font-weight: 750;
+  letter-spacing: 0.4px;
+  vertical-align: middle;
+}
+.sig-demo-explainer {
+  margin-bottom: 18px;
+  padding: 14px 17px;
+  border: 1px solid var(--sig-warning);
+  border-radius: 6px;
+  background: var(--sig-surface);
+}
+.sig-demo-explainer strong {
+  color: var(--sig-warning);
+  font-size: 12px;
+}
+.sig-demo-explainer a {
+  display: inline-block;
+  margin-top: 7px;
+  font-size: 11px;
+}
+.real-purchase-evidence {
+  margin: 0 18px 15px;
+  padding: 13px 15px;
+  border: 1px solid var(--sig-line);
+  border-left: 3px solid var(--sig-warning);
+  border-radius: 5px;
+  background: var(--sig-soft);
+  font-size: 11px;
+}
+.real-purchase-evidence strong {
+  font-size: 12px;
+}
+.real-purchase-evidence p {
+  margin-top: 6px;
+  font-size: 10px;
+}
