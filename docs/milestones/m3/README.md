@@ -1,6 +1,6 @@
 # M3 · Live read-only product view
 
-Open `http://127.0.0.1:4341/product.html`. This is the existing minimal Signal portfolio shell plus one source-specific read page. App/environment/date selection persists; 7/28 **complete** days, real source timestamps, daily installation trend, ordered 24-hour journey, mature D1/D7 and matched posture usage. Themes retain the accepted foundation. PASSPORT has no source rows yet and no identities; production is not inferred from TestFlight.
+Open `http://127.0.0.1:4340/product.html`. This is the existing minimal Signal portfolio shell plus one source-specific read page. App/environment/date selection persists; 7/28 **complete** days, real source timestamps, daily installation trend, ordered 24-hour journey, mature D1/D7 and matched posture usage. Themes retain the accepted foundation. PASSPORT has no source rows yet and no identities; production is not inferred from TestFlight.
 
 ## Run
 
@@ -11,7 +11,7 @@ KOPA_READER_CONFIG=/absolute/private/reader.json \
 KOPA_READER_CA=/absolute/private/supabase-ca.crt npm run product
 ```
 
-The private JSON is a standard `pg` configuration (host, port, database, user, password), kept outside git/static directories with mode 600. CA is the official certificate linked by Supabase Database Settings. TLS verification stays enabled. Server binds only 127.0.0.1:4341; it is not a deployed public service. Portfolio remains available at `/` on the same server. No new authentication system, queue, cache, ingestion or framework.
+The private JSON is a standard `pg` configuration (host, port, database, user, password), kept outside git/static directories with mode 600. CA is the official certificate linked by Supabase Database Settings. TLS verification stays enabled. Server binds only 127.0.0.1:4340; it is not a deployed public service. Portfolio remains available at `/` on the same server. No new authentication system, queue, cache, ingestion or framework.
 
 Approved access SQL is recorded separately. The role has column SELECT grants, read-only default and 5-second statement timeout; two separately approved role-specific RLS read policies allow actual rows. No BYPASSRLS, browser role grant, write permission, or REST exposure. The server checks the policy exists, executes a repeatable-read read-only transaction, returns aggregates only and fails closed on errors. Credentials and installation histories never enter the browser response.
 

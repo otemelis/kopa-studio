@@ -4,7 +4,7 @@ if len(sys.argv)!=3: raise SystemExit('Usage: reconcile-snapshot.py /private/ret
 events=json.loads(Path(sys.argv[1]).read_text())['events']
 def dt(x):return datetime.datetime.fromisoformat(x.replace('Z','+00:00'))
 a=dt('2026-09-17T00:00:00Z');b=dt('2026-10-15T00:00:00Z');all_tf=[x for x in events if x['build_channel']=='testflight'];period=[x for x in all_tf if a<=dt(x['occurred_at'])<b]
-with urllib.request.urlopen('http://127.0.0.1:4341/api/product?app=pois&environment=testflight&days=28') as r:live=json.load(r)
+with urllib.request.urlopen('http://127.0.0.1:4340/api/product?app=pois&environment=testflight&days=28') as r:live=json.load(r)
 assert live['start']==a.isoformat(timespec='milliseconds').replace('+00:00','Z');assert len(period)==324
 unique=lambda rows:len({x['installation_id'] for x in rows})
 by=lambda name:[x for x in period if x['event_name']==name]

@@ -6,7 +6,7 @@
   "scripts": {
     "start": "python3 -m http.server 5173",
     "check": "node ./scripts/check-levels.js",
-    "portfolio": "python3 -m http.server 4340 --bind 127.0.0.1 --directory reporting/portfolio",
+    "portfolio": "node scripts/product-analytics/server.mjs",
     "reports:refresh": "python3 scripts/app-store/refresh.py",
     "test:reporting": "node --test scripts/reporting-tests/*.test.mjs",
     "product": "node scripts/product-analytics/server.mjs"
