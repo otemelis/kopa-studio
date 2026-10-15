@@ -1,3 +1,4 @@
+import {renderLaunch} from './launch.mjs';
 import {APPS,METRICS,SOURCE_SHA256,verifySource,loadSnapshot,aggregate,period,difference} from './model.mjs';
 import {refreshHealth} from './refresh-health.mjs';
 const $=s=>document.querySelector(s);
@@ -23,6 +24,7 @@ function comparison(current,previous,metric,ctx){
 }
 function render(snapshot,days){
   const w=period(snapshot,days);
+  renderLaunch(snapshot,days);
   document.querySelectorAll('[data-days]').forEach(b=>b.setAttribute('aria-pressed',String(Number(b.dataset.days)===days)));
   $('#period-label').textContent=range(w)+' '+w.end.slice(0,4);
   $('#comparison-note').textContent=w.comparable?`Compared with ${range(w.previous)} ${w.previous.end.slice(0,4)}. Changes use the same metric, units and currency.`:'Previous-period comparison unavailable: the preceding period is not included in this CSV.';
@@ -66,5 +68,6 @@ try{
   $('#report').hidden=false;$('#status').hidden=true;
 }catch{
   $('#report').hidden=true;$('#status').hidden=false;
+  renderLaunch(null,28);
   $('#status').textContent='Snapshot unavailable. The CSV could not be read or verified. No metrics are shown.';
 }
