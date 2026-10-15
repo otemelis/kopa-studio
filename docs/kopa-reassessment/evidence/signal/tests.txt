@@ -1,0 +1,15 @@
+
+> kopa-tools@0.1.0 test
+> vitest run
+
+
+ RUN  v5.0.4 /Users/otastemelis/Documents/Codex/2026-10-14/files-pasted-by-the-user-kopa/work/kopa-signal/apps/tools
+
+
+ Test Files  34 passed (34)
+      Tests  167 passed (167)
+   Start at  08:21:52
+   Duration  2.50s (tests 65%, transform 15%, import 15%, worker 4%)
+
+    Isolate  34 workers spawned · ~163ms startup each (spawn + environment, per file)
+             at least ~628ms faster with isolate: false — reuses workers across files instead of one per file

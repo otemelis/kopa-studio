@@ -1,0 +1,35 @@
+// Audit-only synthetic contract probes. Uses in-memory fetch and DB mocks; no real API/database access.
+import { searchApps } from '/Users/otastemelis/Documents/kopa-studio/api/aso/_lib/providers.js';
+import { parseDailySalesSummary } from '/Users/otastemelis/Documents/kopa-studio/api/aso/_lib/appstore-sales.js';
+import { searchTermMetrics, summarizeDailyMetrics } from '/Users/otastemelis/Documents/kopa-studio/apps/tools/src/lib/apple-ads/reporting.ts';
+globalThis.fetch = async () => ({ok:true,status:200,json:async()=>({unexpected:'schema'})});
+console.log('Synthetic contract probe only; not production observations.');
+console.log('Malformed search response returns', JSON.stringify(await searchApps('contract-probe','us',100)));
+console.log('Undated seven-day report row becomes', JSON.stringify(searchTermMetrics({reportingDataResponse:{row:[{metadata:{searchTermText:'contract-probe'},total:{impressions:7,taps:2,installs:0}}]}},'2026-10-14')));
+console.log('Per-unit proceeds parser',JSON.stringify(parseDailySalesSummary('Apple Identifier\tUnits\tEnd Date\tCountry Code\tDeveloper Proceeds\tCurrency of Proceeds\tProduct Type Identifier\n123456789\t3\t10/13/2026\tUS\t1.50\tUSD\t1F')));
+console.log('Currency-free summarizer accepts untyped mixed inputs',JSON.stringify(summarizeDailyMetrics([{metricDate:'2026-10-13',impressions:1,taps:1,installs:1,spend:2,currency:'USD'},{metricDate:'2026-10-13',impressions:1,taps:1,installs:1,spend:3,currency:'EUR'}])));
+const { generateKeyPairSync } = await import('node:crypto');
+const { syncDiscoveryAnalytics } = await import('/Users/otastemelis/Documents/kopa-studio/api/aso/_lib/appstore-analytics.js');
+const { syncDailySalesMetrics } = await import('/Users/otastemelis/Documents/kopa-studio/api/aso/_lib/appstore-sales.js');
+const keyPair = generateKeyPairSync('ec', { namedCurve:'P-256' });
+process.env.APP_STORE_CONNECT_ISSUER_ID='synthetic-test-only';
+process.env.APP_STORE_CONNECT_KEY_ID='synthetic-test-only';
+process.env.APP_STORE_CONNECT_PRIVATE_KEY=keyPair.privateKey.export({format:'pem',type:'pkcs8'});
+process.env.APP_STORE_CONNECT_VENDOR_NUMBER='synthetic-test-only';
+const saved = {};
+const mockDb = {select: async()=>[{id:'request-a',app_id:'app-a',appstore_connect_request_id:'remote-a'}],update:async()=>[],upsert:async(table,rows)=>{saved[table]=rows;return rows;}};
+const tsv = count=>'Date\tEvent\tPage Type\tSource Type\tTerritory\tCounts\n2026-10-10\tImpression\tProduct page\tApp Store search\tUS\t'+count;
+globalThis.fetch = async url=>{
+ let data;
+ if(url.includes('/reports?'))data={data:[{id:'report-a',attributes:{name:'App Store Discovery and Engagement Standard'}}]};
+ else if(url.includes('/instances?'))data={data:[{id:'instance-new',attributes:{processingDate:'2026-10-12'}},{id:'instance-old',attributes:{processingDate:'2026-10-11'}}]};
+ else if(url.includes('instance-new/segments'))data={data:[{id:'segment-new',attributes:{url:'https://synthetic.invalid/new'}}]};
+ else if(url.includes('instance-old/segments'))data={data:[{id:'segment-old',attributes:{url:'https://synthetic.invalid/old'}}]};
+ else return {ok:true,status:200,arrayBuffer:async()=>Buffer.from(tsv(url.endsWith('/new')?12:10))};
+ return {ok:true,status:200,json:async()=>data};
+};
+await syncDiscoveryAnalytics(mockDb,[{id:'app-a'}]);
+console.log('Overlapping instances with older 10 / newer 12 => stored count',saved.aso_storefront_metrics[0].count,'; Apple replacement contract expects 12');
+globalThis.fetch = async()=>({ok:true,status:200,arrayBuffer:async()=>Buffer.from('Apple Identifier\tUnits\tEnd Date\tCountry Code\tDeveloper Proceeds\tCurrency of Proceeds\tProduct Type Identifier\n123456789\t3\t10/13/2026\tUS\t1.50\tUSD\t1F')});
+await syncDailySalesMetrics(mockDb,[{id:'app-a',store_app_id:'123456789'}]);
+console.log('Three units at 1.50 per unit => stored proceeds',saved.aso_daily_metrics[0].proceeds,'; per-unit contract expects 4.50');
