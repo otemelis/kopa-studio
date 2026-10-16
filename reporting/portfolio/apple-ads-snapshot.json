@@ -1,7 +1,2156 @@
 {
-  "mode": "historical_official_csv",
-  "imported_at": "2026-10-15T18:20:59.632Z",
+  "mode": "historical_official_reports",
+  "console_checks": [
+    {
+      "periodStart": "2026-10-11",
+      "periodEnd": "2026-10-11",
+      "result": "PASS: observed API sums match console footer; absent campaign rows are not independently confirmed zeros",
+      "apiSpendExact": "0",
+      "consoleSpendCents": 0,
+      "comparisons": [
+        {
+          "campaignId": "2144314451",
+          "result": "UNAVAILABLE: API has no rows; console-reported values retained independently",
+          "consoleMetrics": {
+            "Spend": 0,
+            "Impressions": 0,
+            "Taps": 0,
+            "Installs (Total)": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          }
+        },
+        {
+          "campaignId": "2144366771",
+          "result": "PASS: reported count sums match; exact API spend rounds to console amount",
+          "apiSpendExact": "0",
+          "consoleSpendCents": 0,
+          "observedDays": 1
+        },
+        {
+          "campaignId": "2144314113",
+          "result": "UNAVAILABLE: API has no rows; console-reported values retained independently",
+          "consoleMetrics": {
+            "Spend": 0,
+            "Impressions": 0,
+            "Taps": 0,
+            "Installs (Total)": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          }
+        }
+      ]
+    },
+    {
+      "periodStart": "2026-10-11",
+      "periodEnd": "2026-10-14",
+      "result": "PASS: observed API sums match console footer; absent campaign rows are not independently confirmed zeros",
+      "apiSpendExact": "0.4918",
+      "consoleSpendCents": 49,
+      "comparisons": [
+        {
+          "campaignId": "2144314451",
+          "result": "UNAVAILABLE: API has no rows; console-reported values retained independently",
+          "consoleMetrics": {
+            "Spend": 0,
+            "Impressions": 0,
+            "Taps": 0,
+            "Installs (Total)": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          }
+        },
+        {
+          "campaignId": "2144366771",
+          "result": "PASS: reported count sums match; exact API spend rounds to console amount",
+          "apiSpendExact": "0.4918",
+          "consoleSpendCents": 49,
+          "observedDays": 4
+        },
+        {
+          "campaignId": "2144314113",
+          "result": "UNAVAILABLE: API has no rows; console-reported values retained independently",
+          "consoleMetrics": {
+            "Spend": 0,
+            "Impressions": 0,
+            "Taps": 0,
+            "Installs (Total)": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          }
+        }
+      ]
+    }
+  ],
+  "imported_at": "2026-10-16T06:07:52.155Z",
   "snapshots": [
+    {
+      "period_start": "2026-09-17",
+      "period_end": "2026-10-14",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 757,
+        "Impressions": 347,
+        "Taps": 18,
+        "Installs (Tap-Through)": 10,
+        "Installs (View-Through)": 1,
+        "Installs (Total)": 11,
+        "New Downloads (Total)": 11,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "7.5740",
+      "cpa_cents": 69,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 757,
+            "Impressions": 347,
+            "Taps": 18,
+            "Installs (Tap-Through)": 10,
+            "Installs (View-Through)": 1,
+            "Installs (Total)": 11,
+            "New Downloads (Total)": 11,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "7.5740",
+          "cpa_cents": 69,
+          "observed_days": 28
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-09-17",
+      "period_end": "2026-09-17",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 182,
+        "Impressions": 16,
+        "Taps": 4,
+        "Installs (Tap-Through)": 2,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 2,
+        "New Downloads (Total)": 2,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "1.8153",
+      "cpa_cents": 91,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 182,
+            "Impressions": 16,
+            "Taps": 4,
+            "Installs (Tap-Through)": 2,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 2,
+            "New Downloads (Total)": 2,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "1.8153",
+          "cpa_cents": 91,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-09-18",
+      "period_end": "2026-09-18",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 0,
+        "Impressions": 11,
+        "Taps": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 11,
+            "Taps": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-09-19",
+      "period_end": "2026-09-19",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 0,
+        "Impressions": 12,
+        "Taps": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 12,
+            "Taps": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-09-20",
+      "period_end": "2026-09-20",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 20,
+        "Impressions": 14,
+        "Taps": 1,
+        "Installs (Tap-Through)": 1,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 1,
+        "New Downloads (Total)": 1,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0.2042",
+      "cpa_cents": 20,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 20,
+            "Impressions": 14,
+            "Taps": 1,
+            "Installs (Tap-Through)": 1,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 1,
+            "New Downloads (Total)": 1,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0.2042",
+          "cpa_cents": 20,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-09-21",
+      "period_end": "2026-09-21",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 65,
+        "Impressions": 15,
+        "Taps": 2,
+        "Installs (Tap-Through)": 1,
+        "Installs (View-Through)": 1,
+        "Installs (Total)": 2,
+        "New Downloads (Total)": 2,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0.6526",
+      "cpa_cents": 33,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 65,
+            "Impressions": 15,
+            "Taps": 2,
+            "Installs (Tap-Through)": 1,
+            "Installs (View-Through)": 1,
+            "Installs (Total)": 2,
+            "New Downloads (Total)": 2,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0.6526",
+          "cpa_cents": 33,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-09-22",
+      "period_end": "2026-09-22",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 31,
+        "Impressions": 15,
+        "Taps": 1,
+        "Installs (Tap-Through)": 1,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 1,
+        "New Downloads (Total)": 1,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0.3072",
+      "cpa_cents": 31,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 31,
+            "Impressions": 15,
+            "Taps": 1,
+            "Installs (Tap-Through)": 1,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 1,
+            "New Downloads (Total)": 1,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0.3072",
+          "cpa_cents": 31,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-09-23",
+      "period_end": "2026-09-23",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 78,
+        "Impressions": 24,
+        "Taps": 2,
+        "Installs (Tap-Through)": 2,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 2,
+        "New Downloads (Total)": 2,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0.78",
+      "cpa_cents": 39,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 78,
+            "Impressions": 24,
+            "Taps": 2,
+            "Installs (Tap-Through)": 2,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 2,
+            "New Downloads (Total)": 2,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0.78",
+          "cpa_cents": 39,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-09-24",
+      "period_end": "2026-09-24",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 40,
+        "Impressions": 8,
+        "Taps": 1,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0.402",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 40,
+            "Impressions": 8,
+            "Taps": 1,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0.402",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-09-25",
+      "period_end": "2026-09-25",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 0,
+        "Impressions": 11,
+        "Taps": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 11,
+            "Taps": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-09-26",
+      "period_end": "2026-09-26",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 0,
+        "Impressions": 12,
+        "Taps": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 12,
+            "Taps": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-09-27",
+      "period_end": "2026-09-27",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 95,
+        "Impressions": 10,
+        "Taps": 2,
+        "Installs (Tap-Through)": 1,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 1,
+        "New Downloads (Total)": 1,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0.9541",
+      "cpa_cents": 95,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 95,
+            "Impressions": 10,
+            "Taps": 2,
+            "Installs (Tap-Through)": 1,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 1,
+            "New Downloads (Total)": 1,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0.9541",
+          "cpa_cents": 95,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-09-28",
+      "period_end": "2026-09-28",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 35,
+        "Impressions": 14,
+        "Taps": 1,
+        "Installs (Tap-Through)": 1,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 1,
+        "New Downloads (Total)": 1,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0.3477",
+      "cpa_cents": 35,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 35,
+            "Impressions": 14,
+            "Taps": 1,
+            "Installs (Tap-Through)": 1,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 1,
+            "New Downloads (Total)": 1,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0.3477",
+          "cpa_cents": 35,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-09-29",
+      "period_end": "2026-09-29",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 28,
+        "Impressions": 18,
+        "Taps": 1,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0.284",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 28,
+            "Impressions": 18,
+            "Taps": 1,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0.284",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-09-30",
+      "period_end": "2026-09-30",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 0,
+        "Impressions": 13,
+        "Taps": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 13,
+            "Taps": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-10-01",
+      "period_end": "2026-10-01",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 0,
+        "Impressions": 14,
+        "Taps": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 14,
+            "Taps": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-10-02",
+      "period_end": "2026-10-02",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 0,
+        "Impressions": 7,
+        "Taps": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 7,
+            "Taps": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-10-03",
+      "period_end": "2026-10-03",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 36,
+        "Impressions": 11,
+        "Taps": 1,
+        "Installs (Tap-Through)": 1,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 1,
+        "New Downloads (Total)": 1,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0.3611",
+      "cpa_cents": 36,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 36,
+            "Impressions": 11,
+            "Taps": 1,
+            "Installs (Tap-Through)": 1,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 1,
+            "New Downloads (Total)": 1,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0.3611",
+          "cpa_cents": 36,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-10-04",
+      "period_end": "2026-10-04",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 0,
+        "Impressions": 12,
+        "Taps": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 12,
+            "Taps": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-10-05",
+      "period_end": "2026-10-05",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 97,
+        "Impressions": 13,
+        "Taps": 1,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0.974",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 97,
+            "Impressions": 13,
+            "Taps": 1,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0.974",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-10-06",
+      "period_end": "2026-10-06",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 0,
+        "Impressions": 14,
+        "Taps": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 14,
+            "Taps": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-10-07",
+      "period_end": "2026-10-07",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 0,
+        "Impressions": 8,
+        "Taps": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 8,
+            "Taps": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-10-08",
+      "period_end": "2026-10-08",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 0,
+        "Impressions": 8,
+        "Taps": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 8,
+            "Taps": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-10-09",
+      "period_end": "2026-10-09",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 0,
+        "Impressions": 9,
+        "Taps": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 9,
+            "Taps": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-10-10",
+      "period_end": "2026-10-10",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 0,
+        "Impressions": 6,
+        "Taps": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 6,
+            "Taps": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-10-11",
+      "period_end": "2026-10-11",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 0,
+        "Impressions": 13,
+        "Taps": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 13,
+            "Taps": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-10-12",
+      "period_end": "2026-10-12",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 49,
+        "Impressions": 11,
+        "Taps": 1,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0.4918",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 49,
+            "Impressions": 11,
+            "Taps": 1,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0.4918",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-10-13",
+      "period_end": "2026-10-13",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 0,
+        "Impressions": 23,
+        "Taps": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 23,
+            "Taps": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
+    {
+      "period_start": "2026-10-14",
+      "period_end": "2026-10-14",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-15T19:25:52.895Z",
+      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 0,
+        "Impressions": 5,
+        "Taps": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 5,
+            "Taps": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+    },
     {
       "period_start": "2026-10-11",
       "period_end": "2026-10-11",

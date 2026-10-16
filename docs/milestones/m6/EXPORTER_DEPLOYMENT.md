@@ -1,3 +1,5 @@
+Update · 16 October: the owner provided a successful saved export. Both supplied console overlaps and independent daily reconciliation now pass; see [API_RECONCILIATION.md](API_RECONCILIATION.md). Earlier pending-validation statements below are rollout history.
+
 # Apple Ads read-only exporter deployment · 15 October 2026
 
 **Deployed; authenticated data validation pending.** The owner approved the four-file exporter deployment. Production is now `dpl_4a8R4cpGaV6FidNHfyEhcpPWFb3n`, aliased to https://tools.kopa.studio. No report has yet been independently reconciled from this new endpoint. The accepted manual CSV snapshot remains unchanged.

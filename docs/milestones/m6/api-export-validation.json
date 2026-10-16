@@ -1,0 +1,122 @@
+{
+  "scope": {
+    "start": "2026-09-17",
+    "end": "2026-10-14",
+    "days": 28,
+    "timezone": "UTC"
+  },
+  "queriedAt": "2026-10-15T19:25:52.895Z",
+  "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+  "coverage": {
+    "campaigns": 3,
+    "observedCampaigns": 1,
+    "observedRows": 28,
+    "expectedCampaignDays": 84,
+    "unreportedCampaignDays": 56
+  },
+  "totalsOfObservedRows": {
+    "impressions": 347,
+    "taps": 18,
+    "tapInstalls": 10,
+    "viewInstalls": 1,
+    "totalInstalls": 11,
+    "newDownloads": 11,
+    "redownloads": 0,
+    "spend": "7.5740"
+  },
+  "checks": [
+    {
+      "periodStart": "2026-10-11",
+      "periodEnd": "2026-10-11",
+      "result": "PASS: observed API sums match console footer; absent campaign rows are not independently confirmed zeros",
+      "apiSpendExact": "0",
+      "consoleSpendCents": 0,
+      "comparisons": [
+        {
+          "campaignId": "2144314451",
+          "result": "UNAVAILABLE: API has no rows; console-reported values retained independently",
+          "consoleMetrics": {
+            "Spend": 0,
+            "Impressions": 0,
+            "Taps": 0,
+            "Installs (Total)": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          }
+        },
+        {
+          "campaignId": "2144366771",
+          "result": "PASS: reported count sums match; exact API spend rounds to console amount",
+          "apiSpendExact": "0",
+          "consoleSpendCents": 0,
+          "observedDays": 1
+        },
+        {
+          "campaignId": "2144314113",
+          "result": "UNAVAILABLE: API has no rows; console-reported values retained independently",
+          "consoleMetrics": {
+            "Spend": 0,
+            "Impressions": 0,
+            "Taps": 0,
+            "Installs (Total)": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          }
+        }
+      ]
+    },
+    {
+      "periodStart": "2026-10-11",
+      "periodEnd": "2026-10-14",
+      "result": "PASS: observed API sums match console footer; absent campaign rows are not independently confirmed zeros",
+      "apiSpendExact": "0.4918",
+      "consoleSpendCents": 49,
+      "comparisons": [
+        {
+          "campaignId": "2144314451",
+          "result": "UNAVAILABLE: API has no rows; console-reported values retained independently",
+          "consoleMetrics": {
+            "Spend": 0,
+            "Impressions": 0,
+            "Taps": 0,
+            "Installs (Total)": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          }
+        },
+        {
+          "campaignId": "2144366771",
+          "result": "PASS: reported count sums match; exact API spend rounds to console amount",
+          "apiSpendExact": "0.4918",
+          "consoleSpendCents": 49,
+          "observedDays": 4
+        },
+        {
+          "campaignId": "2144314113",
+          "result": "UNAVAILABLE: API has no rows; console-reported values retained independently",
+          "consoleMetrics": {
+            "Spend": 0,
+            "Impressions": 0,
+            "Taps": 0,
+            "Installs (Total)": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          }
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "No console control exists for the full 28-day window.",
+    "Absent campaign/day rows remain unavailable, not zero.",
+    "Known stored campaigns only; no current account inventory verification."
+  ]
+}

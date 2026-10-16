@@ -1,3 +1,5 @@
+Update · 16 October: successful owner-saved API data and both supplied console controls now reconcile. The existing local page displays the validated historical daily slice. See [API_RECONCILIATION.md](API_RECONCILIATION.md).
+
 Latest correction: [EXPORTER_PRECISION_FIX.md](EXPORTER_PRECISION_FIX.md) records the owner-reported failure, proven precision defect, tested production correction and pending live reconciliation.
 
 # Deployment update · 15 October 2026

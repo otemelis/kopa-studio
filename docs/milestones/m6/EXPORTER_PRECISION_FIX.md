@@ -1,3 +1,5 @@
+Update · 16 October: the owner provided a successful saved export. Both supplied console overlaps and independent daily reconciliation now pass; see [API_RECONCILIATION.md](API_RECONCILIATION.md). Earlier pending-validation statements below are rollout history.
+
 # Exporter precision defect · 15 October 2026
 
 **Status: corrected production deployment READY; live report reconciliation still pending.** The owner received the endpoint's generic HTTP-error body. No export or zero metrics should be inferred from that response. Live API reconciliation is still incomplete.
