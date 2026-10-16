@@ -1,3 +1,5 @@
+> Update 16 October: approved backend deployed and verified. App shipping remains gated. See PASSPORT_BACKEND_DEPLOYMENT.md.
+
 # PASSPORT replay-safe analytics — review checkpoint, 16 October 2026
 
 **Local candidate verified; no hosted schema, collector, submission or release changed.** The actual counter/outbox, collector and receipt SQL now pass a lost-response retry without inflating totals: **8 → 8**, including concurrent database retries. This does not block the 23 October app submission; deploying or shipping the candidate remains an owner decision.
