@@ -1,3 +1,5 @@
+Update · 16 October: local replay-safe candidate 81f4648 passes 22 simulator tests and restored-schema integration (8→8 on retry). Hosted backend and app release remain unchanged pending approval. See [REPLAY_REVIEW.md](REPLAY_REVIEW.md); the original preflight below records the prior baseline defect.
+
 # M1 · PASSPORT telemetry preflight · 15 October 2026
 
 **Local acknowledgement fix tested; exact aggregate telemetry remains NO-GO pending storage deduplication approval.** This is a telemetry decision, not an instruction to delay the 23 October submission. No release, collector or hosted schema was changed.
