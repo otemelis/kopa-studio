@@ -1,3 +1,5 @@
+> Subsequent update: internal TestFlight 1.0.1 (2) was approved and uploaded. Apple processing and genuine device delivery remain pending; see PASSPORT_TESTFLIGHT_BUILD.md.
+
 # PASSPORT backend deployment · 16 October 2026
 
 Owner-approved contract applied as hosted migration `20261016065705_passport_replay_receipts`. Existing collector is ACTIVE at version 3, retaining JWT verification. Deployed source matches the reviewed candidate byte-for-byte.
