@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "mode": "read_only_project_change_log",
+  "generated_at_utc": "2026-10-17T12:58:00.366165Z",
+  "coverage_note": "Curated verified changes only; not complete release, campaign or metadata history. Dates provide context, not causal attribution. No user histories or performance metrics.",
+  "evidence": {
+    "repository_path": "docs/milestones/m8/change-log-source-evidence.json",
+    "sha256": "3e3f58e4ef235c0b03fe222d292b7fe01d3a1c28002cdbf97fec8084e670ecd6"
+  },
+  "entries": [
+    {
+      "id": "asc-ongoing-lovetype",
+      "apps": [
+        "LoveType"
+      ],
+      "scope": "apple_reporting_configuration",
+      "kind": "analytics_request_enabled",
+      "occurred_at_utc": null,
+      "response_observed_at_utc": "2026-10-17T12:35:54.282Z",
+      "summary": "Ongoing Apple Analytics generation enabled for LoveType; existing reader access verified.",
+      "measurement_note": "Timestamp is the observed successful response, not an invented exact creation time. Enabling generation does not establish historical report coverage or app activity.",
+      "evidence_key": "asc-ongoing-lovetype"
+    },
+    {
+      "id": "asc-ongoing-passport",
+      "apps": [
+        "PASSPORT"
+      ],
+      "scope": "apple_reporting_configuration",
+      "kind": "analytics_request_enabled",
+      "occurred_at_utc": null,
+      "response_observed_at_utc": "2026-10-17T12:35:53.234Z",
+      "summary": "Ongoing Apple Analytics generation enabled for PASSPORT; existing reader access verified.",
+      "measurement_note": "Timestamp is the observed successful response, not an invented exact creation time. Enabling generation does not establish historical report coverage or app activity.",
+      "evidence_key": "asc-ongoing-passport"
+    },
+    {
+      "id": "asc-ongoing-pois",
+      "apps": [
+        "POIS"
+      ],
+      "scope": "apple_reporting_configuration",
+      "kind": "analytics_request_enabled",
+      "occurred_at_utc": null,
+      "response_observed_at_utc": "2026-10-17T12:35:52.218Z",
+      "summary": "Ongoing Apple Analytics generation enabled for POIS; existing reader access verified.",
+      "measurement_note": "Timestamp is the observed successful response, not an invented exact creation time. Enabling generation does not establish historical report coverage or app activity.",
+      "evidence_key": "asc-ongoing-pois"
+    },
+    {
+      "id": "passport-internal-1-0-1-2",
+      "apps": [
+        "PASSPORT"
+      ],
+      "scope": "internal_testflight",
+      "kind": "internal_build_registration",
+      "occurred_at_utc": "2026-10-16T14:42:57Z",
+      "response_observed_at_utc": null,
+      "summary": "Apple registered PASSPORT 1.0.1 (2); retained response confirms VALID and INTERNAL_ONLY.",
+      "measurement_note": "Internal testing is not an App Store release. Installation, genuine delivery and device retry validation remain unverified.",
+      "evidence_key": "passport-internal-1-0-1-2"
+    },
+    {
+      "id": "passport-collector-v3",
+      "apps": [
+        "PASSPORT"
+      ],
+      "scope": "hosted_analytics_backend",
+      "kind": "collector_deployment",
+      "occurred_at_utc": "2026-10-16T06:57:13.707000Z",
+      "response_observed_at_utc": null,
+      "summary": "Existing PASSPORT collector version 3 deployed with schema-2 retry receipts and JWT verification.",
+      "measurement_note": "Old schema-1 uploads remain additive. Backend deployment does not prove adoption by any app build.",
+      "evidence_key": "passport-collector-v3"
+    }
+  ]
+}

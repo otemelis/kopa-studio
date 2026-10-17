@@ -1,0 +1,102 @@
+{
+  "verified_against_retained_sources_at_utc": "2026-10-17T12:58:00.366165Z",
+  "records": {
+    "passport-collector-v3": {
+      "apps": [
+        "PASSPORT"
+      ],
+      "scope": "hosted_analytics_backend",
+      "kind": "collector_deployment",
+      "occurred_at_utc": "2026-10-16T06:57:13.707000Z",
+      "response_observed_at_utc": null,
+      "raw_artifact": "rollout-after-0.json",
+      "raw_sha256": "67ed152771069a194955a98e7fa532ff70b90efb6691fb38850bab84aab6c7d9",
+      "verified_fields": {
+        "slug": "passport-ingest-aggregates",
+        "version": 3,
+        "updated_at": 1792133833707,
+        "verify_jwt": true,
+        "status": "ACTIVE"
+      }
+    },
+    "passport-internal-1-0-1-2": {
+      "apps": [
+        "PASSPORT"
+      ],
+      "scope": "internal_testflight",
+      "kind": "internal_build_registration",
+      "occurred_at_utc": "2026-10-16T14:42:57Z",
+      "response_observed_at_utc": null,
+      "raw_artifact": "testflight-api-last.json",
+      "raw_sha256": "d3eb74d3ee57bfbe339bf0f45fbcea6a4027738df08f90dac7d66de5a5cd1691",
+      "verified_fields": {
+        "build_id": "efd06702-6684-42d8-b02b-85557e430fbd",
+        "marketing_version": "1.0.1",
+        "version": "2",
+        "uploadedDate": "2026-10-16T07:42:57-07:00",
+        "processingState": "VALID",
+        "buildAudienceType": "INTERNAL_ONLY"
+      }
+    },
+    "asc-ongoing-pois": {
+      "apps": [
+        "POIS"
+      ],
+      "scope": "apple_reporting_configuration",
+      "kind": "analytics_request_enabled",
+      "occurred_at_utc": null,
+      "response_observed_at_utc": "2026-10-17T12:35:52.218Z",
+      "raw_artifact": "audit.json",
+      "raw_sha256": "b2ca13603625515634f89ada4e871e2d03281adf188c23091cbbf0e5a8d8781f",
+      "verified_fields": {
+        "app_id": "6820665225",
+        "request_id": "0a5174c1-f952-401f-abea-3f9fd6487a36",
+        "http_status": 201,
+        "access_type": "ONGOING",
+        "stopped_due_to_inactivity": false,
+        "reader_verified": true,
+        "response_observed_at_utc": "2026-10-17T12:35:52.218Z"
+      }
+    },
+    "asc-ongoing-passport": {
+      "apps": [
+        "PASSPORT"
+      ],
+      "scope": "apple_reporting_configuration",
+      "kind": "analytics_request_enabled",
+      "occurred_at_utc": null,
+      "response_observed_at_utc": "2026-10-17T12:35:53.234Z",
+      "raw_artifact": "audit.json",
+      "raw_sha256": "b2ca13603625515634f89ada4e871e2d03281adf188c23091cbbf0e5a8d8781f",
+      "verified_fields": {
+        "app_id": "6822753543",
+        "request_id": "1a1002c3-3a07-4d10-afca-6352b89790d5",
+        "http_status": 201,
+        "access_type": "ONGOING",
+        "stopped_due_to_inactivity": false,
+        "reader_verified": true,
+        "response_observed_at_utc": "2026-10-17T12:35:53.234Z"
+      }
+    },
+    "asc-ongoing-lovetype": {
+      "apps": [
+        "LoveType"
+      ],
+      "scope": "apple_reporting_configuration",
+      "kind": "analytics_request_enabled",
+      "occurred_at_utc": null,
+      "response_observed_at_utc": "2026-10-17T12:35:54.282Z",
+      "raw_artifact": "audit.json",
+      "raw_sha256": "b2ca13603625515634f89ada4e871e2d03281adf188c23091cbbf0e5a8d8781f",
+      "verified_fields": {
+        "app_id": "6786477464",
+        "request_id": "a602f763-4566-411c-9a6d-dd433363d545",
+        "http_status": 201,
+        "access_type": "ONGOING",
+        "stopped_due_to_inactivity": false,
+        "reader_verified": true,
+        "response_observed_at_utc": "2026-10-17T12:35:54.282Z"
+      }
+    }
+  }
+}
