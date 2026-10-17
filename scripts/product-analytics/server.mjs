@@ -1,3 +1,4 @@
+import{createRefreshControl,refreshRequest}from'./app-store-refresh.mjs';
 import http from 'node:http';import fs from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';import {createRequire} from 'node:module';import * as q from './queries.mjs';import {scope,ratio,fillDays} from './model.mjs';
 const root=fileURLToPath(new URL('../../reporting/portfolio/',import.meta.url));
 const {Client}=createRequire(new URL('../../apps/tools/package.json',import.meta.url))('pg');
@@ -19,6 +20,7 @@ async function report(s){
  await client.query('COMMIT');return result;
  }finally{await client.end();}
 }
+const ascRefresh=createRefreshControl();
 const types={'.html':'text/html','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.csv':'text/csv','.md':'text/plain'};
-http.createServer(async(req,res)=>{res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');try{const url=new URL(req.url,'http://localhost');if(url.pathname==='/api/product'){const s=scope(url.searchParams.get('app'),url.searchParams.get('environment'),url.searchParams.get('days'));res.setHeader('Content-Type','application/json');res.end(JSON.stringify(await report(s)));return;}
+http.createServer(async(req,res)=>{res.setHeader('Cache-Control','no-store');res.setHeader('X-Content-Type-Options','nosniff');try{const url=new URL(req.url,'http://localhost');if(url.pathname==='/api/app-store/refresh'){refreshRequest(req,res,Number(process.env.PORT??4340),ascRefresh);return;}if(url.pathname==='/api/product'){const s=scope(url.searchParams.get('app'),url.searchParams.get('environment'),url.searchParams.get('days'));res.setHeader('Content-Type','application/json');res.end(JSON.stringify(await report(s)));return;}
  const name=url.pathname==='/'?'index.html':decodeURIComponent(url.pathname.slice(1));const target=path.resolve(root,name);if(!target.startsWith(root)||name.startsWith('.')||!types[path.extname(target)]){res.writeHead(404);res.end();return;}res.setHeader('Content-Type',types[path.extname(target)]);res.end(await fs.readFile(target));}catch(e){res.writeHead(req.url.startsWith('/api/')?503:404,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'unavailable',message:'Source query failed. No substitute data is shown.'}));console.error('Kopa source request failed:',e.code??e.message);}}).listen(Number(process.env.PORT??4340),'127.0.0.1',()=>console.log('Kopa read-only portfolio + product analytics: http://127.0.0.1:'+(process.env.PORT??4340)));

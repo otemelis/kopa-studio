@@ -1,0 +1,912 @@
+{
+  "status": "PASS",
+  "visibleNumbersChecked": 102,
+  "periods": [
+    "28",
+    "7"
+  ],
+  "manifest": {
+    "schema_version": 1,
+    "csv": "daily-cb5715c4ae57aabb58ee64d5704bd5a9fb4b03e160d88b742f6b93763ba703c3.csv",
+    "sha256": "cb5715c4ae57aabb58ee64d5704bd5a9fb4b03e160d88b742f6b93763ba703c3",
+    "period_start": "2026-09-16",
+    "period_end": "2026-10-13",
+    "last_successful_refresh_utc": "2026-10-17T14:00:33.133822+00:00",
+    "run": "20261017T135904Z",
+    "validation": "independent SQL, raw checksums, daily-to-weekly Sales controls",
+    "historical_snapshot": true,
+    "analytics_availability": [
+      {
+        "app": "POIS",
+        "checkedAt": "2026-10-17T13:59:09.531Z",
+        "reports": [
+          {
+            "kind": "discovery",
+            "reportId": "r14-0a5174c1-f952-401f-abea-3f9fd6487a36",
+            "state": "awaiting_generation",
+            "instances": 0,
+            "latestProcessingDate": null
+          },
+          {
+            "kind": "downloads",
+            "reportId": "r3-0a5174c1-f952-401f-abea-3f9fd6487a36",
+            "state": "awaiting_generation",
+            "instances": 0,
+            "latestProcessingDate": null
+          },
+          {
+            "kind": "purchases",
+            "reportId": "r12-0a5174c1-f952-401f-abea-3f9fd6487a36",
+            "state": "awaiting_generation",
+            "instances": 0,
+            "latestProcessingDate": null
+          }
+        ]
+      },
+      {
+        "app": "PASSPORT",
+        "checkedAt": "2026-10-17T13:59:10.365Z",
+        "reports": [
+          {
+            "kind": "discovery",
+            "reportId": "r14-1a1002c3-3a07-4d10-afca-6352b89790d5",
+            "state": "awaiting_generation",
+            "instances": 0,
+            "latestProcessingDate": null
+          },
+          {
+            "kind": "downloads",
+            "reportId": "r3-1a1002c3-3a07-4d10-afca-6352b89790d5",
+            "state": "awaiting_generation",
+            "instances": 0,
+            "latestProcessingDate": null
+          },
+          {
+            "kind": "purchases",
+            "reportId": "r12-1a1002c3-3a07-4d10-afca-6352b89790d5",
+            "state": "awaiting_generation",
+            "instances": 0,
+            "latestProcessingDate": null
+          }
+        ]
+      },
+      {
+        "app": "LoveType",
+        "checkedAt": "2026-10-17T13:59:11.108Z",
+        "reports": [
+          {
+            "kind": "discovery",
+            "reportId": "r14-a602f763-4566-411c-9a6d-dd433363d545",
+            "state": "awaiting_generation",
+            "instances": 0,
+            "latestProcessingDate": null
+          },
+          {
+            "kind": "downloads",
+            "reportId": "r3-a602f763-4566-411c-9a6d-dd433363d545",
+            "state": "awaiting_generation",
+            "instances": 0,
+            "latestProcessingDate": null
+          },
+          {
+            "kind": "purchases",
+            "reportId": "r12-a602f763-4566-411c-9a6d-dd433363d545",
+            "state": "awaiting_generation",
+            "instances": 0,
+            "latestProcessingDate": null
+          }
+        ]
+      }
+    ]
+  },
+  "independentValidation": {
+    "dataset_sha256": "cb5715c4ae57aabb58ee64d5704bd5a9fb4b03e160d88b742f6b93763ba703c3",
+    "baseline_sha256": "34630e87ba2b9858d02356cfa2cf33628f5dbbaee52c7705e1b1fda561c2715e",
+    "rows": 2184,
+    "days": 28,
+    "apps": 4,
+    "series_reconciled": 78,
+    "daily_values_checked_against_independent_sql": 1204,
+    "weekly_sales_control_groups": 12,
+    "weekly_equals_daily": true,
+    "duplicate_and_calendar_failure_probes_passed": true,
+    "status_counts": {
+      "derived_event_ratio": 69,
+      "reported_value": 263,
+      "unavailable_analytics_pending_validation": 420,
+      "unavailable_source_capability": 560,
+      "undefined_zero_denominator": 71,
+      "zero_apple_no_sales": 52,
+      "zero_matching_rows": 8,
+      "zero_no_matching_sales_rows": 266,
+      "zero_no_rows_in_validated_standard_extract": 475
+    },
+    "series": [
+      {
+        "app": "InnerType",
+        "metric": "icon_impressions",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "2080",
+        "daily_aggregate": "2080",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "product_page_views",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "144",
+        "daily_aggregate": "144",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "first_time_downloads",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "57",
+        "daily_aggregate": "57",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "apple_reported_purchase_units_net",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "4",
+        "daily_aggregate": "4",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "estimated_proceeds_usd",
+        "acquisition_source": "All sources",
+        "currency": "USD",
+        "baseline": "20.73",
+        "daily_aggregate": "20.73",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "product_page_first_downloads_per_view",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "16.666667",
+        "daily_aggregate": "16.666667",
+        "method": "ratio of summed components",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "icon_impressions",
+        "acquisition_source": "App Store search",
+        "currency": "",
+        "baseline": "1931",
+        "daily_aggregate": "1931",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "product_page_views",
+        "acquisition_source": "App Store search",
+        "currency": "",
+        "baseline": "82",
+        "daily_aggregate": "82",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "first_time_downloads",
+        "acquisition_source": "App Store search",
+        "currency": "",
+        "baseline": "47",
+        "daily_aggregate": "47",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "apple_reported_purchase_units_net",
+        "acquisition_source": "App Store search",
+        "currency": "",
+        "baseline": "3",
+        "daily_aggregate": "3",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "estimated_proceeds_usd",
+        "acquisition_source": "App Store search",
+        "currency": "USD",
+        "baseline": "15.13",
+        "daily_aggregate": "15.13",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "product_page_first_downloads_per_view",
+        "acquisition_source": "App Store search",
+        "currency": "",
+        "baseline": "18.292683",
+        "daily_aggregate": "18.292683",
+        "method": "ratio of summed components",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "icon_impressions",
+        "acquisition_source": "App Store browse",
+        "currency": "",
+        "baseline": "149",
+        "daily_aggregate": "149",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "product_page_views",
+        "acquisition_source": "App Store browse",
+        "currency": "",
+        "baseline": "57",
+        "daily_aggregate": "57",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "first_time_downloads",
+        "acquisition_source": "App Store browse",
+        "currency": "",
+        "baseline": "5",
+        "daily_aggregate": "5",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "apple_reported_purchase_units_net",
+        "acquisition_source": "App Store browse",
+        "currency": "",
+        "baseline": "0",
+        "daily_aggregate": "0",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "estimated_proceeds_usd",
+        "acquisition_source": "App Store browse",
+        "currency": "USD",
+        "baseline": "0.00",
+        "daily_aggregate": "0.00",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "product_page_first_downloads_per_view",
+        "acquisition_source": "App Store browse",
+        "currency": "",
+        "baseline": "8.771930",
+        "daily_aggregate": "8.771930",
+        "method": "ratio of summed components",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "icon_impressions",
+        "acquisition_source": "App referrer",
+        "currency": "",
+        "baseline": "0",
+        "daily_aggregate": "0",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "product_page_views",
+        "acquisition_source": "App referrer",
+        "currency": "",
+        "baseline": "5",
+        "daily_aggregate": "5",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "first_time_downloads",
+        "acquisition_source": "App referrer",
+        "currency": "",
+        "baseline": "4",
+        "daily_aggregate": "4",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "apple_reported_purchase_units_net",
+        "acquisition_source": "App referrer",
+        "currency": "",
+        "baseline": "1",
+        "daily_aggregate": "1",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "estimated_proceeds_usd",
+        "acquisition_source": "App referrer",
+        "currency": "USD",
+        "baseline": "5.60",
+        "daily_aggregate": "5.60",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "product_page_first_downloads_per_view",
+        "acquisition_source": "App referrer",
+        "currency": "",
+        "baseline": "80.000000",
+        "daily_aggregate": "80.000000",
+        "method": "ratio of summed components",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "icon_impressions",
+        "acquisition_source": "Web referrer",
+        "currency": "",
+        "baseline": "0",
+        "daily_aggregate": "0",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "product_page_views",
+        "acquisition_source": "Web referrer",
+        "currency": "",
+        "baseline": "0",
+        "daily_aggregate": "0",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "first_time_downloads",
+        "acquisition_source": "Web referrer",
+        "currency": "",
+        "baseline": "1",
+        "daily_aggregate": "1",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "apple_reported_purchase_units_net",
+        "acquisition_source": "Web referrer",
+        "currency": "",
+        "baseline": "0",
+        "daily_aggregate": "0",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "estimated_proceeds_usd",
+        "acquisition_source": "Web referrer",
+        "currency": "USD",
+        "baseline": "0.00",
+        "daily_aggregate": "0.00",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "product_page_first_downloads_per_view",
+        "acquisition_source": "Web referrer",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "undefined preserved",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "first_time_app_units_sales",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "58",
+        "daily_aggregate": "58",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "4",
+        "daily_aggregate": "4",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "estimated_proceeds_native_currency",
+        "acquisition_source": "All sources",
+        "currency": "GBP",
+        "baseline": "2.89",
+        "daily_aggregate": "2.89",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "estimated_proceeds_native_currency",
+        "acquisition_source": "All sources",
+        "currency": "USD",
+        "baseline": "16.80",
+        "daily_aggregate": "16.80",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "unique_paying_customers",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "download_to_paying_customer_conversion",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "product_journey_dropoff",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "organic_only_acquisition",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "InnerType",
+        "metric": "paid_channel_roas",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "LoveType",
+        "metric": "first_time_app_units_sales",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "10",
+        "daily_aggregate": "10",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "LoveType",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "0",
+        "daily_aggregate": "0",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "LoveType",
+        "metric": "estimated_proceeds_native_currency",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "0.00",
+        "daily_aggregate": "0.00",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "LoveType",
+        "metric": "unique_paying_customers",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "LoveType",
+        "metric": "download_to_paying_customer_conversion",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "LoveType",
+        "metric": "product_journey_dropoff",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "LoveType",
+        "metric": "organic_only_acquisition",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "LoveType",
+        "metric": "paid_channel_roas",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "LoveType",
+        "metric": "icon_impressions",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "LoveType",
+        "metric": "product_page_views",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "LoveType",
+        "metric": "first_time_downloads_by_source",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "LoveType",
+        "metric": "purchases_by_acquisition_source",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "LoveType",
+        "metric": "product_page_first_downloads_per_view",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "POIS",
+        "metric": "first_time_app_units_sales",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "0",
+        "daily_aggregate": "0",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "POIS",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "0",
+        "daily_aggregate": "0",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "POIS",
+        "metric": "estimated_proceeds_native_currency",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "0.00",
+        "daily_aggregate": "0.00",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "POIS",
+        "metric": "unique_paying_customers",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "POIS",
+        "metric": "download_to_paying_customer_conversion",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "POIS",
+        "metric": "product_journey_dropoff",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "POIS",
+        "metric": "organic_only_acquisition",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "POIS",
+        "metric": "paid_channel_roas",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "POIS",
+        "metric": "icon_impressions",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "POIS",
+        "metric": "product_page_views",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "POIS",
+        "metric": "first_time_downloads_by_source",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "POIS",
+        "metric": "purchases_by_acquisition_source",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "POIS",
+        "metric": "product_page_first_downloads_per_view",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "PASSPORT",
+        "metric": "first_time_app_units_sales",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "0",
+        "daily_aggregate": "0",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "PASSPORT",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "0",
+        "daily_aggregate": "0",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "PASSPORT",
+        "metric": "estimated_proceeds_native_currency",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "0.00",
+        "daily_aggregate": "0.00",
+        "method": "sum",
+        "match": true
+      },
+      {
+        "app": "PASSPORT",
+        "metric": "unique_paying_customers",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "PASSPORT",
+        "metric": "download_to_paying_customer_conversion",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "PASSPORT",
+        "metric": "product_journey_dropoff",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "PASSPORT",
+        "metric": "organic_only_acquisition",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "PASSPORT",
+        "metric": "paid_channel_roas",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "PASSPORT",
+        "metric": "icon_impressions",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "PASSPORT",
+        "metric": "product_page_views",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "PASSPORT",
+        "metric": "first_time_downloads_by_source",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "PASSPORT",
+        "metric": "purchases_by_acquisition_source",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      },
+      {
+        "app": "PASSPORT",
+        "metric": "product_page_first_downloads_per_view",
+        "acquisition_source": "All sources",
+        "currency": "",
+        "baseline": "",
+        "daily_aggregate": "",
+        "method": "unavailable preserved",
+        "match": true
+      }
+    ]
+  },
+  "refreshMode": "existing official API extractor invoked from local portfolio button; no file handoff",
+  "securityTests": 3,
+  "reportingTests": 20,
+  "httpTests": "pass; foreign POST blocked, no private paths exposed",
+  "exactNumberStringCheck": true
+}

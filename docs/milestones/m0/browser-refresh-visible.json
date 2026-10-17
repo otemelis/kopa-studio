@@ -1,0 +1,1066 @@
+[
+  {
+    "hash": "cb5715c4ae57aabb58ee64d5704bd5a9fb4b03e160d88b742f6b93763ba703c3",
+    "health": "Last complete data date: 2026-10-13. Last successful refresh: 2026-10-17T14:00:33.133822+00:00. Validated historical snapshot. Last refresh attempt: 2026-10-17T13:59:04.460175+00:00 (success). ",
+    "period": "28",
+    "unavailable": [
+      "Unavailable",
+      "Unavailable",
+      "Unavailable",
+      "Unavailable"
+    ],
+    "values": [
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "first_time_app_units_sales",
+        "number": "58",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "58"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "icon_impressions",
+        "number": "2080",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "2,080"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "product_page_views",
+        "number": "144",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "144"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "4",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "4"
+      },
+      {
+        "app": "InnerType",
+        "currency": "GBP",
+        "end": "2026-10-13",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "2.89",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "2.89"
+      },
+      {
+        "app": "InnerType",
+        "currency": "USD",
+        "end": "2026-10-13",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "16.80",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "16.80"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "first_time_app_units_sales",
+        "number": "10",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "10"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "0",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "0"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "0.00"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-09-22",
+        "metric": "first_time_app_units_sales",
+        "number": "23",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "23"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-09-29",
+        "metric": "first_time_app_units_sales",
+        "number": "12",
+        "operation": "sum",
+        "start": "2026-09-23",
+        "text": "12"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "first_time_app_units_sales",
+        "number": "10",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "10"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "first_time_app_units_sales",
+        "number": "13",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "13"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-09-22",
+        "metric": "first_time_app_units_sales",
+        "number": "23",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "23"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-09-29",
+        "metric": "first_time_app_units_sales",
+        "number": "12",
+        "operation": "sum",
+        "start": "2026-09-23",
+        "text": "12"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "first_time_app_units_sales",
+        "number": "10",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "10"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "first_time_app_units_sales",
+        "number": "13",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "13"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-09-22",
+        "metric": "icon_impressions",
+        "number": "526",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "526"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-09-29",
+        "metric": "icon_impressions",
+        "number": "506",
+        "operation": "sum",
+        "start": "2026-09-23",
+        "text": "506"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "icon_impressions",
+        "number": "501",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "501"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "icon_impressions",
+        "number": "547",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "547"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-09-22",
+        "metric": "product_page_views",
+        "number": "36",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "36"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-09-29",
+        "metric": "product_page_views",
+        "number": "37",
+        "operation": "sum",
+        "start": "2026-09-23",
+        "text": "37"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "product_page_views",
+        "number": "49",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "49"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "product_page_views",
+        "number": "22",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "22"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-09-22",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "2",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "2"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-09-29",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "1",
+        "operation": "sum",
+        "start": "2026-09-23",
+        "text": "1"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "1",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "1"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "0",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0"
+      },
+      {
+        "app": "InnerType",
+        "currency": "GBP",
+        "end": "2026-09-22",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "2.89",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "2.89"
+      },
+      {
+        "app": "InnerType",
+        "currency": "USD",
+        "end": "2026-09-22",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "5.60",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "5.60"
+      },
+      {
+        "app": "InnerType",
+        "currency": "GBP",
+        "end": "2026-09-29",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-09-23",
+        "text": "0.00"
+      },
+      {
+        "app": "InnerType",
+        "currency": "USD",
+        "end": "2026-09-29",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "5.60",
+        "operation": "sum",
+        "start": "2026-09-23",
+        "text": "5.60"
+      },
+      {
+        "app": "InnerType",
+        "currency": "GBP",
+        "end": "2026-10-06",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "0.00"
+      },
+      {
+        "app": "InnerType",
+        "currency": "USD",
+        "end": "2026-10-06",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "5.60",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "5.60"
+      },
+      {
+        "app": "InnerType",
+        "currency": "GBP",
+        "end": "2026-10-13",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0.00"
+      },
+      {
+        "app": "InnerType",
+        "currency": "USD",
+        "end": "2026-10-13",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0.00"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-09-22",
+        "metric": "first_time_app_units_sales",
+        "number": "4",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "4"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-09-29",
+        "metric": "first_time_app_units_sales",
+        "number": "5",
+        "operation": "sum",
+        "start": "2026-09-23",
+        "text": "5"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "first_time_app_units_sales",
+        "number": "1",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "1"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "first_time_app_units_sales",
+        "number": "0",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-09-22",
+        "metric": "first_time_app_units_sales",
+        "number": "4",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "4"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-09-29",
+        "metric": "first_time_app_units_sales",
+        "number": "5",
+        "operation": "sum",
+        "start": "2026-09-23",
+        "text": "5"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "first_time_app_units_sales",
+        "number": "1",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "1"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "first_time_app_units_sales",
+        "number": "0",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-09-22",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "0",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "0"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-09-29",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "0",
+        "operation": "sum",
+        "start": "2026-09-23",
+        "text": "0"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "0",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "0"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "0",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-09-22",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-09-16",
+        "text": "0.00"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-09-29",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-09-23",
+        "text": "0.00"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "0.00"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0.00"
+      }
+    ]
+  },
+  {
+    "hash": "cb5715c4ae57aabb58ee64d5704bd5a9fb4b03e160d88b742f6b93763ba703c3",
+    "health": "Last complete data date: 2026-10-13. Last successful refresh: 2026-10-17T14:00:33.133822+00:00. Validated historical snapshot. Last refresh attempt: 2026-10-17T13:59:04.460175+00:00 (success). ",
+    "period": "7",
+    "unavailable": [
+      "Unavailable",
+      "Unavailable",
+      "Unavailable",
+      "Unavailable"
+    ],
+    "values": [
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "first_time_app_units_sales",
+        "number": "13",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "13"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "first_time_app_units_sales",
+        "number": "3",
+        "operation": "delta",
+        "priorEnd": "2026-10-06",
+        "priorStart": "2026-09-30",
+        "start": "2026-10-07",
+        "text": "3"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "first_time_app_units_sales",
+        "number": "10",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "10"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "icon_impressions",
+        "number": "547",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "547"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "icon_impressions",
+        "number": "46",
+        "operation": "delta",
+        "priorEnd": "2026-10-06",
+        "priorStart": "2026-09-30",
+        "start": "2026-10-07",
+        "text": "46"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "icon_impressions",
+        "number": "501",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "501"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "product_page_views",
+        "number": "22",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "22"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "product_page_views",
+        "number": "-27",
+        "operation": "delta",
+        "priorEnd": "2026-10-06",
+        "priorStart": "2026-09-30",
+        "start": "2026-10-07",
+        "text": "-27"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "product_page_views",
+        "number": "49",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "49"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "0",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "-1",
+        "operation": "delta",
+        "priorEnd": "2026-10-06",
+        "priorStart": "2026-09-30",
+        "start": "2026-10-07",
+        "text": "-1"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "1",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "1"
+      },
+      {
+        "app": "InnerType",
+        "currency": "GBP",
+        "end": "2026-10-13",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0.00"
+      },
+      {
+        "app": "InnerType",
+        "currency": "USD",
+        "end": "2026-10-13",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0.00"
+      },
+      {
+        "app": "InnerType",
+        "currency": "GBP",
+        "end": "2026-10-13",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "delta",
+        "priorEnd": "2026-10-06",
+        "priorStart": "2026-09-30",
+        "start": "2026-10-07",
+        "text": "0.00"
+      },
+      {
+        "app": "InnerType",
+        "currency": "GBP",
+        "end": "2026-10-06",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "0.00"
+      },
+      {
+        "app": "InnerType",
+        "currency": "USD",
+        "end": "2026-10-13",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "-5.60",
+        "operation": "delta",
+        "priorEnd": "2026-10-06",
+        "priorStart": "2026-09-30",
+        "start": "2026-10-07",
+        "text": "-5.60"
+      },
+      {
+        "app": "InnerType",
+        "currency": "USD",
+        "end": "2026-10-06",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "5.60",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "5.60"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "first_time_app_units_sales",
+        "number": "0",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "first_time_app_units_sales",
+        "number": "-1",
+        "operation": "delta",
+        "priorEnd": "2026-10-06",
+        "priorStart": "2026-09-30",
+        "start": "2026-10-07",
+        "text": "-1"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "first_time_app_units_sales",
+        "number": "1",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "1"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "0",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "0",
+        "operation": "delta",
+        "priorEnd": "2026-10-06",
+        "priorStart": "2026-09-30",
+        "start": "2026-10-07",
+        "text": "0"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "0",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "0"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0.00"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "delta",
+        "priorEnd": "2026-10-06",
+        "priorStart": "2026-09-30",
+        "start": "2026-10-07",
+        "text": "0.00"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "0.00"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "first_time_app_units_sales",
+        "number": "10",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "10"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "first_time_app_units_sales",
+        "number": "13",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "13"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "first_time_app_units_sales",
+        "number": "10",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "10"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "first_time_app_units_sales",
+        "number": "13",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "13"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "icon_impressions",
+        "number": "501",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "501"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "icon_impressions",
+        "number": "547",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "547"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "product_page_views",
+        "number": "49",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "49"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "product_page_views",
+        "number": "22",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "22"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "1",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "1"
+      },
+      {
+        "app": "InnerType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "0",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0"
+      },
+      {
+        "app": "InnerType",
+        "currency": "GBP",
+        "end": "2026-10-06",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "0.00"
+      },
+      {
+        "app": "InnerType",
+        "currency": "USD",
+        "end": "2026-10-06",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "5.60",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "5.60"
+      },
+      {
+        "app": "InnerType",
+        "currency": "GBP",
+        "end": "2026-10-13",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0.00"
+      },
+      {
+        "app": "InnerType",
+        "currency": "USD",
+        "end": "2026-10-13",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0.00"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "first_time_app_units_sales",
+        "number": "1",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "1"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "first_time_app_units_sales",
+        "number": "0",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "first_time_app_units_sales",
+        "number": "1",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "1"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "first_time_app_units_sales",
+        "number": "0",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "0",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "0"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "apple_reported_paid_iap_units_sales",
+        "number": "0",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-06",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-09-30",
+        "text": "0.00"
+      },
+      {
+        "app": "LoveType",
+        "currency": "",
+        "end": "2026-10-13",
+        "metric": "estimated_proceeds_native_currency",
+        "number": "0.00",
+        "operation": "sum",
+        "start": "2026-10-07",
+        "text": "0.00"
+      }
+    ]
+  }
+]
