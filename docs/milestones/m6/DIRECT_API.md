@@ -1,3 +1,9 @@
+Update · 17 October 2026: **owner-approved deployment complete and live API reads verified.** Open https://tools.kopa.studio/reports/apple-ads using the existing owner login. It fetches on open and Refresh, without a file handoff. Two live source queries succeeded at13:50:09.914 and13:50:23.876 UTC. Both returned the same 19Sep–16Oct totals as the earlier validated control: EUR5.7587 exact,331 impressions,14 taps,9 attributed installs. API query time and browser refresh time are independent clocks, so sub-second order can differ. No automatic background job was added.
+
+Preview dpl_GaM4dtn4uoX4Yp948GiE4ox5owdY and production dpl_DGpNTpJBQaaQnqTjHzqdf4T9Ersn are READY;311 deployed source hashes verify308 unchanged baseline files plus3 approved additions. Anonymous production requests redirect307 to/login; signed-in owner fetch works. Light/dark checked, dark restored. Project root/build/install/output settings remain unchanged. Existing expired Vercel login refreshed through the installed CLI, no new access grants. Two failed previews left production unchanged; explicitly choosing the existing Tools config avoided the unrelated root static-site output directory.
+
+Evidence: direct-api-deployment.json plus live screenshots. Rollback target is the retained previous production dpl_E5iLpGin26uGRh4km2e58sjrhXnu; no database rollback is needed. No rollback executed. Earlier pending notes below are rollout history.
+
 # Direct Apple Ads report: reviewed deployment candidate
 
 17 October 2026. Local implementation ready; **not deployed or live-validated**. Expected owner-only URL after approval: https://tools.kopa.studio/reports/apple-ads.
