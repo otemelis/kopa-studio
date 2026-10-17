@@ -1,0 +1,15 @@
+{
+  "mode": "explicit_local_replay_not_live",
+  "source": "owner-saved real export111.json",
+  "initial": {
+    "scope": "2026-09-19 through 2026-10-16 · UTC · EUR · API queried 2026-10-17T13:09:21.141Z · last successful refresh 2026-10-17T13:30:26.234Z",
+    "totals": "SpendEUR 5.76Impressions331Taps14Installs (Tap-Through)8Installs (Total)9New Downloads (Total)9Redownloads (Total)0CPA (Total)EUR 0.64"
+  },
+  "afterFailure": {
+    "scope": "2026-09-19 through 2026-10-16 · UTC · EUR · API queried 2026-10-17T13:09:21.141Z · last successful refresh 2026-10-17T13:30:26.234Z",
+    "status": "Refresh failed. Previous successful report retained with its original query and refresh times. No replacement metrics shown.",
+    "totals": "SpendEUR 5.76Impressions331Taps14Installs (Tap-Through)8Installs (Total)9New Downloads (Total)9Redownloads (Total)0CPA (Total)EUR 0.64"
+  },
+  "preservedValues": true,
+  "preservedTimes": true
+}
