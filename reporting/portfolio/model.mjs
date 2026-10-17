@@ -40,7 +40,7 @@ export function integer(value,money=false) {
   if(!Number.isSafeInteger(result))throw Error('Unsafe value');
   return result;
 }
-const goodStatuses=new Set(['reported_value','zero_matching_rows','zero_apple_no_sales','zero_no_matching_sales_rows','zero_no_rows_in_validated_standard_extract','derived_event_ratio','undefined_zero_denominator','unavailable_no_analytics_request','unavailable_source_capability']);
+const goodStatuses=new Set(['reported_value','zero_matching_rows','zero_apple_no_sales','zero_no_matching_sales_rows','zero_no_rows_in_validated_standard_extract','derived_event_ratio','undefined_zero_denominator','unavailable_no_analytics_request','unavailable_source_capability','unavailable_analytics_pending_validation']);
 export function loadSnapshot(text) {
   const all=parseCSV(text);
   if(!all.length)throw Error('Unexpected snapshot row count');

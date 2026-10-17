@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
-  "csv": "daily-dba41b51e7333e3f152be894a47fbb6d0984d02ea9d8f05de986af188ee5bcf2.csv",
-  "sha256": "dba41b51e7333e3f152be894a47fbb6d0984d02ea9d8f05de986af188ee5bcf2",
+  "csv": "daily-cd72a0c84418fcb8ee4f395dd9e9a121eaec021e29f90ba8344304303ca4b870.csv",
+  "sha256": "cd72a0c84418fcb8ee4f395dd9e9a121eaec021e29f90ba8344304303ca4b870",
   "period_start": "2026-09-16",
   "period_end": "2026-10-13",
-  "last_successful_refresh_utc": "2026-10-17T11:07:17.662827+00:00",
-  "run": "20261017T110603Z",
+  "last_successful_refresh_utc": "2026-10-17T12:38:30.594745+00:00",
+  "run": "20261017T123714Z",
   "validation": "independent SQL, raw checksums, daily-to-weekly Sales controls",
   "historical_snapshot": true
 }

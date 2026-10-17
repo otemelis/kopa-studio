@@ -1,3 +1,11 @@
+# Current activation update · 17 October 2026, 12:38 UTC
+
+Three owner-approved ONGOING Analytics requests are active for POIS, PASSPORT and LoveType; existing reporting-key access verified. The nine required report types have no daily instances at the activation check. The refreshed CSV therefore retains 420 blank Analytics cells as unavailable_analytics_pending_validation, not zeros. The existing Sales refresh remains functional: 2,184 rows, 78 reconciled series, 1,204 independently checked daily values and three weekly controls. Numeric totals and period (16 September–13 October) match the checkpoint below. Latest manifest hash: `cd72a0c84418fcb8ee4f395dd9e9a121eaec021e29f90ba8344304303ca4b870`. Last successful refresh: 2026-10-17T12:38:30.594745+00:00. No historical request, app release or new permission was created.
+
+The earlier checkpoint below is preserved as historical evidence of the state before approved activation. Current operational metadata always comes from current.json.
+
+---
+
 # M4 four-app official Sales coverage · 17 October 2026
 
 The existing overview at http://127.0.0.1:4340/ now reads validated official Apple Sales rows for all four known apps. Existing Signal layout and appearance controls are retained. Run `npm run reports:refresh` then reload; no server restart or production deployment is needed.

@@ -56,7 +56,10 @@ for day,m in sales_by_day.items():
         assert all(date.fromisoformat(day).strftime('%m/%d/%Y')==r['Begin Date']==r['End Date'] for r in sales[day])
 for app in APPS:
     if app!='InnerType':
-        request=json.loads((P/f'{app}-requests-0.json').read_text());assert request['data']==[] and not request.get('links',{}).get('next')
+        request=json.loads((P/f'{app}-requests-0.json').read_text());assert not request.get('links',{}).get('next')
+        if request['data']:
+            approved=json.loads((Path(__file__).parent/'approved-analytics-requests.json').read_text())
+            assert len(request['data'])==1 and request['data'][0]['id']==approved[app] and request['data'][0]['attributes']['accessType']=='ONGOING' and not request['data'][0]['attributes']['stoppedDueToInactivity']
 
 headers=['date','app','metric','source','value','data_quality_status','acquisition_source','scope','unit','currency','source_timezone','numerator','denominator','source_row_count','selected_processing_dates','evidence_files','evidence_sha256','definition','source_extracted_at_utc']
 output=[]
@@ -68,7 +71,7 @@ for b in baseline:
         if b['status']=='unavailable':
             quality='unavailable_source_capability'
             if app!='InnerType' and evidence==f'{app}-requests-0.json':
-                quality='unavailable_no_analytics_request'; evidence_files=f'{app}-requests-0.json'; evidence_hash=sha(P/evidence_files)
+                quality='unavailable_analytics_pending_validation' if json.loads((P/evidence).read_text())['data'] else 'unavailable_no_analytics_request'; evidence_files=f'{app}-requests-0.json'; evidence_hash=sha(P/evidence_files)
                 extracted_at=max(m['retrievedAt'] for m in json.loads((P/'retrieval-log.json').read_text()) if m['file']==evidence_files)
         elif metric.endswith('_sales') or metric=='estimated_proceeds_native_currency':
             identifier,sku=APPS[app]

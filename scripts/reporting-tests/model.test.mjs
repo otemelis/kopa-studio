@@ -46,3 +46,12 @@ test('four-app snapshots retain source absence separately from Sales zero and re
  assert.throws(()=>loadSnapshot(encode([...rows,...additions.slice(1)])),/Partial/);
  assert.throws(()=>loadSnapshot(encode([...rows,...additions.map(r=>r.app==='PASSPORT'?{...r,app:'Unknown'}:r)])),/Invalid/);
 });
+
+test('enabled Analytics awaiting validation remains unavailable, never a numeric zero',()=>{
+ const pending=text.replaceAll('unavailable_no_analytics_request','unavailable_analytics_pending_validation');
+ const model=loadSnapshot(pending);
+ assert.equal(aggregate(model,'LoveType','icon_impressions',model.start,model.end).state,'unavailable');
+ const rows=parseCSV(pending),row=rows.find(r=>r.data_quality_status==='unavailable_analytics_pending_validation');
+ row.value='0';const header=Object.keys(rows[0]);const encode=rs=>[header.join(','),...rs.map(r=>header.map(k=>'"'+String(r[k]).replaceAll('"','""')+'"').join(','))].join('\n');
+ assert.throws(()=>loadSnapshot(encode(rows)),/Unavailable metric must be blank/);
+});

@@ -15,3 +15,19 @@ with tempfile.TemporaryDirectory() as td:
  assert (m.PAGE/'current.json').read_bytes()==good
  a=json.loads((m.PAGE/'refresh-status.json').read_text());assert a['status']=='failed' and a['last_attempt_utc']=='2026-10-15T14:00:00Z'
 print('PASS: corrupted publication rejected, last-good manifest unchanged, failed attempt recorded')
+
+approved=json.loads((m.SCRIPTS/'approved-analytics-requests.json').read_text())
+for app,request_id in approved.items():
+ body={'data':[{'id':request_id,'attributes':{'accessType':'ONGOING','stoppedDueToInactivity':False}}],'links':{}}
+ m.validate_analytics_configuration(app,body)
+ for bad in [
+  {'data':[{'id':'unapproved','attributes':{'accessType':'ONGOING'}}]},
+  {'data':[{'id':request_id,'attributes':{'accessType':'ONE_TIME_SNAPSHOT'}}]},
+  {'data':[{'id':request_id,'attributes':{'accessType':'ONGOING','stoppedDueToInactivity':True}}]},
+  {**body,'links':{'next':'unexpected-page'}},
+  {'data':body['data']*2},
+ ]:
+  try:m.validate_analytics_configuration(app,bad)
+  except RuntimeError:pass
+  else:raise AssertionError('Unapproved report configuration accepted')
+print('PASS: only the approved active ongoing requests are accepted; duplicates, inactivity, historical type and pagination fail closed')

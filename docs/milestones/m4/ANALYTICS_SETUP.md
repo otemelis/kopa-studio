@@ -1,3 +1,7 @@
+> Approved and executed 17 October 2026. See ANALYTICS_ACTIVATION.md and ANALYTICS_ACTIVATION_VERIFICATION.json. Historical snapshots remain unapproved.
+
+## Original review proposal
+
 # Pending owner approval: ongoing Apple Analytics
 
 Read-only checks on 17 October returned complete empty report-request lists for POIS 6820665225, PASSPORT 6822753543 and LoveType 6786477464. Reviewed POST bodies: ANALYTICS_REQUESTS_PENDING_APPROVAL.json. Recheck before creation and reuse any matching ongoing request instead of creating a duplicate.

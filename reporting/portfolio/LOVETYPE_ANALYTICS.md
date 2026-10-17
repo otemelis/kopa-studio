@@ -1,3 +1,5 @@
+> Update 17 October: the owner approved ongoing reporting, request `a602f763-4566-411c-9a6d-dd433363d545` was created and verified with the existing reader key. Required daily report instances are not yet available. Historical ONE_TIME_SNAPSHOT remains a separate approval. The instructions below preserve the earlier setup proposal.
+
 # LoveType Analytics: minimal setup, approval required
 
 No account configuration was changed. The last read-only check on 15 October 2026 returned no Analytics report requests for LoveType, app ID `6786477464`. Sales refreshes are available now; Analytics remains unavailable until approved setup and validated report coverage.

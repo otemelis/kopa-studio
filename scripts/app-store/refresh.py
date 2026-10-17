@@ -26,6 +26,15 @@ def publish(run, start, end):
     (run/'published.json').write_text(json.dumps(manifest,indent=2)+'\n')
     return manifest
 
+def validate_analytics_configuration(app, request):
+    approved=json.loads((SCRIPTS/'approved-analytics-requests.json').read_text())
+    rows=request['data']
+    if request.get('links',{}).get('next'):raise RuntimeError(f'{app} report request pagination requires review')
+    if not rows:return
+    if len(rows)!=1 or rows[0]['id']!=approved.get(app) or rows[0]['attributes'].get('accessType')!='ONGOING' or rows[0]['attributes'].get('stoppedDueToInactivity'):
+        raise RuntimeError(f'{app} reporting configuration changed: review its mapping before publication')
+    # Approved generation is not validated metric coverage; retain blank Analytics values.
+
 def main():
     if not __debug__:raise RuntimeError("Validation requires Python assertions; do not use -O")
     lock=(SCRIPTS/'refresh.lock').open('w')
@@ -41,7 +50,7 @@ def main():
         apple('inventory');apple('instances')
         for app in ['LoveType','POIS','PASSPORT']:
             request=json.loads((run/f'{app}-requests-0.json').read_text())
-            if request['data'] or request.get('links',{}).get('next'):raise RuntimeError(f'{app} reporting configuration changed: review its mapping before publication')
+            validate_analytics_configuration(app,request)
         latest=max(x['attributes']['processingDate'] for x in json.loads((run/'InnerType-discovery-instances-0.json').read_text())['data'])
         # Discovery's conservative three-day completion lag controls the common portfolio period.
         end=min(date.fromisoformat(latest)-timedelta(days=3),datetime.now(timezone.utc).date()-timedelta(days=3))

@@ -59,6 +59,9 @@ for r in daily:
     if status.startswith('unavailable'):
         assert r['value']=='' and r['numerator']=='' and r['denominator']==''
         if status=='unavailable_no_analytics_request':assert r['app']!='InnerType' and json.loads((P/r['evidence_files']).read_text())['data']==[]
+        if status=='unavailable_analytics_pending_validation':
+            request=json.loads((P/r['evidence_files']).read_text());approved=json.loads((Path(__file__).parent/'approved-analytics-requests.json').read_text())
+            assert len(request['data'])==1 and request['data'][0]['id']==approved[r['app']] and request['data'][0]['attributes']['accessType']=='ONGOING' and not request['data'][0]['attributes']['stoppedDueToInactivity']
         continue
     if r['source'].startswith('Summary Sales'):
         where='grain=\'daily\' AND app=? AND d=?';args=[r['app'],r['date']]
