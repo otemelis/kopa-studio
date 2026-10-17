@@ -1,0 +1,65 @@
+[
+  {
+    "method": "POST",
+    "url": "https://api.appstoreconnect.apple.com/v1/analyticsReportRequests",
+    "app": "POIS",
+    "body": {
+      "data": {
+        "type": "analyticsReportRequests",
+        "attributes": {
+          "accessType": "ONGOING"
+        },
+        "relationships": {
+          "app": {
+            "data": {
+              "type": "apps",
+              "id": "6820665225"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "method": "POST",
+    "url": "https://api.appstoreconnect.apple.com/v1/analyticsReportRequests",
+    "app": "PASSPORT",
+    "body": {
+      "data": {
+        "type": "analyticsReportRequests",
+        "attributes": {
+          "accessType": "ONGOING"
+        },
+        "relationships": {
+          "app": {
+            "data": {
+              "type": "apps",
+              "id": "6822753543"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "method": "POST",
+    "url": "https://api.appstoreconnect.apple.com/v1/analyticsReportRequests",
+    "app": "LoveType",
+    "body": {
+      "data": {
+        "type": "analyticsReportRequests",
+        "attributes": {
+          "accessType": "ONGOING"
+        },
+        "relationships": {
+          "app": {
+            "data": {
+              "type": "apps",
+              "id": "6786477464"
+            }
+          }
+        }
+      }
+    }
+  }
+]

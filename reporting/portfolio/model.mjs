@@ -47,7 +47,7 @@ export function loadSnapshot(text) {
   const keys=new Set();
   for(const row of all){
     const key=[row.date,row.app,row.metric,row.acquisition_source,row.currency].join('|');
-    if(keys.has(key)||!APPS.includes(row.app)||!/^\d{4}-\d{2}-\d{2}$/.test(row.date)||!goodStatuses.has(row.data_quality_status))throw Error('Invalid snapshot coverage');
+    if(keys.has(key)||![...APPS,'POIS','PASSPORT'].includes(row.app)||!/^\d{4}-\d{2}-\d{2}$/.test(row.date)||!goodStatuses.has(row.data_quality_status))throw Error('Invalid snapshot coverage');
     keys.add(key);
     if(row.data_quality_status.startsWith('unavailable')||row.data_quality_status==='undefined_zero_denominator'){
       if(row.value!=='')throw Error('Unavailable metric must be blank');
@@ -57,7 +57,9 @@ export function loadSnapshot(text) {
   const rows=all.filter(r=>r.scope==='summary'&&METRICS.some(m=>m.key===r.metric));
   const dates=[...new Set(all.map(r=>r.date))].sort();
   if(dates.length!==28||daysBetween(dates[0],dates.at(-1))!==28)throw Error('Incomplete date calendar');
-  for(const app of APPS)for(const metric of METRICS){
+  const apps=[...new Set(all.map(r=>r.app))];
+  if(APPS.some(app=>!apps.includes(app)))throw Error('Missing baseline app');
+  for(const app of apps)for(const metric of METRICS){
     const rs=rows.filter(r=>r.app===app&&r.metric===metric.key);
     if(!rs.length)throw Error('Missing portfolio series');
     for(const currency of new Set(rs.map(r=>r.currency))){
@@ -71,7 +73,7 @@ export function loadSnapshot(text) {
       }
     }
   }
-  return {rows,dates,start:dates[0],end:dates.at(-1),extracted:all.map(r=>r.source_extracted_at_utc).sort().at(-1).slice(0,10)};
+  return {rows,dates,apps,start:dates[0],end:dates.at(-1),extracted:all.map(r=>r.source_extracted_at_utc).sort().at(-1).slice(0,10)};
 }
 export function aggregate(snapshot,app,metric,start,end) {
   if(start<snapshot.start||end>snapshot.end)return {state:'outside',reason:'Previous period is outside the CSV snapshot.'};

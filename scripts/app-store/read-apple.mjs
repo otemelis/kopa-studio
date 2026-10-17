@@ -28,7 +28,10 @@ export async function all(path, prefix) {
   return rows;
 }
 if(process.argv[2]==='inventory'){
- for(const [app,id] of [['InnerType','6785764991'],['LoveType','6786477464']]){
+ const apps=JSON.parse(await fs.readFile(new URL('./portfolio-apps.json',import.meta.url),'utf8'));
+ const catalog=await all('/v1/apps?limit=200','portfolio-apps');
+ for(const [app,[id,sku]] of Object.entries(apps)){
+  if(!catalog.some(x=>x.id===id&&x.attributes.sku===sku))throw Error(`Official app identity mismatch: ${app}`);
   const requests=await all(`/v1/apps/${id}/analyticsReportRequests?limit=200`,`${app}-requests`);
   console.log(JSON.stringify({app,requests:requests.map(r=>({id:r.id,...r.attributes}))}));
   for(const request of requests){

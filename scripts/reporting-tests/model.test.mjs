@@ -33,3 +33,16 @@ test('partial source, invalid status and unavailable numeric values are rejected
  const partial={...s,rows:s.rows.filter(r=>!(r.app==='InnerType'&&r.metric===METRICS[0].key&&r.date===s.start))};assert.equal(aggregate(partial,'InnerType',METRICS[0].key,s.start,s.end).state,'unavailable');
 });
 test('money precision is exact and fractional event counts are rejected',()=>{assert.equal(integer('2.89',true),289);assert.equal(integer('-0.29',true),-29);assert.throws(()=>integer('2.891',true));assert.throws(()=>integer('1.2'));});
+
+test('four-app snapshots retain source absence separately from Sales zero and reject partial new app coverage',()=>{
+ // Explicit synthetic test fixture only; never published by the report refresh.
+ const rows=parseCSV(text),header=Object.keys(rows[0]);
+ const additions=['POIS','PASSPORT'].flatMap(app=>rows.filter(r=>r.app==='LoveType').map(r=>({...r,app})));
+ const encode=rs=>[header.join(','),...rs.map(r=>header.map(k=>'"'+String(r[k]).replaceAll('"','""')+'"').join(','))].join('\n');
+ const four=loadSnapshot(encode([...rows,...additions]));
+ assert.deepEqual(four.apps,['InnerType','LoveType','POIS','PASSPORT']);
+ assert.equal(aggregate(four,'PASSPORT','icon_impressions',four.start,four.end).state,'unavailable');
+ assert.equal(aggregate(four,'PASSPORT','apple_reported_paid_iap_units_sales',four.start,four.end).amounts[0].value,0);
+ assert.throws(()=>loadSnapshot(encode([...rows,...additions.slice(1)])),/Partial/);
+ assert.throws(()=>loadSnapshot(encode([...rows,...additions.map(r=>r.app==='PASSPORT'?{...r,app:'Unknown'}:r)])),/Invalid/);
+});

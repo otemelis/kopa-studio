@@ -29,14 +29,14 @@ for m in json.loads((P/'segment-manifest.json').read_text()):
 db.execute(f'''CREATE TEMP VIEW chosen AS SELECT * FROM a WHERE (kind,d,p) IN
  (SELECT kind,d,MAX(p) FROM a GROUP BY kind,d) AND d BETWEEN '{min(days)}' AND '{max(days)}' ''')
 db.execute('CREATE TABLE s(grain,d,app,pti,currency,country,units INTEGER,cents INTEGER,price_positive INTEGER,is_child INTEGER)')
-appmap={'innertype-v1':('InnerType','6785764991'),'lovetype-ios-001':('LoveType','6786477464')}
+portfolio=json.loads((Path(__file__).parent/'portfolio-apps.json').read_text())
+appmap={sku:(app,identifier) for app,(identifier,sku) in portfolio.items()}
 for grain,pattern in [('daily','Sales-????-??-??.tsv'),('weekly','Sales-weekly-*.tsv')]:
     for f in P.glob(pattern):
         for r in load(f,'\t'):
             child=bool(r['Parent Identifier']); identifier=r['Parent Identifier'] if child else r['SKU']
-            assert identifier in appmap
-            app,appleid=appmap[identifier]
-            if not child:assert r['Apple Identifier']==appleid
+            app,appleid=appmap.get(identifier,('Outside portfolio: '+identifier,None))
+            if not child and appleid:assert r['Apple Identifier']==appleid
             units=D(r['Units']);assert units==int(units)
             d=datetime.strptime(r['End Date'],'%m/%d/%Y').date().isoformat()
             db.execute('INSERT INTO s VALUES (?,?,?,?,?,?,?,?,?,?)',(grain,d,app,r['Product Type Identifier'],r['Currency of Proceeds'],r['Country Code'],int(units),cent(units*D(r['Developer Proceeds'])),int(D(r['Customer Price'])>0),int(child)))
@@ -58,7 +58,7 @@ for r in daily:
     status=r['data_quality_status']; metric=r['metric']
     if status.startswith('unavailable'):
         assert r['value']=='' and r['numerator']=='' and r['denominator']==''
-        if status=='unavailable_no_analytics_request':assert r['app']=='LoveType' and json.loads((P/r['evidence_files']).read_text())['data']==[]
+        if status=='unavailable_no_analytics_request':assert r['app']!='InnerType' and json.loads((P/r['evidence_files']).read_text())['data']==[]
         continue
     if r['source'].startswith('Summary Sales'):
         where='grain=\'daily\' AND app=? AND d=?';args=[r['app'],r['date']]
@@ -103,6 +103,6 @@ assert len({(r['date'],*key(r)) for r in daily+[daily[0]]})!=len(daily)+1
 assert len([r for r in daily[1:] if key(r)==key(daily[0])])==27
 zero=[r for r in daily if r['data_quality_status']=='zero_apple_no_sales'];assert all(r['value'] in ['0','0.00'] for r in zero)
 status_counts={s:sum(r['data_quality_status']==s for r in daily) for s in sorted({r['data_quality_status'] for r in daily})}
-result={'dataset_sha256':sha(FILE),'baseline_sha256':sha(BASE),'rows':len(daily),'days':28,'apps':2,'series_reconciled':len(results),'daily_values_checked_against_independent_sql':checked,'weekly_sales_control_groups':len(controls[0]),'weekly_equals_daily':True,'duplicate_and_calendar_failure_probes_passed':True,'status_counts':status_counts,'series':results}
+result={'dataset_sha256':sha(FILE),'baseline_sha256':sha(BASE),'rows':len(daily),'days':28,'apps':len({r['app'] for r in daily}),'series_reconciled':len(results),'daily_values_checked_against_independent_sql':checked,'weekly_sales_control_groups':len(controls[0]),'weekly_equals_daily':True,'duplicate_and_calendar_failure_probes_passed':True,'status_counts':status_counts,'series':results}
 (P/'daily-independent-validation.json').write_text(json.dumps(result,indent=2)+'\n')
 print(json.dumps({k:v for k,v in result.items() if k!='series'},indent=2))

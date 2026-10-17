@@ -11,7 +11,7 @@ P=Path(os.environ.get('ASC_RUN_DIR',Path(__file__).parent/'private'))
 BASE=Path(os.environ.get('ASC_BASE',ROOT/'outputs/inner-lovetype-28-day-report/acquisition-monetization-28-days.csv'))
 OUT=Path(os.environ.get('ASC_CSV',ROOT/'outputs/inner-lovetype-daily-dataset/daily-acquisition-monetization.csv'))
 START=date.fromisoformat(os.environ.get('ASC_START','2026-09-14')); DAYS=[(START+timedelta(days=i)).isoformat() for i in range(28)]
-APPS={'InnerType':('6785764991','innertype-v1'),'LoveType':('6786477464','lovetype-ios-001')}
+APPS=json.loads((Path(__file__).parent/'portfolio-apps.json').read_text())
 def sha(path): return hashlib.sha256(path.read_bytes()).hexdigest()
 def inflate(blob): return gzip.decompress(blob) if blob[:2]==b'\x1f\x8b' else blob
 def tsv(path):
@@ -54,7 +54,9 @@ for day,m in sales_by_day.items():
         assert inflate(original.read_bytes())==(P/m['filename']).read_bytes()
         sales[day]=tsv(P/m['filename'])
         assert all(date.fromisoformat(day).strftime('%m/%d/%Y')==r['Begin Date']==r['End Date'] for r in sales[day])
-assert json.loads((P/'LoveType-requests-daily-review-0.json').read_text())['data']==[]
+for app in APPS:
+    if app!='InnerType':
+        request=json.loads((P/f'{app}-requests-0.json').read_text());assert request['data']==[] and not request.get('links',{}).get('next')
 
 headers=['date','app','metric','source','value','data_quality_status','acquisition_source','scope','unit','currency','source_timezone','numerator','denominator','source_row_count','selected_processing_dates','evidence_files','evidence_sha256','definition','source_extracted_at_utc']
 output=[]
@@ -65,8 +67,8 @@ for b in baseline:
         evidence=b['evidence_file']; evidence_files=evidence; evidence_hash=sha(P/evidence); extracted_at=b['retrieved_at_utc']
         if b['status']=='unavailable':
             quality='unavailable_source_capability'
-            if app=='LoveType' and evidence=='LoveType-requests-0.json':
-                quality='unavailable_no_analytics_request'; evidence_files='LoveType-requests-daily-review-0.json'; evidence_hash=sha(P/evidence_files)
+            if app!='InnerType' and evidence==f'{app}-requests-0.json':
+                quality='unavailable_no_analytics_request'; evidence_files=f'{app}-requests-0.json'; evidence_hash=sha(P/evidence_files)
                 extracted_at=max(m['retrievedAt'] for m in json.loads((P/'retrieval-log.json').read_text()) if m['file']==evidence_files)
         elif metric.endswith('_sales') or metric=='estimated_proceeds_native_currency':
             identifier,sku=APPS[app]
@@ -134,4 +136,4 @@ if '--verify-only' in sys.argv:
 else:
     OUT.parent.mkdir(parents=True,exist_ok=True); OUT.write_text(buf.getvalue(),encoding='utf-8-sig',newline='')
     (P/'daily-reconciliation.json').write_text(json.dumps({'baseline_sha256':sha(BASE),'rows':len(output),'series':len(baseline),'checks':reconciliation},indent=2)+'\n')
-print(json.dumps({'rows':len(output),'dates':len(DAYS),'apps':2,'baseline_series':len(baseline),'results':dict((k,sum(r['result']==k for r in reconciliation)) for k in sorted({r['result'] for r in reconciliation}))},indent=2))
+print(json.dumps({'rows':len(output),'dates':len(DAYS),'apps':len(APPS),'baseline_series':len(baseline),'results':dict((k,sum(r['result']==k for r in reconciliation)) for k in sorted({r['result'] for r in reconciliation}))},indent=2))

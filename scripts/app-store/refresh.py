@@ -39,8 +39,9 @@ def main():
     def apple(mode):subprocess.run([str(NODE),str(SCRIPTS/'read-apple.mjs'),mode],env=env,check=True,stdout=subprocess.DEVNULL)
     try:
         apple('inventory');apple('instances')
-        if json.loads((run/'LoveType-requests-0.json').read_text())['data']:raise RuntimeError('LoveType reporting configuration changed: review its report mapping before publication')
-        if json.loads((run/'LoveType-requests-0.json').read_text()).get('links',{}).get('next'):raise RuntimeError('Unexpected LoveType pagination')
+        for app in ['LoveType','POIS','PASSPORT']:
+            request=json.loads((run/f'{app}-requests-0.json').read_text())
+            if request['data'] or request.get('links',{}).get('next'):raise RuntimeError(f'{app} reporting configuration changed: review its mapping before publication')
         latest=max(x['attributes']['processingDate'] for x in json.loads((run/'InnerType-discovery-instances-0.json').read_text())['data'])
         # Discovery's conservative three-day completion lag controls the common portfolio period.
         end=min(date.fromisoformat(latest)-timedelta(days=3),datetime.now(timezone.utc).date()-timedelta(days=3))

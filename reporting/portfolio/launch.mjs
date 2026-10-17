@@ -6,7 +6,7 @@ export async function renderLaunch(snapshot,days){
  const token=++generation,w=snapshot?period(snapshot,days):null,body=document.querySelector('#launch-rows');body.replaceChildren();
  for(const app of['InnerType','LoveType','POIS','PASSPORT']){
  const row=el('tr','',body);el('th',app,row).scope='row';const official=el('td','',row);
- if(['InnerType','LoveType'].includes(app)&&snapshot){el('strong',`${apple(snapshot,app,'first_time_app_units_sales',w)} downloads · ${apple(snapshot,app,'apple_reported_paid_iap_units_sales',w)} paid IAP units`,official);el('p',`${w.start}–${w.end} · Apple Sales, Pacific dates · historical CSV`,official);}else{el('strong','Unavailable',official);el('p','No validated official Apple report available in this page’s source.',official);}
+ if(snapshot?.apps?.includes(app)){el('strong',`${apple(snapshot,app,'first_time_app_units_sales',w)} downloads · ${apple(snapshot,app,'apple_reported_paid_iap_units_sales',w)} paid IAP units`,official);el('p',`${w.start}–${w.end} · Apple Sales, Pacific dates · historical CSV`,official);}else{el('strong','Unavailable',official);el('p','No validated official Apple report available in this page’s source.',official);}
  const prod=el('td','Reading private source…',row),tf=el('td','Reading private source…',row);
  if(['InnerType','LoveType'].includes(app)){prod.textContent='Not integrated';tf.textContent='Not integrated';continue;}
  const name=app.toLowerCase();

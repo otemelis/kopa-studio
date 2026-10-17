@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 P = Path(os.environ.get('ASC_RUN_DIR',Path(__file__).parent / 'private'))
 OUT = Path(os.environ.get('ASC_SUMMARY_DIR',ROOT / 'outputs/inner-lovetype-28-day-report'))
 START, END = os.environ.get('ASC_START','2026-09-14'), os.environ.get('ASC_END','2026-10-11')
-APPS = {'InnerType': ('6785764991', 'innertype-v1'), 'LoveType': ('6786477464', 'lovetype-ios-001')}
+APPS=json.loads((Path(__file__).parent/'portfolio-apps.json').read_text())
 DOC = 'https://developer.apple.com/documentation/analytics-reports/'
 SALES_DOC = 'https://developer.apple.com/help/app-store-connect/reference/reporting/summary-sales-report/'
 def digest(path): return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -65,8 +65,8 @@ for m in weekly_manifest:
     weekly.extend(rows)
 def app_of(r):
     matches=[app for app,(identifier,sku) in APPS.items() if (r['SKU']==sku and r['Apple Identifier']==identifier) or r['Parent Identifier']==sku]
-    assert len(matches)==1, 'Unmapped or ambiguous sales row'
-    return matches[0]
+    assert len(matches)<=1, 'Ambiguous sales row'
+    return matches[0] if matches else 'Outside portfolio: '+(r['Parent Identifier'] or r['SKU'])
 def sales_control(rows):
     result=defaultdict(lambda:[0,0])
     for r in rows:
@@ -76,7 +76,7 @@ def sales_control(rows):
     return dict(result)
 control_days={ (date.fromisoformat(m['date'])-timedelta(days=i)).strftime('%m/%d/%Y') for m in weekly_manifest for i in range(7)}
 assert sales_control([r for r in daily if r['End Date'] in control_days])==sales_control(weekly), 'Daily/weekly sales reconciliation failed'
-purchase_rows=[r for r in daily if r['Product Type Identifier']=='IA1' and D(r['Customer Price'])>0 and D(r['Units'])>0]
+purchase_rows=[r for r in daily if app_of(r)=='InnerType' and r['Product Type Identifier']=='IA1' and D(r['Customer Price'])>0 and D(r['Units'])>0]
 sale_iap=defaultdict(int)
 for r in purchase_rows: sale_iap[(r['Apple Identifier'],r['Country Code'])]+=int(D(r['Units']))
 analytic_iap=defaultdict(int)
@@ -132,10 +132,10 @@ for app in APPS:
       ('product_journey_dropoff','Store reports contain no in-app assessment/paywall step sequence or linked user identities.'),
       ('organic_only_acquisition','App Store search includes Apple Ads; no defensible organic-only split in these reports.'),
       ('paid_channel_roas','No independently joined ad spend and verified customer attribution for Apple Ads/Meta/Google/TikTok; referrer type does not identify a specific paid network.')]:
-        add(app,metric,None,'unavailable','Official Apple report capability',reason,'Not computed; missing required source/population.',status='unavailable',evidence='sales-weekly-manifest.json' if app=='LoveType' else 'segment-manifest.json',url=DOC+'app-store-purchase')
-    if app=='LoveType':
+        add(app,metric,None,'unavailable','Official Apple report capability',reason,'Not computed; missing required source/population.',status='unavailable',evidence='sales-weekly-manifest.json' if app!='InnerType' else 'segment-manifest.json',url=DOC+'app-store-purchase')
+    if app!='InnerType':
         for metric in ['icon_impressions','product_page_views','first_time_downloads_by_source','purchases_by_acquisition_source','product_page_first_downloads_per_view']:
-            add(app,metric,None,'unavailable','Analytics report requests GET','No existing Analytics Report Request for this app. No current Analytics export available. No request was created under the read-only scope.','GET /v1/apps/6786477464/analyticsReportRequests returned an empty complete list; missing data is not zero.',status='unavailable',evidence='LoveType-requests-0.json',url='https://developer.apple.com/documentation/appstoreconnectapi/downloading-analytics-reports')
+            add(app,metric,None,'unavailable','Analytics report requests GET','No existing Analytics Report Request for this app. No current Analytics export available. No request was created under the read-only scope.',f'GET /v1/apps/{APPS[app][0]}/analyticsReportRequests returned an empty complete list; missing data is not zero.',status='unavailable',evidence=f'{app}-requests-0.json',url='https://developer.apple.com/documentation/appstoreconnectapi/downloading-analytics-reports')
 
 checks={'period':[START,END],'days':28,'segmentsVerified':len(manifest),'selectedRows':len(selected),'dailyHTTP200':sum(m['status']==200 for m in sales_manifest),'dailyExplicitNoSales':sum(m['status']==404 for m in sales_manifest),'weeklyHTTP200':len(weekly_manifest),'weekly_control_days':len(control_days),'dailyEqualsWeekly':True,'analyticsPurchasesEqualSalesByProductAndTerritory':purchase_alignment,'innerTypeFirstDownloadsEqualAcrossAppleSources':downloads_alignment,'sourcePurchaseCounts':dict(db.execute("SELECT source_type,SUM(purchases) FROM selected WHERE kind='purchases' GROUP BY source_type")),'reportRows':len(rows)}
 text=io.StringIO(newline='');writer=csv.DictWriter(text,fieldnames=columns);writer.writeheader();writer.writerows(rows)
