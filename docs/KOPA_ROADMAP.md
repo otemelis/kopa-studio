@@ -94,20 +94,17 @@
 
 **Done when:** In about a minute the owner can distinguish discovery/downloads, first observed app activity, first value, and Apple-reported purchases for POIS/PASSPORT with current dates and clear measurement boundaries.
 
-### M5 — In-house ASO rank collector: **feasibility first, then tracker**
-**Objective:** Obtain valuable ranking history that App Store Connect does not supply; avoid repeating the old Kopa's misleading iTunes “organic rank.”
+### M5 — Independent in-house ASO intelligence: source feasibility before UI
+**Objective:** Build first-party keyword-demand and acquisition intelligence for POIS while preserving honest organic-rank boundaries. AppFollow remains optional validation, never a required source.
 
-**M5a — Proof, timeboxed:**
-- Extract/read the old Kopa search collector as a reference, without bringing across its app architecture. Compare it with one viable **permitted** native-storefront observation technique; document terms, countries, devices, language, response depth and sponsored-slot handling.
-- Pilot **20 relevant terms for POIS in Germany**, then a small contrasting storefront set, over at least three observation runs. Compare a subset with actual native App Store searches under recorded conditions. Record failed requests, non-appearance within depth and stale observations as **different states**.
-- Explicitly test whether iTunes result position agrees with a native observation; if not, label it `iTunes catalog position`, **never organic rank**.
-- Set a stop condition: if native result ordering cannot be captured repeatably and lawfully within a bounded pilot, **do not spend weeks implementing a crawler**. Recommend a narrow external data import or an honestly labeled proxy until another method is validated. No CAPTCHA circumvention or protective-control evasion.
+**Priority order:**
+1. Prove Apple Ads Platform v1 read-only access to Search Term Popularity (country, genre, weekly/monthly history) and app-scoped Keyword Suggestions. Reuse existing approved credentials where accepted; do not create campaigns, spend, or change API roles for the test.
+2. Resolve organic-rank feasibility independently. Existing iTunes catalog order is not organic rank. No scraper or tracker begins unless a repeatable, geographically scoped and permitted method passes a bounded validation against native App Store searches; otherwise rank remains unavailable or a licensed benchmark remains explicitly optional.
+3. Reuse approved App Store Connect extraction for first-party discovery/download/source metrics. Search source includes Search Ads and is not organic-only; ASC does not provide exact query-level organic ranks.
+4. Persist Apple-provided popularity/suggestions and any later validated rank observations as separate, source-attributed time series in Supabase. Keep method, scale, scope, period, collection time and missingness.
+5. Build deterministic opportunity/competitor/metadata experiment evidence only after the source rows reconcile. No UI expansion until this evidence is accepted.
 
-**M5b — Only after proof passes:**
-- Implement the smallest scheduled collector for selected app/keyword/market/device/locale, retaining method/version, observed time, depth, result/error state and raw request evidence where permitted. Bound rate/cost; retry without silently rewriting history.
-- Add **one Keyword Tracker** view: tracked terms, current observed position, 7/28-day movement, a selectable rank history chart, country filter, and a few tracked competitors. Do not add difficulty models, keyword-install estimates, automated metadata writing or AI recommendations.
-
-**Done when:** A tracked keyword's ranking series is reproducible and labeled with the actual observation method, and the owner can tell improvement from a missing collection. If M5a fails, the outcome is an honest source decision, not a fabricated tracker.
+**Done when:** Real Apple API responses prove current, country/genre-scoped demand and at least one historical period; first-party ASC metrics reconcile independently; every stored source uses its own scale and method; the organic ranking path either passes its stated gate or is clearly unavailable. Full scope, acceptance criteria, risk, cost and dependencies are in [the Independent ASO Intelligence Roadmap](aso/INDEPENDENT_ASO_ROADMAP.md).
 
 ### M6 — Apple Ads: read-only daily campaign performance
 **Objective:** Answer what spend is buying for POIS/PASSPORT after campaigns exist.
@@ -159,7 +156,7 @@ A milestone is done only if:
 
 ## Execution status — 17 October 2026
 
-The approved roadmap above is preserved verbatim. Current evidence and exact next tasks remain in ../STATUS.md. M0 Done. M1 backend verified; internal TestFlight 1.0.1 (2) VALID / INTERNAL_ONLY, owner postpones genuine device checks until next week; do not treat this gate as passed. M2 locally done, shipping gated. M3 owner-accepted live read-only capability. M4 four-app official Sales refresh and existing portfolio rows validated (78 series, 2,184 records, 118 browser values); real production launch evidence pending. M5a bounded source decision complete / native automation NO-GO; M5b gated. M6 bounded daily Apple Ads capability validated; full-window external control unavailable. M7 only with active channels; M8 later. Three ONGOING Apple Analytics requests for POIS/PASSPORT/LoveType were explicitly approved and created on 17 October; reader checks pass and daily instances remain pending. Next: read generated instances, reuse existing extraction and validate actual coverage. No further permission is needed for that read/local implementation step; historical snapshots and release changes remain gated.
+The approved roadmap remains the portfolio source of truth, with M5's ASO sequence revised by the owner on 17 October. Current evidence and exact next tasks remain in ../STATUS.md. M0 Done. M1 backend verified; internal TestFlight 1.0.1 (2) VALID / INTERNAL_ONLY, owner postpones genuine device checks until next week; do not treat this gate as passed. M2 locally done, shipping gated. M3 owner-accepted live read-only capability. M4 four-app official Sales refresh and existing portfolio rows validated (78 series, 2,184 records, 118 browser values); real production launch evidence pending. M5 in-house Apple Ads/ASC feasibility is documented; a live v1 endpoint proof is the next engineering step, while organic-rank scraping remains NO-GO pending a permitted validated method. M6 bounded daily Apple Ads capability validated; full-window external control unavailable. M7 only with active channels; M8 later. Three ONGOING Apple Analytics requests for POIS/PASSPORT/LoveType were explicitly approved and created on 17 October; reader checks pass and daily instances remain pending. Next: read generated instances, reuse existing extraction and validate actual coverage. No further permission is needed for that read/local implementation step; historical snapshots and release changes remain gated.
 
 17 October availability continuation: the existing refresh now records source readiness for the nine approved report types without changing metrics. Live availability phase and isolated publication tests pass; 20 reporting regressions pass. Apple generation remains pending, as do genuine PASSPORT device checks. Next authorized work is actual report/coverage validation when instances exist.
 
