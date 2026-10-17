@@ -66,14 +66,18 @@ Capture sanitized request scope, API version, request/response timestamps, respo
 
 ### ASO-2 — Organic-rank method gate
 
-Do not start a collector until one independent method is permitted and observable. First run a bounded live storefront comparison for InnerType in Germany using manually controlled App Store searches, with the exact keyword, storefront, device class, locale, OS version, timestamp, app listing ID, visible rank and sponsorship state recorded by a human. Compare only with iTunes catalog order as a separate candidate. Repeat three times on at least two terms to assess repeatability; do not infer a universal correlation from the pilot. For POIS, identify the actual searchable listing only after Apple publishes it.
+**Status: NO-GO for organic-rank collection (17 October 2026).** Do not start an organic-rank collector or run the previously proposed repeated native-search pilot. Apple's current [Apple Media Services Terms](https://www.apple.com/legal/internet-services/itunes/) say users may not use software, a device, an automated process, or a similar/equivalent manual process to scrape, copy, or perform measurement, analysis, or monitoring of any portion of its Services or Content. Since this pilot's purpose is repeatable measurement of App Store search placement, the proposed manual protocol is not a safe default. This is a conservative reading of Apple's published terms, not legal advice; get written Apple permission or specific confirmation before reconsidering it.
 
-If a licensed API is considered, request only one written, capped sample for DE/iPhone and the chosen terms. Verify raw observed positions, query coverage, device/locale controls, organic-vs-sponsored handling, out-of-depth vs failed/no-data, lookback, redistribution/retention rights, and total cost. AppFollow MCP/exports remain optional benchmarks; they do not satisfy the in-house source gate.
+No official Apple API located in this audit returns an app's organic keyword position. The [iTunes Search API](https://performance-partners.apple.com/search-api) is documented for website catalog-search fields and display, supports country and limited language parameters, and returns an ordered array; it does not promise native App Store organic ordering, sponsored-placement handling, device/locale equivalence, or permission to persist the array order as a commercial rank-monitoring product. Treat existing rows as legacy catalog positions only. App Store Connect reports aggregate acquisition and discovery; they do not provide query-to-app organic position. Apple Ads popularity and suggestions are separate measurements.
 
-**Acceptance:** either a method passes the repeatability, source-scope, permission, terms, and retention checks and receives a bounded implementation decision; or the result is a documented **NO-GO** with organic rank unavailable. No crawler, vendor purchase, or automated web collection before this gate passes.
+The existing DE/iPhone AppFollow comparison is useful only as a source disagreement check: 2 of 15 numeric pairs matched and 13 differed; the remaining 83 cells were missing on one side or nonnumeric. It has no synchronized native ground truth, so it validates neither Kopa nor AppFollow ranking accuracy. No additional source was tested by scraping or automated native/web searches.
 
-**Cost:** $0 for a manual test; a licensed provider is an unpriced dependency and requires an explicit spend cap.
-**Risks:** personalization, storefront drift, ads/CPP/product-page features, provider black-box methodology and licensing.
+Reopen this gate only after Apple provides written permission or an authorized API for this measurement, or a licensed provider supplies terms expressly allowing the required ingestion, retention, and in-house use. Any capped vendor sample must identify observed raw positions, query coverage, device/locale controls, organic-vs-sponsored handling, out-of-depth vs failed/no-data, lookback, redistribution/retention rights, and total cost. AppFollow remains an optional benchmark and does not satisfy the independent-source goal by itself.
+
+**Acceptance:** the current result is a documented **NO-GO**, with organic rank unavailable and no new collection process. Reopening requires a method to pass source-scope, permission, terms, retention, and repeatability checks before implementation.
+
+**Cost:** $0 for this decision. Written Apple confirmation has no assumed fee; any provider remains unpriced and requires an explicit spend cap.
+**Risks:** terms interpretation requires Apple/legal confirmation; vendor methods can be opaque and expensive; rank is sensitive to storefront, locale, device, personalization, and sponsored placements.
 
 ### ASO-3 — Reuse first-party App Store Connect acquisition
 
@@ -105,7 +109,7 @@ Start deterministic and read-only. Generate candidate terms from Apple's popular
 
 ## Current next step
 
-ASO-1 API access and response contracts are now verified. Continue with ASO-2’s organic-rank method gate: compare a manually observed, geographically scoped App Store search with the legacy catalog-order candidate, or record a no-go if repeatability and permitted collection cannot be established. Keep Apple popularity and suggestions clearly separate from organic app ranking. The current account has an active campaign, so the no-campaign prerequisite question remains untested; do not create a test campaign. No production deployment, migration, or dashboard is part of this proof.
+ASO-1 API access and response contracts are verified. ASO-2 concluded **NO-GO**: no organic-rank source passed both permission and measurement validation, and the prior manual search plan conflicts with the face of Apple's current terms for measurement/monitoring. Keep organic rank unavailable. Continue with ASO-3 using generated App Store Connect reports, and preserve Apple popularity, suggestions, legacy catalog order, and any optional vendor benchmark as separate data types. The current Apple Ads account has an active campaign, so no-campaign eligibility remains untested; do not create a test campaign. No production deployment, migration, or dashboard is part of ASO-2.
 
 ## Sources
 
