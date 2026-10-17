@@ -22,6 +22,9 @@ def publish(run, start, end):
     target=PAGE/name
     if not target.exists():shutil.copyfile(csvpath,target)
     manifest={'schema_version':1,'csv':name,'sha256':digest,'period_start':start,'period_end':end,'last_successful_refresh_utc':datetime.now(timezone.utc).isoformat(),'run':run.name,'validation':'independent SQL, raw checksums, daily-to-weekly Sales controls','historical_snapshot':True}
+    availability=run/'analytics-availability.json'
+    if availability.exists():
+        manifest['analytics_availability']=json.loads(availability.read_text())
     temp=PAGE/'current.json.tmp';temp.write_text(json.dumps(manifest,indent=2)+'\n');os.replace(temp,PAGE/'current.json')
     (run/'published.json').write_text(json.dumps(manifest,indent=2)+'\n')
     return manifest
@@ -47,10 +50,11 @@ def main():
     env=dict(os.environ,ASC_RUN_DIR=str(run))
     def apple(mode):subprocess.run([str(NODE),str(SCRIPTS/'read-apple.mjs'),mode],env=env,check=True,stdout=subprocess.DEVNULL)
     try:
-        apple('inventory');apple('instances')
+        apple('inventory')
         for app in ['LoveType','POIS','PASSPORT']:
             request=json.loads((run/f'{app}-requests-0.json').read_text())
             validate_analytics_configuration(app,request)
+        apple('instances')
         latest=max(x['attributes']['processingDate'] for x in json.loads((run/'InnerType-discovery-instances-0.json').read_text())['data'])
         # Discovery's conservative three-day completion lag controls the common portfolio period.
         end=min(date.fromisoformat(latest)-timedelta(days=3),datetime.now(timezone.utc).date()-timedelta(days=3))

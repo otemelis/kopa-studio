@@ -31,3 +31,19 @@ for app,request_id in approved.items():
   except RuntimeError:pass
   else:raise AssertionError('Unapproved report configuration accepted')
 print('PASS: only the approved active ongoing requests are accepted; duplicates, inactivity, historical type and pagination fail closed')
+
+# A failed optional Analytics availability check must not fabricate zero or block verified Sales.
+with tempfile.TemporaryDirectory() as td:
+ root=Path(td);m.PAGE=root/'page';m.PAGE.mkdir();run=root/'run';run.mkdir()
+ (m.PAGE/'model.mjs').write_bytes((R/'reporting/portfolio/model.mjs').read_bytes())
+ current=json.loads((R/'reporting/portfolio/current.json').read_text())
+ source=(R/'reporting/portfolio'/current['csv']).read_bytes()
+ (run/'daily-acquisition-monetization.csv').write_bytes(source)
+ (run/'daily-independent-validation.json').write_text(json.dumps({'dataset_sha256':hashlib.sha256(source).hexdigest(),'weekly_equals_daily':True}))
+ availability=[{'app':app,'reports':[{'kind':kind,'state':'query_failed','instances':None} for kind in ['discovery','downloads','purchases']]} for app in ['POIS','PASSPORT','LoveType']]
+ (run/'analytics-availability.json').write_text(json.dumps(availability))
+ manifest=m.publish(run,current['period_start'],current['period_end'])
+ assert manifest['analytics_availability']==availability
+ assert (m.PAGE/manifest['csv']).read_bytes()==source
+ assert all(report['instances'] is None for app in manifest['analytics_availability'] for report in app['reports'])
+print('PASS: failed optional Analytics checks preserve verified Sales bytes and explicit null availability')

@@ -17,3 +17,15 @@ export function refreshHealth(manifest, attempt, now = new Date()) {
   }
   return {status,message:prefix+detail};
 }
+
+// Provider instance availability is metadata, never a validated metric or coverage claim.
+export function analyticsInstanceAvailability(instances){
+ if(!Array.isArray(instances))throw Error('Invalid report instance list');
+ const ids=new Set(),dates=[];
+ for(const instance of instances){
+  const day=instance?.attributes?.processingDate;
+  if(typeof instance?.id!=='string'||!instance.id||ids.has(instance.id)||!/^\d{4}-\d{2}-\d{2}$/.test(day??'')||new Date(day+'T00:00:00Z').toISOString().slice(0,10)!==day)throw Error('Invalid or duplicate report instance');
+  ids.add(instance.id);dates.push(day);
+ }
+ return {state:instances.length?'available_pending_validation':'awaiting_generation',instances:instances.length,latestProcessingDate:dates.sort().at(-1)??null};
+}

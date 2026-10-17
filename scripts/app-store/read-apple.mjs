@@ -1,5 +1,6 @@
 // One-off report retrieval only. No writes to Apple, databases, or application code.
 import fs from 'node:fs/promises';
+import {analyticsInstanceAvailability} from '../../reporting/portfolio/refresh-health.mjs';
 import { createHash } from 'node:crypto';
 import { gunzipSync } from 'node:zlib';
 import { createAppStoreConnectToken } from '../../api/aso/_lib/appstore-connect.js';
@@ -46,6 +47,28 @@ if(process.argv[2]==='instances'){
   const instances=await all(`/v1/analyticsReports/${id}/instances?filter%5Bgranularity%5D=DAILY&limit=200`,`InnerType-${kind}-instances`);
   console.log(JSON.stringify({kind,count:instances.length,instances:instances.map(x=>({id:x.id,...x.attributes}))}));
  }
+ // Newly approved catalogs are inspected independently; no rows become metrics here.
+ const approved=JSON.parse(await fs.readFile(new URL('./approved-analytics-requests.json',import.meta.url),'utf8'));
+ const readiness=[];
+ for(const [app,id] of Object.entries(approved)){
+  let reports=[];
+  try{
+   let page=0,body;
+   do{body=JSON.parse(await fs.readFile(new URL(`${app}-${id}-reports-${page++}.json`,root),'utf8'));reports.push(...body.data);if(page>30)throw Error('Catalog pagination limit');}while(body.links?.next);
+  }catch{readiness.push({app,state:'catalog_unavailable',checkedAt:new Date().toISOString(),reports:[]});continue;}
+  const checks=[];
+  for(const [kind,name] of [['discovery','App Store Discovery and Engagement Standard'],['downloads','App Downloads Standard'],['purchases','App Store Purchases Standard']]){
+   const matches=reports.filter(r=>r.attributes.name===name);
+   if(matches.length!==1){checks.push({kind,state:'catalog_unavailable',instances:null});continue;}
+   try{
+    const instances=await all(`/v1/analyticsReports/${matches[0].id}/instances?filter%5Bgranularity%5D=DAILY&limit=200`,`${app}-${kind}-instances`);
+    checks.push({kind,reportId:matches[0].id,...analyticsInstanceAvailability(instances)});
+   }catch{checks.push({kind,reportId:matches[0].id,state:'query_failed',instances:null});}
+  }
+  readiness.push({app,checkedAt:new Date().toISOString(),reports:checks});
+ }
+ await fs.writeFile(new URL('analytics-availability.json',root),JSON.stringify(readiness,null,2),{mode:0o600});
+ console.log(JSON.stringify({analyticsAvailability:readiness}));
 }
 if(process.argv[2]==='latest'){
  for(const kind of ['discovery','downloads','purchases']){
