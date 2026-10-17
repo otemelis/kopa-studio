@@ -1,3 +1,5 @@
+> 17 October update: the same saved source now supports four complete weekly windows and strict matched-coverage comparisons. See APPLE_ADS_WEEKLY_COMPARISONS.md. Independent checks now cover 33 API windows; original source/control limitations are unchanged.
+
 # Apple Ads daily slice — validated 16 October 2026
 
 The owner-saved API response now validates successfully. The existing local page at http://127.0.0.1:4340/apple-ads.html shows the 28-day snapshot and each reported day in the approved Signal layout. It is a historical snapshot, not an automatic or live feed. No production database, ad configuration or campaign was changed in this step. The local page changes were not deployed.

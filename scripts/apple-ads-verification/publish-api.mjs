@@ -1,9 +1,9 @@
 // Reproduce one bounded saved API snapshot against two official console controls.
-import fs from'node:fs';import crypto from'node:crypto';import{validate}from'./validate.mjs';import{validateAPI,reconcileCSV,apiSnapshot,totals,countFields}from'./api-export.mjs';
+import fs from'node:fs';import crypto from'node:crypto';import{validate}from'./validate.mjs';import{validateAPI,reconcileCSV,apiSnapshot,weeklySnapshots,totals,countFields}from'./api-export.mjs';
 const[source,...controlFiles]=process.argv.slice(2);if(!source||controlFiles.length!==2)throw Error('Usage: node scripts/apple-ads-verification/publish-api.mjs export.json one-day.csv four-day.csv');
 const bytes=fs.readFileSync(source),x=JSON.parse(bytes),coverage=validateAPI(x),sha=crypto.createHash('sha256').update(bytes).digest('hex'),controls=controlFiles.map(f=>{const b=fs.readFileSync(f);return{...validate(b.toString('utf8')),source_sha256:crypto.createHash('sha256').update(b).digest('hex')};});
 if(!controls.some(c=>c.period_start==='2026-10-11'&&c.period_end==='2026-10-11')||!controls.some(c=>c.period_start==='2026-10-11'&&c.period_end==='2026-10-14'))throw Error('Both accepted console control windows are required');
-const checks=controls.map(c=>reconcileCSV(x,c)),snapshots=[apiSnapshot(x,x.scope.start,x.scope.end,sha)];
+const checks=controls.map(c=>reconcileCSV(x,c)),snapshots=[apiSnapshot(x,x.scope.start,x.scope.end,sha),...weeklySnapshots(x,sha)];
 for(let d=Date.parse(x.scope.start);d<=Date.parse(x.scope.end);d+=86400000){const date=new Date(d).toISOString().slice(0,10);snapshots.push(apiSnapshot(x,date,date,sha));}
 const rows=x.reports.flatMap(c=>c.rows),summary={scope:x.scope,queriedAt:x.queriedAt,source_sha256:sha,coverage,totalsOfObservedRows:totals(rows),checks,notes:['No console control exists for the full 28-day window.','Absent campaign/day rows remain unavailable, not zero.','Known stored campaigns only; no current account inventory verification.']};
 const quote=v=>'"'+String(v??'').replaceAll('"','""')+'"',columns=['date','app','campaign_id','campaign_name','source','currency','spend',...countFields,'data_quality_status','source_queried_at','source_sha256'];const csv=[columns.map(quote).join(',')];

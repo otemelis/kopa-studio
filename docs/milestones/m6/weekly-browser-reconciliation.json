@@ -1,0 +1,11 @@
+{
+  "result": "PASS",
+  "weekly_windows_checked": 4,
+  "visible_metric_cells_checked": 104,
+  "comparison_states_checked": 4,
+  "source": "original saved Apple Ads export; independent Python Decimal",
+  "source_period": [
+    "2026-09-17",
+    "2026-10-14"
+  ]
+}

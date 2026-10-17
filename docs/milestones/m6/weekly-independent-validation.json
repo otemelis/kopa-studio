@@ -1,0 +1,37 @@
+{
+  "validator": "independent Python csv + Decimal",
+  "result": "PASS",
+  "coverage": {
+    "observedRows": 28,
+    "unavailableCoverageRows": 56
+  },
+  "observedTotals": {
+    "impressions": 347,
+    "taps": 18,
+    "tapInstalls": 10,
+    "viewInstalls": 1,
+    "totalInstalls": 11,
+    "newDownloads": 11,
+    "redownloads": 0
+  },
+  "spendExact": "7.5740",
+  "controls": [
+    {
+      "start": "2026-10-11",
+      "end": "2026-10-11",
+      "exactApiSpend": "0",
+      "consoleSpend": "0.00",
+      "result": "PASS; absent API campaigns remain unavailable"
+    },
+    {
+      "start": "2026-10-11",
+      "end": "2026-10-14",
+      "exactApiSpend": "0.4918",
+      "consoleSpend": "0.49",
+      "result": "PASS; absent API campaigns remain unavailable"
+    }
+  ],
+  "sourceSha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+  "snapshotApiWindowsChecked": 33,
+  "weeklyComparisonsChecked": 4
+}
