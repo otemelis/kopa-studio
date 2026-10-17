@@ -94,17 +94,18 @@
 
 **Done when:** In about a minute the owner can distinguish discovery/downloads, first observed app activity, first value, and Apple-reported purchases for POIS/PASSPORT with current dates and clear measurement boundaries.
 
-### M5 — Independent in-house ASO intelligence: source feasibility before UI
-**Objective:** Build first-party keyword-demand and acquisition intelligence for POIS while preserving honest organic-rank boundaries. AppFollow remains optional validation, never a required source. ASO-1 and ASO-2 are complete; ASO-3 generated-report refresh remains pending; ASO-4 Apple keyword feasibility is complete with a NO-GO for production intelligence scoring due to weak POIS coverage and relevance. The next concrete task is to rerun the existing read-only ASC refresh once the three approved ONGOING requests have generated report instances. Keep the existing ASO-4b persistence and ASO-5 evidence-scoring milestones queued until POIS-specific evidence or licensed data passes coverage, accuracy and rights gates. See [ASO-4 feasibility report](aso/ASO-4_APPLE_KEYWORD_INTELLIGENCE_FEASIBILITY.md).
+### M5 — Independent in-house ASO intelligence: prove organic rank before intelligence
+**Objective:** Build an independent ASO intelligence product whose organic positions are actual, country- and date-scoped observations. Apple's popularity/suggestions alone did not pass POIS coverage/relevance. AppFollow is optional. ASO-1 through ASO-4 remain preserved. ASO-5 is now the owner-requested organic ranking provider proof; the previous evidence-based intelligence milestone is preserved as ASO-6. The next source task outside this gate remains the existing read-only ASC refresh once approved report instances are generated. See [ASO-4 feasibility report](aso/ASO-4_APPLE_KEYWORD_INTELLIGENCE_FEASIBILITY.md) and [ASO-5 organic ranking proof](aso/ASO-5_ORGANIC_RANKING_DATA_PROOF.md).
 
 **Priority order:**
 1. Apple Ads Platform v1 read access is verified, but current POIS candidate popularity rows are absent in US/DE/GB and app-scoped suggestions are inaccessible. Keep this feed unavailable for POIS until subsequent evidence improves.
 2. ASO-2 independently concluded NO-GO for unlicensed organic-rank collection; legacy iTunes catalog order remains separate.
 3. Refresh the already-approved App Store Connect reports through the existing extractor after Apple generates their first instances. Keep App Store Search source inclusive of Search Ads; no exact query-level organic position is exposed.
-4. Persist observations as separate source-attributed Supabase facts only after the ASO-4b gate reopens. Keep method, scale, scope, period, capture time, and missingness.
-5. Build opportunity/metadata evidence only after source coverage and provenance pass. No UI expansion until useful POIS evidence is accepted.
+4. ASO-5 compares Appfigures, AppTweak and AppFollow. Current recommendation: Appfigures is the cheapest ongoing candidate, but API language, checked-unranked semantics and retention rights need written confirmation. AppTweak has the strongest documented three-state API but starts at $166/month and its database-retention terms need clarification. No vendor trial or purchase has started.
+5. Record rank as ranked, confirmed-unranked or unavailable. Do not use filled/sentinel positions as observations. No production ranking ingestion or dashboard until exact scope, provider rights and real response validation pass.
+6. Preserve ASO-6 evidence-based opportunity work until ranking and first-party inputs pass provenance/coverage checks.
 
-**Done when:** Real Apple responses have been evaluated for scope, history and relevance; first-party ASC metrics reconcile independently; all sources use their own scales and methods; unsupported POIS popularity and organic ranking remain explicitly unavailable. Current feasibility result: insufficient for a production intelligence engine. Full scope and evidence are in [the Independent ASO Intelligence Roadmap](aso/INDEPENDENT_ASO_ROADMAP.md).
+**Done when:** Real ranking responses have exact country, language/device evidence, observation time and status; raw positions reconcile to provider payloads; provider terms permit the planned internal ingestion and retention; and organic rank is never inferred from iTunes order, Apple Ads or estimated fields. Full scope and evidence are in [the Independent ASO Intelligence Roadmap](aso/INDEPENDENT_ASO_ROADMAP.md).
 
 ### M6 — Apple Ads: read-only daily campaign performance
 **Objective:** Answer what spend is buying for POIS/PASSPORT after campaigns exist.

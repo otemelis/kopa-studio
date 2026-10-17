@@ -108,7 +108,7 @@ After ASO-1's real response contract passes, add a small additive Supabase migra
 **Risks:** the existing public ASO schema relies on service role and RLS; preserve server-only writes and avoid exposing raw histories.
 **Dependency:** ASO-1 endpoint contract and payload validation.
 
-### ASO-5 — Evidence-based intelligence
+### ASO-6 — Evidence-based intelligence
 
 Start deterministic and read-only. Generate candidate terms from Apple's popularity rows and app-specific suggestions; compare popularity movements with official App Store acquisition by territory/source, Apple Ads search-term outcomes, and verified metadata snapshots. Show observed inputs, method, confidence, sample/coverage, and alternatives. Competitor candidates may come from public catalog discovery, but must not be called search competitors or ranked competitors without query-scoped evidence. Recommendations propose metadata experiments; they never write metadata, create campaigns or change bids.
 
@@ -117,9 +117,21 @@ Start deterministic and read-only. Generate candidate terms from Apple's popular
 **Cost:** $0 if deterministic; any LLM/provider expense is deferred and requires approval.
 **Risk:** genre demand vs an app's audience, sparse launches, confounded metadata/ads/seasonality.
 
+### ASO-5 — Organic Ranking Data Proof
+
+**Status: Feasibility recommendation delivered; live validation not started.** The provider-neutral observation contract is implemented locally and tested. See [`ASO-5_ORGANIC_RANKING_DATA_PROOF.md`](ASO-5_ORGANIC_RANKING_DATA_PROOF.md) for current provider terms, API scope, costs, risks and the exact InnerType proof request.
+
+Use Appfigures as the first-cost candidate only if the vendor confirms per-keyword check/missingness semantics, effective storefront scope, daily schedule, history, keyword-market limits, and private Kopa ingestion/retention rights in writing. If it cannot satisfy the explicit three-state contract, evaluate AppTweak's 7-day API trial as a bounded technical proof only after the owner approves trial activation and confirms retention rights. AppFollow remains optional benchmark evidence. No provider account, subscription, trial, API credential, dashboard, database schema or production data has been changed.
+
+**Acceptance:** 5–10 InnerType keywords in US and DE return raw, source-attributed observations for current and historical dates; every cell has explicit ranked, confirmed-unranked or unavailable state; exact country, language, device, observed time and retrieval time survive normalization; independent/manual validation only proceeds if Apple provides written authorization; and provider terms explicitly permit Kopa's intended ingestion and retention. POIS joins after its listing is public and indexed.
+
+**Cost:** $0 so far. Candidate ongoing plans: Appfigures Monitor $44.99/month ($35.99/month annual); AppTweak API Lite $166/month; AppFollow ASO advertised from $19/month billed yearly, with API credits/access separately unresolved. No trial or purchase authorized or started.
+**Risks:** vendor rank methods may not reveal language/personalization or exact check status; subscriptions can increase cost; retention/competitive-service clauses may prevent persistence; historical dates may be corrections rather than contemporaneous captures.
+**Next owner input:** select an existing Appfigures account or authorize a no-cost AppTweak API trial after confirming no automatic paid conversion; provide a secret file path or connected vendor account; confirm the proposed ten terms; request written data-use/retention answers.
+
 ## Current next step
 
-ASO-1 access and response contracts are verified; ASO-2 remains **NO-GO** for organic rank. ASO-3 ONGOING requests for POIS, PASSPORT and LoveType were awaiting first generated instances at the last 17 October check; after Apple's generation window, rerun the existing read-only refresh and reconcile. ASO-4 feasibility is complete but returned a **NO-GO for a production keyword-intelligence engine** because POIS demand coverage/app-scoped suggestion quality is insufficient. Keep ASO-4b persistence and ASO-5 intelligence queued until useful owned or licensed evidence passes. Do not create campaigns or run a vendor trial without the appropriate cost/rights approval. No production deployment, migration, or dashboard is part of this checkpoint.
+ASO-1 access and response contracts are verified; ASO-2 remains **NO-GO** for organic-rank collection absent written Apple authorization. ASO-3's approved ongoing report requests were awaiting first generated instances at the last 17 October check; reuse the existing read-only refresh after generation. ASO-4 is complete with a **NO-GO for production keyword-intelligence scoring** because POIS popularity coverage and app-scoped suggestion relevance were insufficient. ASO-5 now gates organic-rank provider feasibility; ASO-6 retains the prior evidence-based intelligence milestone. No provider trial, purchase, migration, production change or dashboard is included here.
 
 ## Sources
 
