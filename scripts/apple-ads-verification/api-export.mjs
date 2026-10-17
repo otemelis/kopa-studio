@@ -21,7 +21,7 @@ export function reconcileCSV(x,s){validateAPI(x);if(s.timezone!=='UTC'||s.curren
 }
 export function apiSnapshot(x,start,end,hash){
  validateAPI(x);if(date(start)>date(end)||start<x.scope.start||end>x.scope.end)throw Error('Snapshot outside validated source period');
-const campaigns=x.reports.map(c=>{const rows=c.rows.filter(r=>r.date>=start&&r.date<=end),t=rows.length?totals(rows):null;return{campaign_id:c.campaignId,name:c.campaignName,app:'InnerType Personality Test',market:'Not supplied',reported_status:rows.length?'Observed rows':'No reported rows',metrics:t?{Spend:cents(t.spend),...Object.fromEntries(Object.entries(fieldMap).map(([k,f])=>[k,t[f]]))}:null,spend_exact:t?.spend??null,cpa_cents:t&&t.totalInstalls>0?cents(t.spend,t.totalInstalls):null,observed_days:rows.length};});const rows=x.reports.flatMap(c=>c.rows).filter(r=>r.date>=start&&r.date<=end),t=totals(rows),observed=campaigns.filter(c=>c.metrics).length;return{period_start:start,period_end:end,timezone:'UTC',currency:'EUR',source_kind:'api_export',source_label:'Saved owner API export',queried_at:x.queriedAt,source_sha256:hash,grain:'Observed campaign/day rows; absent rows remain unavailable',campaign_count:campaigns.length,observed_campaigns:observed,totals_in_cents_for_spend:rows.length?{Spend:cents(t.spend),...Object.fromEntries(Object.entries(fieldMap).map(([k,f])=>[k,t[f]]))}:null,spend_exact:rows.length?t.spend:null,cpa_cents:rows.length&&t.totalInstalls>0?cents(t.spend,t.totalInstalls):null,campaigns,validation:'PASS: saved export structure validated and supplied console overlap controls reconcile',quality:`${observed}/${campaigns.length} mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass.`};}
+const campaigns=x.reports.map(c=>{const rows=c.rows.filter(r=>r.date>=start&&r.date<=end),t=rows.length?totals(rows):null;return{campaign_id:c.campaignId,name:c.campaignName,app:'InnerType Personality Test',market:'Not supplied',reported_status:rows.length?'Observed rows':'No reported rows',metrics:t?{Spend:cents(t.spend),...Object.fromEntries(Object.entries(fieldMap).map(([k,f])=>[k,t[f]]))}:null,spend_exact:t?.spend??null,cpa_cents:t&&t.totalInstalls>0?cents(t.spend,t.totalInstalls):null,observed_days:rows.length};});const rows=x.reports.flatMap(c=>c.rows).filter(r=>r.date>=start&&r.date<=end),t=totals(rows),observed=campaigns.filter(c=>c.metrics).length;return{period_start:start,period_end:end,timezone:'UTC',currency:'EUR',source_kind:'api_export',source_label:'Saved owner API export',queried_at:x.queriedAt,source_sha256:hash,grain:'Observed campaign/day rows; absent rows remain unavailable',campaign_count:campaigns.length,observed_campaigns:observed,totals_in_cents_for_spend:rows.length?{Spend:cents(t.spend),...Object.fromEntries(Object.entries(fieldMap).map(([k,f])=>[k,t[f]]))}:null,spend_exact:rows.length?t.spend:null,cpa_cents:rows.length&&t.totalInstalls>0?cents(t.spend,t.totalInstalls):null,campaigns,validation:'PASS: saved export structure validated; external controls must be checked separately',quality:`${observed}/${campaigns.length} mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. External console coverage is determined by the supplied control files, not by source dates.`};}
 
 function shiftDay(day, n){return new Date(date(day)+n*86400000).toISOString().slice(0,10);}
 function spendDifference(current, previous){
@@ -32,7 +32,7 @@ function spendDifference(current, previous){
  const exact=(delta<0n?'-':'')+(scale?digits.slice(0,-scale)+'.'+digits.slice(-scale):digits);
  return {exact,cents:(delta<0n?-1:1)*cents(exact.replace(/^-/,''))};
 }
-export function weeklySnapshots(x,hash){
+export function weeklySnapshots(x,hash,controlWindows=[]){
  validateAPI(x);const snapshots=[];
  for(let end=x.scope.end;shiftDay(end,-6)>=x.scope.start;end=shiftDay(end,-7)){
   const start=shiftDay(end,-6),current=apiSnapshot(x,start,end,hash);
@@ -50,9 +50,9 @@ export function weeklySnapshots(x,hash){
    }else comparison.reason='Observed campaign coverage differs or has missing days; no matched complete comparison.';
   }
   current.comparison=comparison;
-  const controls=[['2026-10-11','2026-10-11'],['2026-10-11','2026-10-14']].filter(([a,b])=>a>=start&&b<=end);
+  const controls=controlWindows.map(c=>[c.start,c.end]).filter(([a,b])=>a>=start&&b<=end);
   current.console_controls_within_window=controls.map(([start,end])=>({start,end}));
-  current.quality+=controls.length?' Selected week contains the supplied one-day and four-day aggregate console controls; no independent full-week console control.':' No supplied console control is wholly inside this week; source arithmetic is checked independently, but this week has no external console reconciliation.';
+  current.quality+=controls.length?' Selected week contains supplied console controls; no independent full-week console control unless the exact week is listed.':' No supplied console control is wholly inside this week; source arithmetic is checked independently, but this week has no external console reconciliation.';
   snapshots.push(current);
  }
  return snapshots;

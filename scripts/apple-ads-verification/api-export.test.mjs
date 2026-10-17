@@ -31,5 +31,5 @@ test('missing days or changed observed campaign sets make weekly comparison unav
 });
 test('snapshot bounds fail closed and console subwindows never certify whole weeks',()=>{
  const x=twoWeekFixture();assert.throws(()=>apiSnapshot(x,'2026-09-30','2026-10-01','test'));assert.throws(()=>apiSnapshot(x,'2026-10-10','2026-10-09','test'));
- const [latest,earliest]=weeklySnapshots(x,'test');assert.equal(latest.console_controls_within_window.length,2);assert.match(latest.quality,/no independent full-week/);assert.equal(earliest.console_controls_within_window.length,0);assert.match(earliest.quality,/no external console reconciliation/);
+ const [latest,earliest]=weeklySnapshots(x,'test',[{start:'2026-10-11',end:'2026-10-11'},{start:'2026-10-11',end:'2026-10-14'}]);assert.equal(latest.console_controls_within_window.length,2);assert.match(latest.quality,/no independent full-week/);assert.equal(earliest.console_controls_within_window.length,0);assert.match(earliest.quality,/no external console reconciliation/);
 });

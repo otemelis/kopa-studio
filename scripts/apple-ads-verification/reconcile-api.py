@@ -1,5 +1,7 @@
 """Independent Decimal/csv control for the saved JSON and JS-generated daily CSV."""
-import csv, hashlib, io, json, sys
+import csv, hashlib, io, json, sys, os
+from pathlib import Path
+output_root=Path(os.environ.get("KOPA_ADS_OUTPUT_ROOT", "."))
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import datetime, timedelta
 source, *controls = sys.argv[1:]
@@ -25,20 +27,23 @@ for file in controls:
    for k,f in fields.items():assert sum(r[f] for r in a)==int(c[k])
    assert sum((Decimal(r['spend']) for r in a),Decimal(0)).quantize(Decimal('.01'),rounding=ROUND_HALF_UP)==Decimal(c['Spend'])
  checks.append({'start':start,'end':end,'exactApiSpend':str(exact),'consoleSpend':footer[0]['Spend'],'result':'PASS; absent API campaigns remain unavailable'})
-published=list(csv.DictReader(open('docs/milestones/m6/apple-ads-daily.csv')));assert len(published)==84
-observed=[r for r in published if r['data_quality_status'].startswith('observed')];missing=[r for r in published if r['data_quality_status'].startswith('unavailable')];assert len(observed)==len(rows)==28 and len(missing)==56
+published=list(csv.DictReader(open(output_root/'docs/milestones/m6/apple-ads-daily.csv')));assert len(published)==x['scope']['days']*len(x['reports'])
+observed=[r for r in published if r['data_quality_status'].startswith('observed')];missing=[r for r in published if r['data_quality_status'].startswith('unavailable')];assert len(observed)==len(rows) and len(missing)==len(published)-len(rows)
 lookup={(r['campaignId'],r['date']):r for r in rows}
 for row in observed:
  original=lookup[(row['campaign_id'],row['date'])];assert row['spend']==original['spend']
  for f in fields.values():assert int(row[f])==original[f]
 for r in missing:
  assert all(r[f]=='' for f in [*fields.values(),'spend','currency'])
-snapshot=json.load(open('reporting/portfolio/apple-ads-snapshot.json'))
+snapshot=json.load(open(output_root/'reporting/portfolio/apple-ads-snapshot.json'))
 for s in snapshot['snapshots']:
  if s.get('source_kind')!='api_export':continue
+ assert s['source_sha256']==hashlib.sha256(open(source,'rb').read()).hexdigest() and s['queried_at']==x['queriedAt']
  subset=[r for r in rows if s['period_start']<=r['date']<=s['period_end']]
- assert s['spend_exact']==str(sum((Decimal(r['spend']) for r in subset),Decimal(0)))
- for k,f in fields.items():assert s['totals_in_cents_for_spend'][k]==sum(r[f] for r in subset)
+ assert (Decimal(s['spend_exact']) if s['spend_exact'] is not None else None)==(sum((Decimal(r['spend']) for r in subset),Decimal(0)) if subset else None)
+ if subset:
+  for k,f in fields.items():assert s['totals_in_cents_for_spend'][k]==sum(r[f] for r in subset)
+ else:assert s['totals_in_cents_for_spend'] is None
  for c in s['campaigns']:
   a=[r for r in subset if r['campaignId']==c['campaign_id']]
   if not a:assert c['metrics'] is None and c['spend_exact'] is None
