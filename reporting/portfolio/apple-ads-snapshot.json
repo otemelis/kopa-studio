@@ -2,11 +2,11 @@
   "mode": "historical_official_reports",
   "console_checks": [
     {
-      "periodStart": "2026-10-11",
-      "periodEnd": "2026-10-11",
+      "periodStart": "2026-09-19",
+      "periodEnd": "2026-10-16",
       "result": "PASS: observed API sums match console footer; absent campaign rows are not independently confirmed zeros",
-      "apiSpendExact": "0",
-      "consoleSpendCents": 0,
+      "apiSpendExact": "5.7587",
+      "consoleSpendCents": 576,
       "comparisons": [
         {
           "campaignId": "2144314451",
@@ -25,53 +25,9 @@
         {
           "campaignId": "2144366771",
           "result": "PASS: reported count sums match; exact API spend rounds to console amount",
-          "apiSpendExact": "0",
-          "consoleSpendCents": 0,
-          "observedDays": 1
-        },
-        {
-          "campaignId": "2144314113",
-          "result": "UNAVAILABLE: API has no rows; console-reported values retained independently",
-          "consoleMetrics": {
-            "Spend": 0,
-            "Impressions": 0,
-            "Taps": 0,
-            "Installs (Total)": 0,
-            "Installs (Tap-Through)": 0,
-            "Installs (View-Through)": 0,
-            "New Downloads (Total)": 0,
-            "Redownloads (Total)": 0
-          }
-        }
-      ]
-    },
-    {
-      "periodStart": "2026-10-11",
-      "periodEnd": "2026-10-14",
-      "result": "PASS: observed API sums match console footer; absent campaign rows are not independently confirmed zeros",
-      "apiSpendExact": "0.4918",
-      "consoleSpendCents": 49,
-      "comparisons": [
-        {
-          "campaignId": "2144314451",
-          "result": "UNAVAILABLE: API has no rows; console-reported values retained independently",
-          "consoleMetrics": {
-            "Spend": 0,
-            "Impressions": 0,
-            "Taps": 0,
-            "Installs (Total)": 0,
-            "Installs (Tap-Through)": 0,
-            "Installs (View-Through)": 0,
-            "New Downloads (Total)": 0,
-            "Redownloads (Total)": 0
-          }
-        },
-        {
-          "campaignId": "2144366771",
-          "result": "PASS: reported count sums match; exact API spend rounds to console amount",
-          "apiSpendExact": "0.4918",
-          "consoleSpendCents": 49,
-          "observedDays": 4
+          "apiSpendExact": "5.7587",
+          "consoleSpendCents": 576,
+          "observedDays": 28
         },
         {
           "campaignId": "2144314113",
@@ -90,32 +46,32 @@
       ]
     }
   ],
-  "imported_at": "2026-10-17T12:49:33.645Z",
+  "imported_at": "2026-10-17T13:11:50.452Z",
   "snapshots": [
     {
-      "period_start": "2026-09-17",
-      "period_end": "2026-10-14",
+      "period_start": "2026-09-19",
+      "period_end": "2026-10-16",
       "timezone": "UTC",
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
       "totals_in_cents_for_spend": {
-        "Spend": 757,
-        "Impressions": 347,
-        "Taps": 18,
-        "Installs (Tap-Through)": 10,
+        "Spend": 576,
+        "Impressions": 331,
+        "Taps": 14,
+        "Installs (Tap-Through)": 8,
         "Installs (View-Through)": 1,
-        "Installs (Total)": 11,
-        "New Downloads (Total)": 11,
+        "Installs (Total)": 9,
+        "New Downloads (Total)": 9,
         "Redownloads (Total)": 0
       },
-      "spend_exact": "7.5740",
-      "cpa_cents": 69,
+      "spend_exact": "5.7587",
+      "cpa_cents": 64,
       "campaigns": [
         {
           "campaign_id": "2144314451",
@@ -146,38 +102,38 @@
           "market": "Not supplied",
           "reported_status": "Observed rows",
           "metrics": {
-            "Spend": 757,
-            "Impressions": 347,
-            "Taps": 18,
-            "Installs (Tap-Through)": 10,
+            "Spend": 576,
+            "Impressions": 331,
+            "Taps": 14,
+            "Installs (Tap-Through)": 8,
             "Installs (View-Through)": 1,
-            "Installs (Total)": 11,
-            "New Downloads (Total)": 11,
+            "Installs (Total)": 9,
+            "New Downloads (Total)": 9,
             "Redownloads (Total)": 0
           },
-          "spend_exact": "7.5740",
-          "cpa_cents": 69,
+          "spend_exact": "5.7587",
+          "cpa_cents": 64,
           "observed_days": 28
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
-      "period_start": "2026-10-08",
-      "period_end": "2026-10-14",
+      "period_start": "2026-10-10",
+      "period_end": "2026-10-16",
       "timezone": "UTC",
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
       "totals_in_cents_for_spend": {
         "Spend": 49,
-        "Impressions": 75,
+        "Impressions": 69,
         "Taps": 1,
         "Installs (Tap-Through)": 0,
         "Installs (View-Through)": 0,
@@ -218,7 +174,7 @@
           "reported_status": "Observed rows",
           "metrics": {
             "Spend": 49,
-            "Impressions": 75,
+            "Impressions": 69,
             "Taps": 1,
             "Installs (Tap-Through)": 0,
             "Installs (View-Through)": 0,
@@ -231,14 +187,14 @@
           "observed_days": 7
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass. Selected week contains the supplied one-day and four-day aggregate console controls; no independent full-week console control.",
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16",
       "window_kind": "seven_complete_days",
       "window_label": "7 days",
       "comparison": {
         "state": "comparable_observed_campaigns",
-        "start": "2026-10-01",
-        "end": "2026-10-07",
+        "start": "2026-10-03",
+        "end": "2026-10-09",
         "reason": null,
         "campaign_ids": [
           "2144366771"
@@ -250,7 +206,7 @@
         "spend_change_cents": -84,
         "previous_totals": {
           "Spend": 134,
-          "Impressions": 79,
+          "Impressions": 75,
           "Taps": 2,
           "Installs (Tap-Through)": 1,
           "Installs (View-Through)": 0,
@@ -259,7 +215,7 @@
           "Redownloads (Total)": 0
         },
         "changes": {
-          "Impressions": -4,
+          "Impressions": -6,
           "Taps": -1,
           "Installs (Tap-Through)": -1,
           "Installs (View-Through)": 0,
@@ -268,32 +224,23 @@
           "Redownloads (Total)": 0
         }
       },
-      "console_controls_within_window": [
-        {
-          "start": "2026-10-11",
-          "end": "2026-10-11"
-        },
-        {
-          "start": "2026-10-11",
-          "end": "2026-10-14"
-        }
-      ]
+      "console_controls_within_window": []
     },
     {
-      "period_start": "2026-10-01",
-      "period_end": "2026-10-07",
+      "period_start": "2026-10-03",
+      "period_end": "2026-10-09",
       "timezone": "UTC",
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
       "totals_in_cents_for_spend": {
         "Spend": 134,
-        "Impressions": 79,
+        "Impressions": 75,
         "Taps": 2,
         "Installs (Tap-Through)": 1,
         "Installs (View-Through)": 0,
@@ -334,7 +281,7 @@
           "reported_status": "Observed rows",
           "metrics": {
             "Spend": 134,
-            "Impressions": 79,
+            "Impressions": 75,
             "Taps": 2,
             "Installs (Tap-Through)": 1,
             "Installs (View-Through)": 0,
@@ -347,27 +294,27 @@
           "observed_days": 7
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass. No supplied console control is wholly inside this week; source arithmetic is checked independently, but this week has no external console reconciliation.",
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16",
       "window_kind": "seven_complete_days",
       "window_label": "7 days",
       "comparison": {
         "state": "comparable_observed_campaigns",
-        "start": "2026-09-24",
-        "end": "2026-09-30",
+        "start": "2026-09-26",
+        "end": "2026-10-02",
         "reason": null,
         "campaign_ids": [
           "2144366771"
         ],
         "observed_campaigns": 1,
         "mapped_campaigns": 3,
-        "previous_spend_exact": "1.9878",
-        "spend_change_exact": "-0.6527",
-        "spend_change_cents": -65,
+        "previous_spend_exact": "1.5858",
+        "spend_change_exact": "-0.2507",
+        "spend_change_cents": -25,
         "previous_totals": {
-          "Spend": 199,
-          "Impressions": 86,
-          "Taps": 5,
+          "Spend": 159,
+          "Impressions": 88,
+          "Taps": 4,
           "Installs (Tap-Through)": 2,
           "Installs (View-Through)": 0,
           "Installs (Total)": 2,
@@ -375,8 +322,8 @@
           "Redownloads (Total)": 0
         },
         "changes": {
-          "Impressions": -7,
-          "Taps": -3,
+          "Impressions": -13,
+          "Taps": -2,
           "Installs (Tap-Through)": -1,
           "Installs (View-Through)": 0,
           "Installs (Total)": -1,
@@ -387,207 +334,20 @@
       "console_controls_within_window": []
     },
     {
-      "period_start": "2026-09-24",
-      "period_end": "2026-09-30",
+      "period_start": "2026-09-26",
+      "period_end": "2026-10-02",
       "timezone": "UTC",
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
       "totals_in_cents_for_spend": {
-        "Spend": 199,
-        "Impressions": 86,
-        "Taps": 5,
-        "Installs (Tap-Through)": 2,
-        "Installs (View-Through)": 0,
-        "Installs (Total)": 2,
-        "New Downloads (Total)": 2,
-        "Redownloads (Total)": 0
-      },
-      "spend_exact": "1.9878",
-      "cpa_cents": 99,
-      "campaigns": [
-        {
-          "campaign_id": "2144314451",
-          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
-          "app": "InnerType Personality Test",
-          "market": "Not supplied",
-          "reported_status": "No reported rows",
-          "metrics": null,
-          "spend_exact": null,
-          "cpa_cents": null,
-          "observed_days": 0
-        },
-        {
-          "campaign_id": "2144314113",
-          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
-          "app": "InnerType Personality Test",
-          "market": "Not supplied",
-          "reported_status": "No reported rows",
-          "metrics": null,
-          "spend_exact": null,
-          "cpa_cents": null,
-          "observed_days": 0
-        },
-        {
-          "campaign_id": "2144366771",
-          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
-          "app": "InnerType Personality Test",
-          "market": "Not supplied",
-          "reported_status": "Observed rows",
-          "metrics": {
-            "Spend": 199,
-            "Impressions": 86,
-            "Taps": 5,
-            "Installs (Tap-Through)": 2,
-            "Installs (View-Through)": 0,
-            "Installs (Total)": 2,
-            "New Downloads (Total)": 2,
-            "Redownloads (Total)": 0
-          },
-          "spend_exact": "1.9878",
-          "cpa_cents": 99,
-          "observed_days": 7
-        }
-      ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass. No supplied console control is wholly inside this week; source arithmetic is checked independently, but this week has no external console reconciliation.",
-      "window_kind": "seven_complete_days",
-      "window_label": "7 days",
-      "comparison": {
-        "state": "comparable_observed_campaigns",
-        "start": "2026-09-17",
-        "end": "2026-09-23",
-        "reason": null,
-        "campaign_ids": [
-          "2144366771"
-        ],
-        "observed_campaigns": 1,
-        "mapped_campaigns": 3,
-        "previous_spend_exact": "3.7593",
-        "spend_change_exact": "-1.7715",
-        "spend_change_cents": -177,
-        "previous_totals": {
-          "Spend": 376,
-          "Impressions": 107,
-          "Taps": 10,
-          "Installs (Tap-Through)": 7,
-          "Installs (View-Through)": 1,
-          "Installs (Total)": 8,
-          "New Downloads (Total)": 8,
-          "Redownloads (Total)": 0
-        },
-        "changes": {
-          "Impressions": -21,
-          "Taps": -5,
-          "Installs (Tap-Through)": -5,
-          "Installs (View-Through)": -1,
-          "Installs (Total)": -6,
-          "New Downloads (Total)": -6,
-          "Redownloads (Total)": 0
-        }
-      },
-      "console_controls_within_window": []
-    },
-    {
-      "period_start": "2026-09-17",
-      "period_end": "2026-09-23",
-      "timezone": "UTC",
-      "currency": "EUR",
-      "source_kind": "api_export",
-      "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
-      "grain": "Observed campaign/day rows; absent rows remain unavailable",
-      "campaign_count": 3,
-      "observed_campaigns": 1,
-      "totals_in_cents_for_spend": {
-        "Spend": 376,
-        "Impressions": 107,
-        "Taps": 10,
-        "Installs (Tap-Through)": 7,
-        "Installs (View-Through)": 1,
-        "Installs (Total)": 8,
-        "New Downloads (Total)": 8,
-        "Redownloads (Total)": 0
-      },
-      "spend_exact": "3.7593",
-      "cpa_cents": 47,
-      "campaigns": [
-        {
-          "campaign_id": "2144314451",
-          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
-          "app": "InnerType Personality Test",
-          "market": "Not supplied",
-          "reported_status": "No reported rows",
-          "metrics": null,
-          "spend_exact": null,
-          "cpa_cents": null,
-          "observed_days": 0
-        },
-        {
-          "campaign_id": "2144314113",
-          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
-          "app": "InnerType Personality Test",
-          "market": "Not supplied",
-          "reported_status": "No reported rows",
-          "metrics": null,
-          "spend_exact": null,
-          "cpa_cents": null,
-          "observed_days": 0
-        },
-        {
-          "campaign_id": "2144366771",
-          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
-          "app": "InnerType Personality Test",
-          "market": "Not supplied",
-          "reported_status": "Observed rows",
-          "metrics": {
-            "Spend": 376,
-            "Impressions": 107,
-            "Taps": 10,
-            "Installs (Tap-Through)": 7,
-            "Installs (View-Through)": 1,
-            "Installs (Total)": 8,
-            "New Downloads (Total)": 8,
-            "Redownloads (Total)": 0
-          },
-          "spend_exact": "3.7593",
-          "cpa_cents": 47,
-          "observed_days": 7
-        }
-      ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass. No supplied console control is wholly inside this week; source arithmetic is checked independently, but this week has no external console reconciliation.",
-      "window_kind": "seven_complete_days",
-      "window_label": "7 days",
-      "comparison": {
-        "state": "unavailable",
-        "start": "2026-09-10",
-        "end": "2026-09-16",
-        "reason": "Previous seven days are outside the saved source."
-      },
-      "console_controls_within_window": []
-    },
-    {
-      "period_start": "2026-09-17",
-      "period_end": "2026-09-17",
-      "timezone": "UTC",
-      "currency": "EUR",
-      "source_kind": "api_export",
-      "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
-      "grain": "Observed campaign/day rows; absent rows remain unavailable",
-      "campaign_count": 3,
-      "observed_campaigns": 1,
-      "totals_in_cents_for_spend": {
-        "Spend": 182,
-        "Impressions": 16,
+        "Spend": 159,
+        "Impressions": 88,
         "Taps": 4,
         "Installs (Tap-Through)": 2,
         "Installs (View-Through)": 0,
@@ -595,8 +355,8 @@
         "New Downloads (Total)": 2,
         "Redownloads (Total)": 0
       },
-      "spend_exact": "1.8153",
-      "cpa_cents": 91,
+      "spend_exact": "1.5858",
+      "cpa_cents": 79,
       "campaigns": [
         {
           "campaign_id": "2144314451",
@@ -627,8 +387,8 @@
           "market": "Not supplied",
           "reported_status": "Observed rows",
           "metrics": {
-            "Spend": 182,
-            "Impressions": 16,
+            "Spend": 159,
+            "Impressions": 88,
             "Taps": 4,
             "Installs (Tap-Through)": 2,
             "Installs (View-Through)": 0,
@@ -636,38 +396,74 @@
             "New Downloads (Total)": 2,
             "Redownloads (Total)": 0
           },
-          "spend_exact": "1.8153",
-          "cpa_cents": 91,
-          "observed_days": 1
+          "spend_exact": "1.5858",
+          "cpa_cents": 79,
+          "observed_days": 7
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16",
+      "window_kind": "seven_complete_days",
+      "window_label": "7 days",
+      "comparison": {
+        "state": "comparable_observed_campaigns",
+        "start": "2026-09-19",
+        "end": "2026-09-25",
+        "reason": null,
+        "campaign_ids": [
+          "2144366771"
+        ],
+        "observed_campaigns": 1,
+        "mapped_campaigns": 3,
+        "previous_spend_exact": "2.3460",
+        "spend_change_exact": "-0.7602",
+        "spend_change_cents": -76,
+        "previous_totals": {
+          "Spend": 235,
+          "Impressions": 99,
+          "Taps": 7,
+          "Installs (Tap-Through)": 5,
+          "Installs (View-Through)": 1,
+          "Installs (Total)": 6,
+          "New Downloads (Total)": 6,
+          "Redownloads (Total)": 0
+        },
+        "changes": {
+          "Impressions": -11,
+          "Taps": -3,
+          "Installs (Tap-Through)": -3,
+          "Installs (View-Through)": -1,
+          "Installs (Total)": -4,
+          "New Downloads (Total)": -4,
+          "Redownloads (Total)": 0
+        }
+      },
+      "console_controls_within_window": []
     },
     {
-      "period_start": "2026-09-18",
-      "period_end": "2026-09-18",
+      "period_start": "2026-09-19",
+      "period_end": "2026-09-25",
       "timezone": "UTC",
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
       "totals_in_cents_for_spend": {
-        "Spend": 0,
-        "Impressions": 11,
-        "Taps": 0,
-        "Installs (Tap-Through)": 0,
-        "Installs (View-Through)": 0,
-        "Installs (Total)": 0,
-        "New Downloads (Total)": 0,
+        "Spend": 235,
+        "Impressions": 99,
+        "Taps": 7,
+        "Installs (Tap-Through)": 5,
+        "Installs (View-Through)": 1,
+        "Installs (Total)": 6,
+        "New Downloads (Total)": 6,
         "Redownloads (Total)": 0
       },
-      "spend_exact": "0",
-      "cpa_cents": null,
+      "spend_exact": "2.3460",
+      "cpa_cents": 39,
       "campaigns": [
         {
           "campaign_id": "2144314451",
@@ -698,22 +494,31 @@
           "market": "Not supplied",
           "reported_status": "Observed rows",
           "metrics": {
-            "Spend": 0,
-            "Impressions": 11,
-            "Taps": 0,
-            "Installs (Tap-Through)": 0,
-            "Installs (View-Through)": 0,
-            "Installs (Total)": 0,
-            "New Downloads (Total)": 0,
+            "Spend": 235,
+            "Impressions": 99,
+            "Taps": 7,
+            "Installs (Tap-Through)": 5,
+            "Installs (View-Through)": 1,
+            "Installs (Total)": 6,
+            "New Downloads (Total)": 6,
             "Redownloads (Total)": 0
           },
-          "spend_exact": "0",
-          "cpa_cents": null,
-          "observed_days": 1
+          "spend_exact": "2.3460",
+          "cpa_cents": 39,
+          "observed_days": 7
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16",
+      "window_kind": "seven_complete_days",
+      "window_label": "7 days",
+      "comparison": {
+        "state": "unavailable",
+        "start": "2026-09-12",
+        "end": "2026-09-18",
+        "reason": "Previous seven days are outside the saved source."
+      },
+      "console_controls_within_window": []
     },
     {
       "period_start": "2026-09-19",
@@ -722,8 +527,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -783,8 +588,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-09-20",
@@ -793,8 +598,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -854,8 +659,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-09-21",
@@ -864,8 +669,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -925,8 +730,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-09-22",
@@ -935,8 +740,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -996,8 +801,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-09-23",
@@ -1006,8 +811,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -1067,8 +872,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-09-24",
@@ -1077,8 +882,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -1138,8 +943,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-09-25",
@@ -1148,8 +953,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -1209,8 +1014,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-09-26",
@@ -1219,8 +1024,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -1280,8 +1085,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-09-27",
@@ -1290,8 +1095,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -1351,8 +1156,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-09-28",
@@ -1361,8 +1166,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -1422,8 +1227,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-09-29",
@@ -1432,8 +1237,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -1493,8 +1298,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-09-30",
@@ -1503,8 +1308,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -1564,8 +1369,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-10-01",
@@ -1574,8 +1379,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -1635,8 +1440,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-10-02",
@@ -1645,8 +1450,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -1706,8 +1511,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-10-03",
@@ -1716,8 +1521,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -1777,8 +1582,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-10-04",
@@ -1787,8 +1592,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -1848,8 +1653,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-10-05",
@@ -1858,8 +1663,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -1919,8 +1724,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-10-06",
@@ -1929,8 +1734,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -1990,8 +1795,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-10-07",
@@ -2000,8 +1805,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -2061,8 +1866,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-10-08",
@@ -2071,8 +1876,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -2132,8 +1937,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-10-09",
@@ -2142,8 +1947,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -2203,8 +2008,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-10-10",
@@ -2213,8 +2018,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -2274,8 +2079,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-10-11",
@@ -2284,8 +2089,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -2345,8 +2150,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-10-12",
@@ -2355,8 +2160,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -2416,8 +2221,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-10-13",
@@ -2426,8 +2231,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -2487,8 +2292,8 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
       "period_start": "2026-10-14",
@@ -2497,8 +2302,8 @@
       "currency": "EUR",
       "source_kind": "api_export",
       "source_label": "Saved owner API export",
-      "queried_at": "2026-10-15T19:25:52.895Z",
-      "source_sha256": "aaae3ad54ddb0ca26208d90e0fcb9ceb213af0501bcaccd08e377971bf0ed77b",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
       "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
       "observed_campaigns": 1,
@@ -2558,97 +2363,166 @@
           "observed_days": 1
         }
       ],
-      "validation": "PASS: saved export structure validated and supplied console overlap controls reconcile",
-      "quality": "1/3 mapped campaigns have observed rows. Totals include reported rows only; this is not a verified account-wide total. Spend summed at source precision before display rounding. Full-window console reconciliation unavailable; 11 October and 11–14 October overlap controls pass."
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
-      "period_start": "2026-10-11",
-      "period_end": "2026-10-11",
+      "period_start": "2026-10-15",
+      "period_end": "2026-10-15",
       "timezone": "UTC",
       "currency": "EUR",
-      "grain": "campaign totals for one explicit reporting day",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
       "campaign_count": 3,
+      "observed_campaigns": 1,
       "totals_in_cents_for_spend": {
         "Spend": 0,
-        "Impressions": 13,
+        "Impressions": 2,
         "Taps": 0,
-        "Installs (Total)": 0,
         "Installs (Tap-Through)": 0,
         "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
         "New Downloads (Total)": 0,
         "Redownloads (Total)": 0
       },
+      "spend_exact": "0",
+      "cpa_cents": null,
       "campaigns": [
         {
           "campaign_id": "2144314451",
           "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
           "app": "InnerType Personality Test",
-          "market": "Germany",
-          "reported_status": "PAUSED",
-          "metrics": {
-            "Spend": 0,
-            "Impressions": 0,
-            "Taps": 0,
-            "Installs (Total)": 0,
-            "Installs (Tap-Through)": 0,
-            "Installs (View-Through)": 0,
-            "New Downloads (Total)": 0,
-            "Redownloads (Total)": 0
-          }
-        },
-        {
-          "campaign_id": "2144366771",
-          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
-          "app": "InnerType Personality Test",
-          "market": "United Kingdom",
-          "reported_status": "RUNNING",
-          "metrics": {
-            "Spend": 0,
-            "Impressions": 13,
-            "Taps": 0,
-            "Installs (Total)": 0,
-            "Installs (Tap-Through)": 0,
-            "Installs (View-Through)": 0,
-            "New Downloads (Total)": 0,
-            "Redownloads (Total)": 0
-          }
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
         },
         {
           "campaign_id": "2144314113",
           "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
           "app": "InnerType Personality Test",
-          "market": "United Kingdom",
-          "reported_status": "ON_HOLD",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
           "metrics": {
             "Spend": 0,
-            "Impressions": 0,
+            "Impressions": 2,
             "Taps": 0,
-            "Installs (Total)": 0,
             "Installs (Tap-Through)": 0,
             "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
             "New Downloads (Total)": 0,
             "Redownloads (Total)": 0
-          }
+          },
+          "spend_exact": "0",
+          "cpa_cents": null,
+          "observed_days": 1
         }
       ],
-      "validation": "PASS: campaign totals equal footer; install attribution and new/redownload components reconcile; footer excluded from campaign sums",
-      "source_sha256": "7260ff4bea2f632353833a1a65b9b4f597943a3a805b70dd4357b3d6b777ccab"
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
     },
     {
-      "period_start": "2026-10-11",
-      "period_end": "2026-10-14",
+      "period_start": "2026-10-16",
+      "period_end": "2026-10-16",
+      "timezone": "UTC",
+      "currency": "EUR",
+      "source_kind": "api_export",
+      "source_label": "Saved owner API export",
+      "queried_at": "2026-10-17T13:09:21.141Z",
+      "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
+      "grain": "Observed campaign/day rows; absent rows remain unavailable",
+      "campaign_count": 3,
+      "observed_campaigns": 1,
+      "totals_in_cents_for_spend": {
+        "Spend": 0,
+        "Impressions": 9,
+        "Taps": 0,
+        "Installs (Tap-Through)": 0,
+        "Installs (View-Through)": 0,
+        "Installs (Total)": 0,
+        "New Downloads (Total)": 0,
+        "Redownloads (Total)": 0
+      },
+      "spend_exact": "0",
+      "cpa_cents": null,
+      "campaigns": [
+        {
+          "campaign_id": "2144314451",
+          "name": "KOPA_InnerType_DE_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144314113",
+          "name": "KOPA_InnerType_UK_Research_Seed_2026-07",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "No reported rows",
+          "metrics": null,
+          "spend_exact": null,
+          "cpa_cents": null,
+          "observed_days": 0
+        },
+        {
+          "campaign_id": "2144366771",
+          "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+          "app": "InnerType Personality Test",
+          "market": "Not supplied",
+          "reported_status": "Observed rows",
+          "metrics": {
+            "Spend": 0,
+            "Impressions": 9,
+            "Taps": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "Installs (Total)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          },
+          "spend_exact": "0",
+          "cpa_cents": null,
+          "observed_days": 1
+        }
+      ],
+      "validation": "PASS: source structure and supplied console controls reconcile",
+      "quality": "1/3 mapped campaigns have observed rows; absent rows remain unavailable. Known stored campaign inventory only, not independently verified account coverage. Exact source precision is retained. Full-window console counts and rounded spend reconcile. Controls: 2026-09-19 through 2026-10-16"
+    },
+    {
+      "period_start": "2026-09-19",
+      "period_end": "2026-10-16",
       "timezone": "UTC",
       "currency": "EUR",
       "grain": "campaign totals over the complete selected period; not daily rows",
       "campaign_count": 3,
       "totals_in_cents_for_spend": {
-        "Spend": 49,
-        "Impressions": 52,
-        "Taps": 1,
-        "Installs (Total)": 0,
-        "Installs (Tap-Through)": 0,
-        "Installs (View-Through)": 0,
-        "New Downloads (Total)": 0,
+        "Spend": 576,
+        "Impressions": 331,
+        "Taps": 14,
+        "Installs (Total)": 9,
+        "Installs (Tap-Through)": 8,
+        "Installs (View-Through)": 1,
+        "New Downloads (Total)": 9,
         "Redownloads (Total)": 0
       },
       "campaigns": [
@@ -2676,13 +2550,13 @@
           "market": "United Kingdom",
           "reported_status": "RUNNING",
           "metrics": {
-            "Spend": 49,
-            "Impressions": 52,
-            "Taps": 1,
-            "Installs (Total)": 0,
-            "Installs (Tap-Through)": 0,
-            "Installs (View-Through)": 0,
-            "New Downloads (Total)": 0,
+            "Spend": 576,
+            "Impressions": 331,
+            "Taps": 14,
+            "Installs (Total)": 9,
+            "Installs (Tap-Through)": 8,
+            "Installs (View-Through)": 1,
+            "New Downloads (Total)": 9,
             "Redownloads (Total)": 0
           }
         },
@@ -2705,7 +2579,7 @@
         }
       ],
       "validation": "PASS: campaign totals equal footer; install attribution and new/redownload components reconcile; footer excluded from campaign sums",
-      "source_sha256": "004471bbba8df8c7603b0df1abd3b095fd5f60d6d7deef937da0ea64eeea9f02"
+      "source_sha256": "8a53848c2bfa16f4468f9f7b791274dce36bde195a6e34bbd9b44965f80d9ade"
     }
   ]
 }

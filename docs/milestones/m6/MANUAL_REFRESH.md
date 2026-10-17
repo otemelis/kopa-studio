@@ -1,3 +1,5 @@
+Update · 17 October 2026: **successful real manual refresh demonstrated.** Owner supplied export111.json and Apple Ads Campaigns(2).csv. API queried at 13:09:21.141 UTC; snapshot imported at 13:11:50.452 UTC. Full 19 September–16 October UTC/EUR window reconciles: 331 impressions, 14 taps, 8 tap-through + 1 view-through = 9 total attributed installs, exact EUR 5.7587 rounding to console EUR 5.76. Independent Python validates all 33 API windows/four weekly contracts; 16 regressions pass and 210 visible cells across six views reconcile. No paying-customer/revenue claim. Two absent API campaigns remain unavailable; their explicit console zeros are separately retained. Browser data is a newly refreshed historical snapshot, not a live feed. The following pending-input notes are implementation history.
+
 # Apple Ads manual refresh · 17 October 2026
 
 **Local mechanism implemented and tested; fresh provider/full-window validation pending input.** The accepted dashboard snapshot has not changed. The owner-authenticated exporter still returns ERR_BLOCKED_BY_CLIENT in the in-app browser; Chrome automation is unavailable. No cookies, credentials, browser protections or provider permissions were changed. This is a manual saved-export workflow, not unattended live API access.
@@ -36,3 +38,9 @@ The independent check reopens the original JSON/CSV with Python csv + Decimal, c
 ## Limits and next step
 
 Next: supply a fresh JSON and matching full-window Campaigns CSV, run the same command, retain the reconciliation result, and verify the existing page's displayed values and scope. Until then this milestone is incomplete. Even when the full-window export reconciles, absent campaign rows remain unavailable and inventory is the exporter's stored mapping, not a fresh account inventory. Network-attributed installs are not verified paying customers; no ROAS or channel-to-purchase link is created. Attribution revisions are compared honestly, not forced to match.
+
+## Completed checkpoint and next step
+
+The one-command manual saved-export path is demonstrated on real fresh data and full-window console control. No UI layout changed; obsolete fixed-window explanatory text was corrected to describe selected source periods. Evidence: fresh-refresh-validation.json, fresh-browser-validation.json and the retained original owner files. Source JSON SHA-256: 74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11.
+
+Future refreshes reuse the same command with newly downloaded matching exports. Automated authenticated download and current account-inventory discovery remain outside this completed manual slice. Next roadmap priority remains generated Apple Analytics validation and PASSPORT device tests next week; independently, a narrow real AppFollow import can supply honest ASO history without claiming the rejected native collector is validated. No Meta/Google/TikTok spend exists.

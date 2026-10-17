@@ -1,0 +1,10 @@
+{
+  "result": "PASS",
+  "checkedAt": "2026-10-17T13:12:45.522Z",
+  "windows": 6,
+  "visibleCellsChecked": 210,
+  "scope": "full API, four weekly API views and full console control; dark theme",
+  "sourceQueriedAt": "2026-10-17T13:09:21.141Z",
+  "importedAt": "2026-10-17T13:11:50.452Z",
+  "uiLayoutChanged": false
+}
