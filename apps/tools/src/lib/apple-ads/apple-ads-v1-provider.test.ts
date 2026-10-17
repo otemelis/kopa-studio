@@ -87,4 +87,84 @@ describe("AppleAdsApiV1Provider", () => {
     await expect(new AppleAdsApiV1Provider(store).queryKeywordSuggestions({ appAdamId: "123" })).rejects.toThrow("APPLE_ADS_V1_AD_ACCOUNT_ID is not configured");
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
+
+  it("builds read-only Phrase Suggestions SEARCH and SUGGESTION requests", async () => {
+    vi.stubEnv("APPLE_ADS_V1_AD_ACCOUNT_ID", "123456");
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "opaque-token", expires_in: 3600 }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ result: [{ phrase: "passport renewal app", popularity: 62 }] }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ result: [{ phrase: "travel document organizer", popularity: 41 }] }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const api = new AppleAdsApiV1Provider(store);
+    await api.queryPhraseSuggestions({ mode: "SEARCH", exactPhrases: ["passport renewal app"] });
+    await api.queryPhraseSuggestions({ mode: "SUGGESTION", appAdamId: "6785764991" });
+    const calls = fetchMock.mock.calls.slice(1) as Array<[string, RequestInit]>;
+    expect(calls.map(([url]) => url)).toEqual([
+      "https://api.ads.apple.com/v1/suggestions/phrases/query",
+      "https://api.ads.apple.com/v1/suggestions/phrases/query",
+    ]);
+    expect(JSON.parse(String(calls[0][1].body)).filters).toEqual([
+      { field: "queryType", operator: "EQUALS", value: ["SEARCH"] },
+      { field: "phrase", operator: "IN", value: ["passport renewal app"] },
+    ]);
+    expect(JSON.parse(String(calls[1][1].body)).filters).toEqual([
+      { field: "queryType", operator: "EQUALS", value: ["SUGGESTION"] },
+      { field: "promotedObjectId", operator: "EQUALS", value: ["6785764991"] },
+      { field: "promotedObjectType", operator: "EQUALS", value: ["APPSTORE_APP"] },
+    ]);
+    for (const [, init] of calls) {
+      expect(init.method).toBe("POST");
+      expect(new Headers(init.headers).get("X-AP-Context")).toBe("adAccountId=123456");
+      expect(JSON.stringify(init)).not.toMatch(/\/campaigns|\/budgets|\/keywords\//);
+    }
+  });
+
+  it("supports documented exact, contains, and starts-with popularity filters", async () => {
+    vi.stubEnv("APPLE_ADS_V1_AD_ACCOUNT_ID", "123456");
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "opaque-token", expires_in: 3600 }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ result: { rows: [] } }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ result: { rows: [] } }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ result: { rows: [] } }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const api = new AppleAdsApiV1Provider(store);
+    for (const operator of ["EQUALS", "CONTAINS", "STARTS_WITH"] as const) {
+      await api.querySearchTermPopularity({ countryOrRegion: "DE", genre: "TRAVEL", start: "2026-10-04", end: "2026-10-10", searchTermFilter: { operator, value: "passport" } });
+    }
+    const calls = fetchMock.mock.calls.slice(1) as Array<[string, RequestInit]>;
+    expect(calls.map(([, init]) => JSON.parse(String(init.body)).filters.find((filter: { field: string }) => filter.field === "searchTerm"))).toEqual([
+      { field: "searchTerm", operator: "EQUALS", value: "passport" },
+      { field: "searchTerm", operator: "CONTAINS", value: "passport" },
+      { field: "searchTerm", operator: "STARTS_WITH", value: "passport" },
+    ]);
+  });
+
+  it("builds paid search-term and impression-share queries from read-only report contracts", async () => {
+    vi.stubEnv("APPLE_ADS_V1_AD_ACCOUNT_ID", "123456");
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: "opaque-token", expires_in: 3600 }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ result: { rows: [] } }), { status: 200 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ result: { rows: [] } }), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const api = new AppleAdsApiV1Provider(store);
+    await api.queryAppSearchTerms({ campaignId: "444", start: "2026-09-17", end: "2026-10-16" });
+    await api.queryImpressionShare({ appAdamId: "6785764991", countryOrRegion: "US", start: "2026-09-20", end: "2026-10-11" });
+    const calls = fetchMock.mock.calls.slice(1) as Array<[string, RequestInit]>;
+    expect(calls.map(([url]) => url)).toEqual([
+      "https://api.ads.apple.com/v1/reports/apps/searchterms/query",
+      "https://api.ads.apple.com/v1/insights/apps/impression-share/query",
+    ]);
+    expect(JSON.parse(String(calls[0][1].body))).toMatchObject({
+      filters: [{ field: "campaignId", operator: "EQUALS", value: "444" }],
+      timeRange: { start: "2026-09-17", end: "2026-10-16", timeZone: "ORTZ", granularity: "DAILY" },
+    });
+    expect(JSON.parse(String(calls[1][1].body))).toMatchObject({
+      filters: expect.arrayContaining([
+        { field: "promotedObjectId", operator: "IN", value: ["6785764991"] },
+        { field: "countryOrRegion", operator: "EQUALS", value: "US" },
+      ]),
+      options: { impressionShareReportType: "ALL_SLOTS" },
+      timeRange: { start: "2026-09-20", end: "2026-10-11", timeZone: "UTC", granularity: "WEEKLY_SUN_SAT" },
+    });
+  });
 });

@@ -86,6 +86,7 @@ export class AppleAdsApiV1Provider {
   async querySearchTermPopularity(input: {
     countryOrRegion: string; genre: string; start: string; end: string;
     searchTerms?: string[]; searchTermContains?: string; weeks?: string[]; offset?: number; pageSize?: number;
+    searchTermFilter?: { operator: "EQUALS" | "CONTAINS" | "STARTS_WITH"; value: string };
   }): Promise<AppleAdsV1Result<Record<string, unknown>>> {
     const filters: Array<Record<string, unknown>> = [
       { field: "countryOrRegion", operator: "EQUALS", value: input.countryOrRegion },
@@ -93,6 +94,7 @@ export class AppleAdsApiV1Provider {
     ];
     if (input.searchTerms?.length) filters.push({ field: "searchTerm", operator: "IN", value: input.searchTerms });
     if (input.searchTermContains?.trim()) filters.push({ field: "searchTerm", operator: "CONTAINS", value: input.searchTermContains.trim() });
+    if (input.searchTermFilter?.value.trim()) filters.push({ field: "searchTerm", operator: input.searchTermFilter.operator, value: input.searchTermFilter.value.trim() });
     if (input.weeks?.length) filters.push({ field: "week", operator: "IN", value: input.weeks });
     return this.post("/insights/apps/search-term-popularity/query", {
       filters,
@@ -112,6 +114,62 @@ export class AppleAdsApiV1Provider {
     if (input.terms?.length) filters.push({ field: "terms", operator: "IN", value: input.terms });
     // Apple documents popularity sorting, but the live API currently rejects it as non-queryable.
     return this.post<unknown[]>("/suggestions/keywords/query", { filters, pagination: { offset: input.offset ?? 0, pageSize: input.pageSize ?? 100 } });
+  }
+
+  async queryPhraseSuggestions(input: {
+    mode: "SUGGESTION" | "SEARCH";
+    appAdamId?: string;
+    appType?: "APPSTORE_APP";
+    exactPhrases?: string[];
+    partialPhrase?: string;
+    offset?: number;
+    pageSize?: number;
+  }): Promise<AppleAdsV1Result<unknown[]>> {
+    const filters: Array<Record<string, unknown>> = [{ field: "queryType", operator: "EQUALS", value: [input.mode] }];
+    if (input.mode === "SUGGESTION") {
+      if (!input.appAdamId) throw new Error("Phrase suggestions require a promoted App Store app ID.");
+      filters.push(
+        { field: "promotedObjectId", operator: "EQUALS", value: [input.appAdamId] },
+        { field: "promotedObjectType", operator: "EQUALS", value: [input.appType ?? "APPSTORE_APP"] },
+      );
+    } else if (input.exactPhrases?.length) {
+      filters.push({ field: "phrase", operator: "IN", value: input.exactPhrases });
+    } else if (input.partialPhrase?.trim()) {
+      filters.push({ field: "phrase", operator: "LIKE", value: [input.partialPhrase.trim()] });
+    } else {
+      throw new Error("Phrase search requires exactPhrases or partialPhrase.");
+    }
+    return this.post<unknown[]>("/suggestions/phrases/query", { filters, pagination: { offset: input.offset ?? 0, pageSize: input.pageSize ?? 100 } });
+  }
+
+  async queryCampaignsForApp(appAdamId: string, offset = 0, pageSize = 100): Promise<AppleAdsV1Result<unknown[]>> {
+    return this.post<unknown[]>("/campaigns/query", {
+      filters: [
+        { field: "promotedObjectType", operator: "EQUALS", value: "APPSTORE_APP" },
+        { field: "promotedObjectId", operator: "EQUALS", value: appAdamId },
+      ],
+      pagination: { offset, pageSize, fetchTotalCount: true },
+    });
+  }
+
+  async queryAppSearchTerms(input: { campaignId: string; start: string; end: string; timeZone?: "ORTZ" | "UTC"; offset?: number; pageSize?: number }): Promise<AppleAdsV1Result<Record<string, unknown>>> {
+    return this.post("/reports/apps/searchterms/query", {
+      filters: [{ field: "campaignId", operator: "EQUALS", value: input.campaignId }],
+      timeRange: { start: input.start, end: input.end, timeZone: input.timeZone ?? "ORTZ", granularity: "DAILY" },
+      pagination: { offset: input.offset ?? 0, pageSize: input.pageSize ?? 100 },
+    });
+  }
+
+  async queryImpressionShare(input: { appAdamId: string; countryOrRegion: string; start: string; end: string; reportType?: "FIRST_SLOT" | "ALL_SLOTS"; offset?: number; pageSize?: number }): Promise<AppleAdsV1Result<Record<string, unknown>>> {
+    return this.post("/insights/apps/impression-share/query", {
+      filters: [
+        { field: "promotedObjectId", operator: "IN", value: [input.appAdamId] },
+        { field: "countryOrRegion", operator: "EQUALS", value: input.countryOrRegion },
+      ],
+      options: { impressionShareReportType: input.reportType ?? "ALL_SLOTS" },
+      timeRange: { start: input.start, end: input.end, timeZone: "UTC", granularity: "WEEKLY_SUN_SAT" },
+      pagination: { offset: input.offset ?? 0, pageSize: input.pageSize ?? 100 },
+    });
   }
 
   private async get(path: string) { return this.request<Record<string, unknown>>(path); }

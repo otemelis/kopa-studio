@@ -88,7 +88,17 @@ Use the existing approved Analytics requests and `scripts/app-store/` extractor 
 **Cost:** $0 planned incremental service cost; existing ASC API roles, requests and reader are reused.
 **Risks:** report generation delay, privacy suppression, revised instances, source definitions that include paid placements.
 
-### ASO-4 — Persist owned, source-attributed ASO observations
+### ASO-4 — Apple-powered keyword intelligence feasibility and proof
+
+**Status: Complete with a NO-GO for a production intelligence engine (17 October 2026).** Read-only live tests exercised Phrase Suggestions SEARCH/SUGGESTION, popularity operators and history, candidate coverage for POIS/PASSPORT in US/DE/GB, relevance, pagination, paid Search Terms and Impression Share. The evaluation returned no POIS popularity rows for the tested terms/markets; POIS/PASSPORT app-scoped suggestions were inaccessible; InnerType proxy suggestions were weak; Phrase SEARCH was broad/noisy. PASSPORT popularity proves the endpoint works, but does not solve POIS coverage. Paid metrics remain separate from organic ASO. No current listing metadata, organic positions or competition values were verified. See [`ASO-4_APPLE_KEYWORD_INTELLIGENCE_FEASIBILITY.md`](ASO-4_APPLE_KEYWORD_INTELLIGENCE_FEASIBILITY.md).
+
+**Acceptance:** live official responses and hashes retained outside the repository; request behavior tested; zero rows correctly treated as coverage gaps; usefulness decision and proposed metadata candidates include provenance; no campaign, database, UI or metadata writes. **Passed for feasibility determination; failed the usefulness threshold for advancing an automated engine.**
+
+**Cost:** $0 incremental; no vendor credits or paid trial. Existing Apple Ads read-only account only.
+**Risks:** Apple's coverage and eligibility vary by app/term/market; relative popularity is easy to misread as volume; sparse suggestions may be misleading.
+**Next:** retain ASO-4b persistence and ASO-5 intelligence as queued; do not start them until POIS-specific or properly licensed data passes evidence and rights checks. Rerun the existing ASO-3 ONGOING report refresh after Apple's generation window.
+
+### ASO-4b — Persist owned, source-attributed ASO observations
 
 After ASO-1's real response contract passes, add a small additive Supabase migration for Apple popularity rows and app-specific suggestion snapshots. Keep their facts separate from `aso_keyword_rank_snapshots`. Store provider/source/method/version, term, country, genre, App Store app ID when applicable, period granularity and exact period, rank/popularity field names and scales, `observed_at`, `ingested_at`, request ID/hash, page coverage, and collection status. Successful observations remain append-only across periods; corrections/revisions are traceable. Do not store tokens or unnecessary raw user data. Add a narrow service-only server writer/reader and least-privilege policy after a migration review.
 
@@ -109,7 +119,7 @@ Start deterministic and read-only. Generate candidate terms from Apple's popular
 
 ## Current next step
 
-ASO-1 API access and response contracts are verified. ASO-2 concluded **NO-GO**: keep organic rank unavailable unless Apple authorizes a method or a licensed source confirms in-house rights. ASO-3 is underway. InnerType's existing Analytics source path has been checked against fresh report segments and the accepted CSV; the approved POIS, PASSPORT and LoveType ONGOING requests still have no daily instances as of 17 October 19:09 UTC, inside Apple's documented first-generation window. Leave their metrics unavailable and rerun the existing read-only refresh after generation. See [`ASO-3_APP_STORE_CONNECT_VALIDATION.md`](ASO-3_APP_STORE_CONNECT_VALIDATION.md). Preserve Apple popularity, suggestions, legacy catalog order, and optional vendor benchmarks as separate data types. The current Apple Ads account has an active campaign, so no-campaign eligibility remains untested; do not create a test campaign. No production deployment, migration, or dashboard is part of this checkpoint.
+ASO-1 access and response contracts are verified; ASO-2 remains **NO-GO** for organic rank. ASO-3 ONGOING requests for POIS, PASSPORT and LoveType were awaiting first generated instances at the last 17 October check; after Apple's generation window, rerun the existing read-only refresh and reconcile. ASO-4 feasibility is complete but returned a **NO-GO for a production keyword-intelligence engine** because POIS demand coverage/app-scoped suggestion quality is insufficient. Keep ASO-4b persistence and ASO-5 intelligence queued until useful owned or licensed evidence passes. Do not create campaigns or run a vendor trial without the appropriate cost/rights approval. No production deployment, migration, or dashboard is part of this checkpoint.
 
 ## Sources
 
