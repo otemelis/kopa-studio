@@ -62,7 +62,7 @@ Capture sanitized request scope, API version, request/response timestamps, respo
 
 **Cost:** $0 planned incremental spend; bounded API calls under existing account.
 **Risks:** role/account eligibility, unspecified historical lookback, endpoint/version changes, relative scores easy to mislabel.
-**Unresolved dependency:** credentials exist only in protected deployed configuration per current evidence; local live proof needs an approved safe execution path using those credentials or an owner-provided path to the already-authorized private key. Do not fetch or expose production secrets to a local workspace.
+**Live status (17 October 2026):** API access is verified. The new local client generated the OAuth client-secret JWT from a protected key and received HTTP 200 from `/v1/me`, `/v1/acls`, Search Term Popularity, and Keyword Suggestions. The ACL returned account `23026890` with role string `API Read Only`; both query endpoints succeeded with `X-AP-Context: adAccountId=23026890`. In the user-directed US / `HEALTH_FITNESS` validation, exact POIS phrases and `CONTAINS` searches for `orgasmic` and `personality` returned no matching rows. A targeted historical term query returned `18 birdies` for 2025-07-13 and 2026-10-04 with the expected rank/popularity fields. InnerType suggestions returned 300 total unseeded rows, but the sample was weakly relevant; seeding personality terms returned one row with score 5. Apple’s documented popularity sort for suggestions was rejected by the live validator, so the adapter omits it. Details, response hashes, limits and gaps are in [`ASO-1_APPLE_ADS_V1_PROOF.md`](ASO-1_APPLE_ADS_V1_PROOF.md). No campaign or account state was changed.
 
 ### ASO-2 — Organic-rank method gate
 
@@ -105,7 +105,7 @@ Start deterministic and read-only. Generate candidate terms from Apple's popular
 
 ## Current next step
 
-The next engineering item is ASO-1's read-only access proof. The deployed Apple Ads connection is a viable credential source, but the current local branch has no credentials and only implements the legacy `/api/v5` reporting methods. Use the existing approved read-only account through a scoped server-side v1 request path; if production deployment is needed to execute that path, prepare a minimal reviewable diff and request the specific deployment approval only after local validation. No POIS campaign or new recurring cost is required by the documented endpoint payloads, but live campaign independence remains unproven.
+ASO-1 API access and response contracts are now verified. Continue with ASO-2’s organic-rank method gate: compare a manually observed, geographically scoped App Store search with the legacy catalog-order candidate, or record a no-go if repeatability and permitted collection cannot be established. Keep Apple popularity and suggestions clearly separate from organic app ranking. The current account has an active campaign, so the no-campaign prerequisite question remains untested; do not create a test campaign. No production deployment, migration, or dashboard is part of this proof.
 
 ## Sources
 
