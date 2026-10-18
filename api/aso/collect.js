@@ -325,7 +325,7 @@ export async function runCollection(trigger, scope = "full") {
           keyword_id: keyword.id,
           captured_at: new Date().toISOString(),
           captured_on: capturedOn,
-          results: results.slice(0, 25),
+          results: results.slice(0, 100),
           result_depth: depth,
           checksum,
           source: "itunes_catalog",
