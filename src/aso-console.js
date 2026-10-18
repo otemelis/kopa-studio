@@ -22,6 +22,7 @@ import {
   rankChange,
   toDateStr,
 } from "./aso-calc.js";
+import { renderAsoProgress } from "./aso-progress-view.js";
 
 const SESSION_KEY = "kopa-admin-session-v1";
 const KEYWORD_VIEWS_KEY = "kopa-aso-keyword-views-v1";
@@ -189,6 +190,7 @@ function escapeHtml(value) {
 
 const SUB_TABS = [
   ["portfolio", "Portfolio"],
+  ["progress", "ASO progress"],
   ["briefing", "Briefing"],
   ["keywords", "Keywords"],
   ["insights", "Insights"],
@@ -262,6 +264,14 @@ async function renderSubTab(panel) {
   panel.innerHTML = '<p class="loading-state">Loading…</p>';
   try {
     if (activeSubTab === "portfolio") await renderPortfolio(panel);
+    else if (activeSubTab === "progress") await renderAsoProgress(panel, {
+      pg,
+      formatNumber,
+      addDays,
+      toDateStr,
+      escapeHtml,
+      workspaceAppScope,
+    });
     else if (activeSubTab === "briefing") await renderBriefing(panel);
     else if (activeSubTab === "keywords") await renderKeywords(panel);
     else if (activeSubTab === "insights") await renderInsights(panel);
@@ -269,7 +279,7 @@ async function renderSubTab(panel) {
     else if (activeSubTab === "competitors") await renderCompetitors(panel);
     else if (activeSubTab === "reviews") await renderReviews(panel);
     else if (activeSubTab === "sync") await renderSync(panel);
-    if (!["briefing", "sync"].includes(activeSubTab)) await addFreshnessContext(panel);
+    if (!["briefing", "sync", "progress"].includes(activeSubTab)) await addFreshnessContext(panel);
   } catch (error) {
     panel.innerHTML = `<section class="panel"><h3>Could not load this view</h3><p class="empty-state">${escapeHtml(error.message)}</p></section>`;
   }

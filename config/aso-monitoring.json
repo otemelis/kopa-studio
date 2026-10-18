@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "note": "Small InnerType pilot set. Every target must already be linked to the app in aso_app_keywords; update this file to change coverage.",
+  "apps": [
+    {
+      "name": "InnerType",
+      "storeAppId": "6785764991",
+      "countries": {
+        "us": ["attachment style test", "personality test", "personality traits test", "personality type test", "self discovery"],
+        "de": ["16 persönlichkeitstyp test", "bindungsstil test", "charaktertest", "persönlichkeitstest", "selbstfindung"]
+      }
+    }
+  ]
+}

@@ -9,6 +9,8 @@
     "portfolio": "node scripts/product-analytics/server.mjs",
     "ads:refresh": "node scripts/apple-ads-verification/refresh.mjs",
     "reports:refresh": "python3 scripts/app-store/refresh.py",
+    "test:aso": "node --test scripts/aso/*.test.mjs",
+    "aso:web": "node scripts/aso/collect-web-progress.mjs",
     "test:reporting": "node --test scripts/reporting-tests/*.test.mjs",
     "product": "node scripts/product-analytics/server.mjs"
   }
