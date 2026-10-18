@@ -69,9 +69,11 @@ test("recent acquisition periods sum only observed ASC rows", () => {
 });
 
 test("assessment requires source-specific rank observations and Search impressions", () => {
-  const acquisition = { before: { impressions: { available: true, value: 10 } }, after: { impressions: { available: true, value: 15 } } };
+  const acquisition = { before: { impressions: { available: true, value: 10, days: 1, expectedDays: 1 } }, after: { impressions: { available: true, value: 15, days: 1, expectedDays: 1 } } };
   assert.equal(assessAsoprogress([{ state: "comparable", delta: 2 }], acquisition).status, "improving");
   const downloads = { before: { available: true, value: 13, start: "2026-09-28", end: "2026-10-04", days: 7, expectedDays: 7 }, after: { available: true, value: 9, start: "2026-10-05", end: "2026-10-11", days: 7, expectedDays: 7 } };
   assert.equal(assessAsoprogress([{ state: "comparable", delta: 2 }], acquisition, downloads).status, "mixed");
   assert.equal(assessAsoprogress([{ state: "not_observed", delta: null }], acquisition).status, "insufficient evidence");
+  const partial = { before: { impressions: { available: true, value: 10, days: 5, expectedDays: 7 } }, after: acquisition.after };
+  assert.equal(assessAsoprogress([{ state: "comparable", delta: 2 }], partial).status, "insufficient evidence");
 });

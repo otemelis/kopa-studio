@@ -52,18 +52,20 @@ export function compareRankAroundChange(rows, changeDay, days) {
 }
 
 export function summarizeMetricWindow(rows, { start, end, event, sourceType, country }) {
+  const expectedDays = Math.max(0, Math.round((new Date(`${end}T00:00:00Z`) - new Date(`${start}T00:00:00Z`)) / 86400000) + 1);
   const matching = rows.filter((row) =>
     isoDay(row.date) >= start && isoDay(row.date) <= end &&
     (!country || row.country === country) &&
     (!event || row.event === event) &&
     (!sourceType || row.source_type === sourceType),
   );
-  if (!matching.length) return { available: false, value: null, rows: 0, days: 0 };
+  if (!matching.length) return { available: false, value: null, rows: 0, days: 0, expectedDays };
   return {
     available: true,
     value: matching.reduce((total, row) => total + Number(row.count ?? 0), 0),
     rows: matching.length,
     days: new Set(matching.map((row) => isoDay(row.date))).size,
+    expectedDays,
   };
 }
 
@@ -139,14 +141,15 @@ export function compareRecentAcquisitionWindows(rows, endDay, days, dimensions =
 export function assessAsoprogress(rankMovements, acquisitionComparison, downloadComparison = null) {
   const comparable = rankMovements.filter((row) => row.state === "comparable");
   const { before, after } = acquisitionComparison;
-  if (!comparable.length || !before.impressions.available || !after.impressions.available) {
-    return { status: "insufficient evidence", explanation: "Need comparable source-specific keyword observations and App Store Search impression data in both periods." };
+  if (!comparable.length || !before.impressions.available || !after.impressions.available || before.impressions.days !== before.impressions.expectedDays || after.impressions.days !== after.impressions.expectedDays) {
+    return { status: "insufficient evidence", explanation: "Need comparable source-specific keyword observations and complete App Store Search impression coverage in both periods." };
   }
   const improved = comparable.filter((row) => row.delta > 0).length;
   const declined = comparable.filter((row) => row.delta < 0).length;
   const rankDirection = improved === declined ? "mixed" : improved > declined ? "up" : "down";
   const impressionDirection = after.impressions.value === before.impressions.value ? "flat" : after.impressions.value > before.impressions.value ? "up" : "down";
-  const downloadsAvailable = downloadComparison?.before?.available && downloadComparison?.after?.available;
+  const downloadsAvailable = downloadComparison?.before?.available && downloadComparison?.after?.available &&
+    downloadComparison.before.days === downloadComparison.before.expectedDays && downloadComparison.after.days === downloadComparison.after.expectedDays;
   const downloadDirection = downloadsAvailable
     ? downloadComparison.after.value === downloadComparison.before.value ? "flat" : downloadComparison.after.value > downloadComparison.before.value ? "up" : "down"
     : null;
