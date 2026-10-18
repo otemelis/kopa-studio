@@ -200,7 +200,11 @@ export async function runCollection(trigger, scope = "full") {
       try {
         const owner = apps.find((a) => a.id === comp.app_id);
         const meta = await lookupApp(comp.store_app_id, owner?.primary_country ?? "us");
-        if (!meta) throw new Error("Competitor not found in public store");
+        if (!meta) {
+          counters.warnings++;
+          errors.push({ item: `competitor:${comp.store_app_id}`, message: "Listing is not publicly discoverable in this storefront; metadata refresh deferred." });
+          continue;
+        }
 
         const fields = {
           name: meta.name,

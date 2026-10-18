@@ -10,7 +10,18 @@ export async function dispatchCollection(request: Request, scope: CollectionScop
   }
 
   const endpoint = new URL(process.env.ASO_COLLECTOR_URL ?? "https://www.kopa.studio/api/aso/collect");
-  endpoint.searchParams.set("scope", scope);
+  const collectorPath = endpoint.pathname.replace(/\/+$/, "");
+  if (collectorPath.endsWith("/collect")) {
+    // Route through the collector's scope-pinning wrapper. This avoids
+    // accidentally starting a full collection if an upstream deployment
+    // drops or ignores the scope query parameter.
+    endpoint.pathname = `${collectorPath}-${scope}`;
+    endpoint.searchParams.delete("scope");
+  } else {
+    // Preserve custom collector endpoints that do not use the standard
+    // /collect route family.
+    endpoint.searchParams.set("scope", scope);
+  }
   try {
     const upstream = await fetch(endpoint, {
       headers: { Authorization: `Bearer ${secret}`, Accept: "application/json" },

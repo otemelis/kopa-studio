@@ -85,7 +85,16 @@ export function mapLookupResult(r) {
 
 export async function lookupApp(storeAppId, country) {
   const url = `https://itunes.apple.com/lookup?id=${encodeURIComponent(storeAppId)}&country=${encodeURIComponent(country)}&entity=software`;
-  const body = await politeFetchJson(url);
+  let body;
+  try {
+    body = await politeFetchJson(url);
+  } catch (error) {
+    // Apple can return HTTP 404 for a listing that is not available in this
+    // storefront. Treat that as an unavailable observation, not a transient
+    // collector failure; callers preserve it as an explicit warning.
+    if (error instanceof Error && error.message === "HTTP 404") return null;
+    throw error;
+  }
   const r = body?.results?.[0];
   if (!r || r.trackId == null) return null;
   return mapLookupResult(r);
