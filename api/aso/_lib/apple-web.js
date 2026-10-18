@@ -1,5 +1,6 @@
 import { chromium as playwright } from "playwright-core";
 import serverlessChromium from "@sparticuz/chromium";
+import { classifyAppleWebCards } from "./search-results.js";
 
 const TIMEOUT_MS = 25_000;
 const CHALLENGE = /captcha|access denied|unusual traffic|verify you are human|temporarily blocked/i;
@@ -11,23 +12,6 @@ export async function launchAppleWebBrowser() {
     executablePath: await serverlessChromium.executablePath(),
     headless: true,
   });
-}
-
-export function classifyAppleWebCards(cards) {
-  const seen = new Set();
-  let organicPosition = 0;
-  const ordered = [];
-  for (const card of cards) {
-    const id = String(card.id ?? "");
-    if (!/^\d{6,}$/.test(id) || seen.has(id)) continue;
-    seen.add(id);
-    const isAd = Boolean(card.explicitAd);
-    const position = isAd ? null : ++organicPosition;
-    ordered.push({ id, name: card.name ?? null, explicitAd: isAd, position });
-  }
-  const positions = Object.fromEntries(ordered.filter((row) => row.position != null).map((row) => [row.id, row.position]));
-  const checksum = ordered.reduce((value, row) => (value * 31 + Number(row.id) % 997) % 1_000_000_007, 7).toString();
-  return { ordered, positions, depth: organicPosition, explicitAdCount: ordered.filter((row) => row.explicitAd).length, checksum };
 }
 
 export async function collectAppleWebObservation(browser, country, term) {
@@ -68,7 +52,7 @@ export async function collectAppleWebObservation(browser, country, term) {
       previousCount = nextCount;
       if (stablePasses >= 2) break;
     }
-    const rawCards = await cards.evaluateAll((items) => items.map((item) => {
+    const rawCards = await cards.evaluateAll((items) => items.slice(0, 100).map((item) => {
       const link = item.querySelector('a[href*="/id"]');
       const id = link?.href.match(/\/id(\d+)/)?.[1] ?? null;
       const name = link?.innerText?.trim() || item.querySelector("h3")?.textContent?.trim() || null;

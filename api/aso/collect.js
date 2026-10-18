@@ -13,6 +13,7 @@ import { deriveRankFields, toDateStr, compareWindows, addDays } from "./_lib/cal
 import { diffMetadata, metadataChecksum } from "./_lib/metadata-diff.js";
 import { lookupApp, searchApps } from "./_lib/providers.js";
 import { launchAppleWebBrowser, collectAppleWebObservation } from "./_lib/apple-web.js";
+import { buildKeywordSearchSnapshot } from "./_lib/search-results.js";
 import { syncRecentReviews } from "./_lib/appstore-reviews.js";
 import { hasSalesReportsConfig, salesSyncMessage, syncDailySalesMetrics } from "./_lib/appstore-sales.js";
 import { syncDiscoveryAnalytics } from "./_lib/appstore-analytics.js";
@@ -299,7 +300,8 @@ export async function runCollection(trigger, scope = "full") {
       .sort((a, b) => (lastCollectedAt.get(a.id) ?? "").localeCompare(lastCollectedAt.get(b.id) ?? "") || a.country.localeCompare(b.country) || a.term.localeCompare(b.term) || a.id.localeCompare(b.id))
       .slice(0, MAX_KEYWORDS_PER_RUN);
 
-    const webSummary = { succeeded: 0, failed: 0, explicit_ads: 0 };
+    const webSummary = { succeeded: 0, failed: 0, explicit_ads: 0, stored_app_ids: 0 };
+    let itunesStoredAppIds = 0;
     if (trackedKeywords.length) {
       try {
         webBrowser = await launchAppleWebBrowser();
@@ -319,17 +321,19 @@ export async function runCollection(trigger, scope = "full") {
 
       try {
         const results = await searchApps(keyword.term, keyword.country, 100);
-        const depth = results.length;
+        const snapshot = buildKeywordSearchSnapshot("itunes_catalog", results);
+        const depth = snapshot.resultDepth;
         const checksum = String(results.reduce((h, r) => (h * 31 + (Number(r.store_app_id) % 997)) % 1000000007, 7));
         await db.upsert("aso_keyword_search_results", [{
           keyword_id: keyword.id,
           captured_at: new Date().toISOString(),
           captured_on: capturedOn,
-          results: results.slice(0, 25),
+          results: snapshot.results,
           result_depth: depth,
           checksum,
           source: "itunes_catalog",
-        }], "keyword_id,captured_on");
+        }], "keyword_id,captured_on,source");
+        itunesStoredAppIds += snapshot.results.length;
 
         for (const appId of linkedAppIds) {
           const app = apps.find((a) => a.id === appId);
@@ -375,6 +379,19 @@ export async function runCollection(trigger, scope = "full") {
       try {
         const web = await webPromise;
         const capturedAt = new Date().toISOString();
+        if (web.status !== "failed" && Array.isArray(web.ordered) && web.ordered.length) {
+          const snapshot = buildKeywordSearchSnapshot("apple_web_search", web.ordered);
+          await db.upsert("aso_keyword_search_results", [{
+            keyword_id: keyword.id,
+            captured_at: capturedAt,
+            captured_on: capturedOn,
+            results: snapshot.results,
+            result_depth: snapshot.resultDepth,
+            checksum: web.checksum,
+            source: "apple_web_search",
+          }], "keyword_id,captured_on,source");
+          webSummary.stored_app_ids += snapshot.results.length;
+        }
         const webRows = [];
         for (const appId of linkedAppIds) {
           const app = apps.find((a) => a.id === appId);
@@ -423,7 +440,7 @@ export async function runCollection(trigger, scope = "full") {
       const status = counters.failed === 0 && counters.warnings === 0 ? "ok" : counters.succeeded > 0 || counters.warnings > 0 ? "partial" : "failed";
       await db.update("aso_sync_runs", {
         finished_at: new Date().toISOString(), status, ...counters,
-        summary: { scope, apps: apps.length, competitors: competitors.length, keywords: trackedKeywords.length, keywords_total: allTrackedKeywords.length, itunes_catalog: trackedKeywords.length, apple_web_search: webSummary },
+        summary: { scope, apps: apps.length, competitors: competitors.length, keywords: trackedKeywords.length, keywords_total: allTrackedKeywords.length, itunes_catalog: { keywords: trackedKeywords.length, stored_app_ids: itunesStoredAppIds }, apple_web_search: webSummary },
       }, `id=eq.${run.id}`);
       if (errors.length) await db.insert("aso_sync_errors", errors.slice(0, 50).map((error) => ({ run_id: run.id, ...error })));
       return { ok: status !== "failed", message: `Rankings-only collection ${status}: ${counters.succeeded}/${counters.processed} terms had an observed source result; iTunes ${trackedKeywords.length}, Apple web ${webSummary.succeeded}/${trackedKeywords.length}; ${trackedKeywords.length}/${allTrackedKeywords.length} terms in this sweep.`, runId: run.id };
@@ -487,6 +504,7 @@ export async function runCollection(trigger, scope = "full") {
           competitors: competitors.length,
           keywords: trackedKeywords.length,
           keywords_total: allTrackedKeywords.length,
+          itunes_catalog: { keywords: trackedKeywords.length, stored_app_ids: itunesStoredAppIds },
           apple_web_search: webSummary,
           insights_created: created,
           reviews,

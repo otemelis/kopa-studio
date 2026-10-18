@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { classifyAppleWebCards } from "../../api/aso/_lib/apple-web.js";
+import { classifyAppleWebCards } from "../../api/aso/_lib/search-results.js";
 
 test("Apple web observations exclude only explicitly labeled ads from organic positions", () => {
   const result = classifyAppleWebCards([
