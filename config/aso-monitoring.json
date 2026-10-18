@@ -6,8 +6,20 @@
       "name": "InnerType",
       "storeAppId": "6785764991",
       "countries": {
-        "us": ["attachment style test", "personality test", "personality traits test", "personality type test", "self discovery"],
-        "de": ["16 persönlichkeitstyp test", "bindungsstil test", "charaktertest", "persönlichkeitstest", "selbstfindung"]
+        "us": [
+          { "keywordId": "1d764eff-fbc8-4da2-80cd-ecf55a1f5661", "term": "attachment style test" },
+          { "keywordId": "bb15c8ec-24db-4814-bd46-c5c587165536", "term": "personality test" },
+          { "keywordId": "c4dffdd2-37e4-40e8-b80a-1c390ee4140b", "term": "personality traits test" },
+          { "keywordId": "145d0b85-31aa-49d1-9d2b-a30cfc8cb33a", "term": "personality type test" },
+          { "keywordId": "2f9caaa2-b441-42a5-8a8c-fa04a4b87658", "term": "self discovery" }
+        ],
+        "de": [
+          { "keywordId": "fcf2566f-3ad9-479d-87d8-28cb26dcdcad", "term": "16 persönlichkeitstyp test" },
+          { "keywordId": "f9e6391d-43c4-4feb-bed4-f3c9dcb37c76", "term": "bindungsstil test" },
+          { "keywordId": "b667d871-d6be-4e42-8fc3-367dc79dbd32", "term": "charaktertest" },
+          { "keywordId": "195f3c04-e17c-477e-b4bf-a8155cefd3e0", "term": "persönlichkeitstest" },
+          { "keywordId": "052f08c4-9c0a-4c3a-b09f-50fd0aa1d582", "term": "selbstfindung" }
+        ]
       }
     }
   ]

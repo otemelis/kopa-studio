@@ -11,7 +11,7 @@ const configArg = process.argv.find((arg) => arg.startsWith("--config="))?.slice
 const configPath = resolve(process.cwd(), configArg ?? "config/aso-monitoring.json");
 const write = process.argv.includes("--write");
 const config = JSON.parse(await readFile(configPath, "utf8"));
-const db = serviceClient();
+const db = write ? serviceClient() : null;
 const timeoutMs = 30_000;
 
 async function collect(page, country, term, storeAppId) {
@@ -58,20 +58,33 @@ let browser;
 try {
   browser = await chromium.launch({ headless: true });
   for (const appTarget of config.apps) {
-    const apps = await db.select("aso_apps", `store_app_id=eq.${encodeURIComponent(appTarget.storeAppId)}&select=id,name,store_app_id`);
-    const app = apps[0];
-    if (!app) throw new Error(`App Store ID ${appTarget.storeAppId} is not in aso_apps.`);
-    for (const [country, terms] of Object.entries(appTarget.countries)) {
+    let app = { name: appTarget.name, store_app_id: appTarget.storeAppId };
+    let linkedTerms = new Map();
+    if (write) {
+      const apps = await db.select("aso_apps", `store_app_id=eq.${encodeURIComponent(appTarget.storeAppId)}&select=id,name,store_app_id`);
+      app = apps[0];
+      if (!app) throw new Error(`App Store ID ${appTarget.storeAppId} is not in aso_apps.`);
       const links = await db.select("aso_app_keywords", `app_id=eq.${app.id}&status=eq.active&select=keyword_id`);
       const ids = [...new Set(links.map((row) => row.keyword_id))];
-      const keywordRows = ids.length ? await db.select("aso_keywords", `id=in.(${ids.join(",")})&country=eq.${country}&select=id,term,country`) : [];
-      const byTerm = new Map(keywordRows.map((row) => [row.term.trim().toLocaleLowerCase(), row]));
+      const keywordRows = ids.length ? await db.select("aso_keywords", `id=in.(${ids.join(",")})&select=id,term,country`) : [];
+      linkedTerms = new Map(keywordRows.map((row) => [row.id, row]));
+    }
+    for (const [country, terms] of Object.entries(appTarget.countries)) {
+      const configuredTerms = terms.map(({ keywordId, term }) => {
+        if (!keywordId || !term) throw new Error(`Each configured term must include its checked keywordId and term (${country.toUpperCase()}).`);
+        if (write) {
+          const linked = linkedTerms.get(keywordId);
+          if (!linked || linked.country !== country || linked.term.trim().toLocaleLowerCase() !== term.trim().toLocaleLowerCase()) {
+            throw new Error(`Keyword ${term} (${keywordId}) is no longer active and linked to ${app.name} in ${country.toUpperCase()}.`);
+          }
+        }
+        return { id: keywordId, term };
+      });
       const context = await browser.newContext({ locale: country === "de" ? "de-DE" : "en-US", timezoneId: "Europe/Berlin", viewport: { width: 1440, height: 1000 } });
       const page = await context.newPage();
       try {
-        for (const term of terms) {
-          const keyword = byTerm.get(term.trim().toLocaleLowerCase());
-          if (!keyword) throw new Error(`Configured term is not an active ${country.toUpperCase()} keyword linked to ${app.name}: ${term}`);
+        for (const keyword of configuredTerms) {
+          const { term } = keyword;
           const result = await collect(page, country, term, app.store_app_id);
           const capturedAt = new Date().toISOString();
           const row = {

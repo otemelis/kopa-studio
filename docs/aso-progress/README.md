@@ -19,19 +19,21 @@ The view's recent comparison is aligned to the latest shared day in the Search t
 
 The 28-day acquisition windows are 17 Aug–13 Sep and 14 Sep–11 Oct; the 7-day windows are 28 Sep–4 Oct and 5–11 Oct. The first-time download snapshot has no earlier 28-day window, so the view leaves that comparison unavailable. Seven-day all-storefront downloads fell 13→9 (Search-attributed 9→8) while reported US Search impressions rose 113→283; Search page views rose 4→9 on the dates reported. The available signals are therefore mixed, not evidence that the metadata changes caused an improvement. Search impressions/page views are country-scoped and Search may include paid placement; first-time downloads are all-storefront counts attributed by Apple's report.
 
-The existing daily Vercel cron continues to gather iTunes Search catalog order under its `public_store` source label. To collect an Apple web snapshot locally, set the existing server-side `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in a private environment file outside version control, then run:
+The existing daily Vercel cron continues to gather iTunes Search catalog order under its `public_store` source label. To preview an Apple web snapshot locally, run:
 
 ```sh
-node --env-file=/absolute/path/to/private.env scripts/aso/collect-web-progress.mjs
+npm run aso:web
 ```
 
-That command previews the result and does not write. Add `--write` to append source-tagged observations to the existing `aso_keyword_rank_snapshots` table:
+Preview uses the checked keyword IDs and terms in `config/aso-monitoring.json` and does not require or read database credentials. Add `--write` only when the private server-side `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are available in an environment file outside version control; the write mode rechecks that each configured keyword is still active and linked to the app before it saves rows to the existing `aso_keyword_rank_snapshots` table:
 
 ```sh
 node --env-file=/absolute/path/to/private.env scripts/aso/collect-web-progress.mjs --write
 ```
 
 It uses the repository's already installed Playwright package from the earlier App Store web experiment. It makes ordinary anonymous storefront page requests, uses the configured country locale, and stops on a challenge. It marks only explicit ad labels as ads. Other displayed cards remain uncertain; an absent app means **not observed within the returned page depth**, never “unranked.” Each persisted row includes its capture timestamp, storefront keyword, source label, result depth, and collection status. No full competitor list is imported, and no AppFollow calls are made.
+
+The first local preview ran on 18 October 2026 for all ten configured InnerType terms (five US, five DE), with no detected challenge. The ten observations were appended to Supabase under `apple_web_search` and independently read back with matching keyword, country, app ID, timestamp, position, depth, and `partial` collection status. Seven results contained the app within the returned page; three were not observed within depths of 11–12. The collector detected no explicit ad labels, but that does not establish the absence of unlabeled or differently marked sponsored placements. Treat these as dated web observations, not verified organic rankings.
 
 ## Interpretation limits
 
@@ -42,4 +44,4 @@ It uses the repository's already installed Playwright package from the earlier A
 - The assessment is descriptive evidence, not causal attribution. It shows the exact rank source and date movement, App Store Search impressions/page views, and (when comparable) all-storefront first-time downloads with reported-day coverage. Search placements may include paid search; Apple Ads remains separate.
 - POIS becomes available in the same view when its production app, keywords, ASC rows, and source snapshots exist. No POIS metrics are substituted or synthesized.
 
-Run the pure comparison and rendering tests with `npm run test:aso`. This pilot is local code only; it does not deploy the page, schedule the browser collector, or change database schema or permissions. The browser collector preview requires the existing private server-side Supabase credentials to read the tracked keyword configuration; do not paste or commit them. A successful preview is local collection evidence; adding `--write` saves owned-app observations in the existing rank table under the distinct `apple_web_search` source label.
+Run the pure comparison and rendering tests with `npm run test:aso`. This pilot is local code only; it does not deploy the page, schedule the browser collector, or change database schema or permissions. Preview reads the checked local config only; the write mode requires the existing private server-side Supabase credentials and validates each target against the tracked app/keyword links. Do not paste or commit credentials. A successful preview is local collection evidence; adding `--write` saves owned-app observations in the existing rank table under the distinct `apple_web_search` source label.
