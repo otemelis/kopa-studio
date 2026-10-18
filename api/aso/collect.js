@@ -272,14 +272,11 @@ export async function runCollection(trigger, scope = "full") {
 
     // ── Keyword search + rank snapshots ──────────────────────────────
     //
-    // The Apple queue is deliberately rate-limited (~1 request/3.2s), and a
-    // single Vercel function invocation has a hard wall-clock limit
-    // (configured in vercel.json — currently 300s). At personal-portfolio
-    // scale that's plenty, but comfortably over ~70-80 tracked keywords a
-    // full sweep no longer fits in one run. Rather than time out and lose
-    // the whole run, process only the least-recently-collected keywords
-    // each run (never-collected keywords sort first) and let the daily
-    // cron — or clicking "Run collection now" again — pick up the rest.
+    // The Apple queue is deliberately rate-limited (~1 request/3.2s). The
+    // current Vercel Hobby project has a 60s function limit, so each scheduled
+    // slice stays small enough to leave time for browser startup and database
+    // writes. Five ranking runs cover up to 60 keywords/day; larger sets rotate
+    // fairly rather than being presented as fully refreshed every day.
     const capturedOn = toDateStr(new Date());
     const activeLinks = appKeywords.filter((ak) => ak.status === "active");
     const allTrackedKeywords = keywords.filter((k) => activeLinks.some((ak) => ak.keyword_id === k.id));
@@ -293,7 +290,7 @@ export async function runCollection(trigger, scope = "full") {
       if (!lastCollectedAt.has(r.keyword_id)) lastCollectedAt.set(r.keyword_id, r.captured_at);
     }
 
-    const MAX_KEYWORDS_PER_RUN = 50; // Five scheduled slices provide 250 slots/day under the existing 300s limit.
+    const MAX_KEYWORDS_PER_RUN = 12; // Keep each slice within Hobby's 60s function limit; five daily slots cover 60 keywords.
     const trackedKeywords = scope === "maintenance" ? [] : [...allTrackedKeywords]
       .sort((a, b) => (lastCollectedAt.get(a.id) ?? "").localeCompare(lastCollectedAt.get(b.id) ?? "") || a.country.localeCompare(b.country) || a.term.localeCompare(b.term) || a.id.localeCompare(b.id))
       .slice(0, MAX_KEYWORDS_PER_RUN);
