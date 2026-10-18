@@ -11,9 +11,10 @@ const workspaces = [
   {
     label: "ASO Intelligence",
     href: "/aso",
-    paths: ["/aso", "/keywords", "/rankings", "/competitors", "/localizations"],
+    paths: ["/aso", "/keywords", "/rankings", "/competitors", "/localizations", "/aso/progress"],
     children: [
       ["Overview", "/aso"],
+      ["ASO Progress", "/aso/progress"],
       ["Keywords", "/keywords"],
       ["Competitors", "/competitors"],
       ["Markets", "/localizations"],

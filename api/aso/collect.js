@@ -12,6 +12,8 @@
 import { deriveRankFields, toDateStr, compareWindows, addDays } from "./_lib/calc.js";
 import { diffMetadata, metadataChecksum } from "./_lib/metadata-diff.js";
 import { lookupApp, searchApps } from "./_lib/providers.js";
+import { launchAppleWebBrowser, collectAppleWebObservation } from "./_lib/apple-web.js";
+import { buildKeywordSearchSnapshot } from "./_lib/search-results.js";
 import { syncRecentReviews } from "./_lib/appstore-reviews.js";
 import { hasSalesReportsConfig, salesSyncMessage, syncDailySalesMetrics } from "./_lib/appstore-sales.js";
 import { syncDiscoveryAnalytics } from "./_lib/appstore-analytics.js";
@@ -45,9 +47,10 @@ export default async function handler(request, response) {
       return;
     }
     const db = serviceClient();
-    const claimed = await db.rpc("aso_claim_next_job").catch(() => []);
+    const scope = request.asoCollectionScope ?? request.query?.scope ?? "full";
+    const claimed = scope === "full" ? await db.rpc("aso_claim_next_job").catch(() => []) : [];
     const job = claimed?.[0] ?? null;
-    const result = await runCollection("cron");
+    const result = await runCollection("cron", scope);
     if (job) {
       await db.update("aso_jobs", { status: result.ok ? "completed" : "failed", progress: 100, completed_at: new Date().toISOString(), error_message: result.ok ? null : result.message, sync_run_id: result.runId ?? null }, `id=eq.${job.id}`).catch(() => undefined);
     }
@@ -62,7 +65,7 @@ export default async function handler(request, response) {
       response.status(error.status ?? 401).json({ ok: false, error: error.message });
       return;
     }
-    const result = await runCollection("manual");
+    const result = await runCollection("manual", "full");
     response.status(result.ok ? 200 : 500).json(result);
     return;
   }
@@ -70,16 +73,23 @@ export default async function handler(request, response) {
   response.status(405).json({ ok: false, error: "Method not allowed" });
 }
 
-async function runCollection(trigger) {
+export async function runCollection(trigger, scope = "full") {
+  if (!["full", "rankings", "maintenance"].includes(scope)) return { ok: false, message: "Invalid collection scope." };
   if (collectionInFlight) return { ok: false, message: "A collection run is already in progress." };
   const db = serviceClient();
   const lockHolder = `${trigger}:${crypto.randomUUID()}`;
   const acquired = await db.rpc("aso_try_acquire_collection_lock", { p_holder: lockHolder });
   if (!acquired) return { ok: false, message: "A collection run is already in progress. Try again in a few minutes." };
   collectionInFlight = true;
+  await db.update(
+    "aso_sync_runs",
+    { finished_at: new Date().toISOString(), status: "failed", error: "Run exceeded its six-minute collection lease; closed by the next collector invocation." },
+    `provider=eq.apple_public&status=eq.running&started_at=lt.${new Date(Date.now() - 6 * 60_000).toISOString()}`,
+  ).catch(() => undefined);
   const counters = { processed: 0, succeeded: 0, failed: 0, warnings: 0, retries: 0 };
   const errors = [];
   const startedAt = new Date().toISOString();
+  let webBrowser = null;
 
   const [run] = await db.insert("aso_sync_runs", [
     { provider: "apple_public", trigger, started_at: startedAt, status: "running", ...counters },
@@ -93,12 +103,17 @@ async function runCollection(trigger) {
       db.select("aso_competitors", "platform=eq.ios&select=*"),
     ]);
 
+    if (scope !== "rankings") {
     // ── App metadata + change detection ──────────────────────────────
     for (const app of apps) {
       counters.processed++;
       try {
         const meta = await lookupApp(app.store_app_id, app.primary_country);
-        if (!meta) throw new Error("App not found in public store");
+        if (!meta) {
+          counters.warnings++;
+          errors.push({ item: `app:${app.store_app_id}`, message: "Listing is not publicly discoverable yet; metadata refresh deferred." });
+          continue;
+        }
 
         await db.update(
           "aso_apps",
@@ -186,7 +201,11 @@ async function runCollection(trigger) {
       try {
         const owner = apps.find((a) => a.id === comp.app_id);
         const meta = await lookupApp(comp.store_app_id, owner?.primary_country ?? "us");
-        if (!meta) throw new Error("Competitor not found in public store");
+        if (!meta) {
+          counters.warnings++;
+          errors.push({ item: `competitor:${comp.store_app_id}`, message: "Listing is not publicly discoverable in this storefront; metadata refresh deferred." });
+          continue;
+        }
 
         const fields = {
           name: meta.name,
@@ -220,7 +239,7 @@ async function runCollection(trigger) {
               release_notes: meta.release_notes,
               screenshot_urls: meta.screenshot_urls,
               checksum,
-              source: "public_store",
+              source: "itunes_catalog",
             },
           ]);
           if (prev) {
@@ -254,123 +273,177 @@ async function runCollection(trigger) {
       }
     }
 
+    }
+
     // ── Keyword search + rank snapshots ──────────────────────────────
     //
-    // The Apple queue is deliberately rate-limited (~1 request/3.2s), and a
-    // single Vercel function invocation has a hard wall-clock limit
-    // (configured in vercel.json — currently 300s). At personal-portfolio
-    // scale that's plenty, but comfortably over ~70-80 tracked keywords a
-    // full sweep no longer fits in one run. Rather than time out and lose
-    // the whole run, process only the least-recently-collected keywords
-    // each run (never-collected keywords sort first) and let the daily
-    // cron — or clicking "Run collection now" again — pick up the rest.
+    // The Apple queue is deliberately rate-limited (~1 request/3.2s). The
+    // current Vercel Hobby project has a 60s function limit, so each scheduled
+    // slice stays small enough to leave time for browser startup and database
+    // writes. Five ranking runs cover up to 60 keywords/day; larger sets rotate
+    // fairly rather than being presented as fully refreshed every day.
     const capturedOn = toDateStr(new Date());
-    const allTrackedKeywords = keywords.filter((k) => appKeywords.some((ak) => ak.keyword_id === k.id));
+    const activeLinks = appKeywords.filter((ak) => ak.status === "active");
+    const allTrackedKeywords = keywords.filter((k) => activeLinks.some((ak) => ak.keyword_id === k.id));
 
-    const recentResults = await db.select(
+    const recentResults = scope === "maintenance" ? [] : await db.select(
       "aso_keyword_search_results",
-      "select=keyword_id,captured_at&order=captured_at.desc",
+      `captured_at=gte.${new Date(Date.now() - 45 * 86_400_000).toISOString()}&select=keyword_id,captured_at&order=captured_at.desc&limit=5000`,
     );
     const lastCollectedAt = new Map();
     for (const r of recentResults) {
       if (!lastCollectedAt.has(r.keyword_id)) lastCollectedAt.set(r.keyword_id, r.captured_at);
     }
 
-    const MAX_KEYWORDS_PER_RUN = 50; // ≈ safe budget within a 300s function limit, incl. per-keyword Supabase overhead
-    const trackedKeywords = [...allTrackedKeywords]
-      .sort((a, b) => (lastCollectedAt.get(a.id) ?? "") < (lastCollectedAt.get(b.id) ?? "") ? -1 : 1)
+    const MAX_KEYWORDS_PER_RUN = 12; // Keep each slice within Hobby's 60s function limit; five daily slots cover 60 keywords.
+    const trackedKeywords = scope === "maintenance" ? [] : [...allTrackedKeywords]
+      .sort((a, b) => (lastCollectedAt.get(a.id) ?? "").localeCompare(lastCollectedAt.get(b.id) ?? "") || a.country.localeCompare(b.country) || a.term.localeCompare(b.term) || a.id.localeCompare(b.id))
       .slice(0, MAX_KEYWORDS_PER_RUN);
+
+    const webSummary = { succeeded: 0, failed: 0, explicit_ads: 0, stored_app_ids: 0 };
+    let itunesStoredAppIds = 0;
+    if (trackedKeywords.length) {
+      try {
+        webBrowser = await launchAppleWebBrowser();
+      } catch (error) {
+        counters.warnings++;
+        errors.push({ item: "apple_web_search:browser", message: msg(error) });
+      }
+    }
 
     for (const keyword of trackedKeywords) {
       counters.processed++;
+      const linkedAppIds = activeLinks.filter((ak) => ak.keyword_id === keyword.id).map((ak) => ak.app_id);
+      const webPromise = webBrowser
+        ? collectAppleWebObservation(webBrowser, keyword.country, keyword.term)
+        : Promise.resolve({ status: "failed", depth: 0, positions: {}, explicitAdCount: 0, checksum: null, error: "Chromium runtime was unavailable." });
+      let itemSucceeded = false;
+
       try {
         const results = await searchApps(keyword.term, keyword.country, 100);
-        const depth = results.length;
+        const snapshot = buildKeywordSearchSnapshot("itunes_catalog", results);
+        const depth = snapshot.resultDepth;
         const checksum = String(results.reduce((h, r) => (h * 31 + (Number(r.store_app_id) % 997)) % 1000000007, 7));
+        await db.upsert("aso_keyword_search_results", [{
+          keyword_id: keyword.id,
+          captured_at: new Date().toISOString(),
+          captured_on: capturedOn,
+          results: snapshot.results,
+          result_depth: depth,
+          checksum,
+          source: "itunes_catalog",
+        }], "keyword_id,captured_on,source");
+        itunesStoredAppIds += snapshot.results.length;
 
-        await db.upsert(
-          "aso_keyword_search_results",
-          [
-            {
-              keyword_id: keyword.id,
-              captured_at: new Date().toISOString(),
-              captured_on: capturedOn,
-              results: results.slice(0, 25),
-              result_depth: depth,
-              checksum,
-              source: "public_store",
-            },
-          ],
-          "keyword_id,captured_on",
-        );
-
-        const linkedAppIds = appKeywords.filter((ak) => ak.keyword_id === keyword.id).map((ak) => ak.app_id);
         for (const appId of linkedAppIds) {
           const app = apps.find((a) => a.id === appId);
           if (!app) continue;
           const position = results.find((r) => r.store_app_id === app.store_app_id)?.position ?? null;
           const history = await db.select(
             "aso_keyword_rank_snapshots",
-            `keyword_id=eq.${keyword.id}&store_app_id=eq.${app.store_app_id}&app_kind=eq.owned&captured_on=lt.${capturedOn}&order=captured_at.asc&select=captured_at,rank`,
+            `keyword_id=eq.${keyword.id}&store_app_id=eq.${app.store_app_id}&app_kind=eq.owned&captured_on=lt.${capturedOn}&or=(source.eq.itunes_catalog,source.eq.public_store)&order=captured_at.asc&select=captured_at,rank`,
           );
           const nowIso = new Date().toISOString();
           const derived = deriveRankFields(history, position, nowIso);
-          await db.upsert("aso_keyword_rank_snapshots", [
-            {
-              keyword_id: keyword.id,
-              store_app_id: app.store_app_id,
-              app_kind: "owned",
-              captured_at: nowIso,
-              captured_on: capturedOn,
-              collection_key: `${capturedOn}:owned:${keyword.id}:${app.store_app_id}`,
-              rank: position,
-              found: position != null,
-              result_depth: depth,
-              ...derived,
-              collection_status: "ok",
-              checksum,
-              source: "public_store",
-            },
-          ], "collection_key");
+          await db.upsert("aso_keyword_rank_snapshots", [{
+            keyword_id: keyword.id, store_app_id: app.store_app_id, app_kind: "owned",
+            captured_at: nowIso, captured_on: capturedOn,
+            collection_key: `itunes:${capturedOn}:owned:${keyword.id}:${app.store_app_id}`,
+            rank: position, found: position != null, result_depth: depth, ...derived,
+            collection_status: "ok", checksum, source: "itunes_catalog",
+          }], "collection_key");
         }
 
-        // Competitors tracked against any owned app linked to this keyword.
-        // No derived rank history for competitors (matches the original
-        // design — only owned apps get previous_rank/change_7d/change_30d).
         const seenCompetitors = new Set();
         for (const appId of linkedAppIds) {
           for (const comp of competitors.filter((c) => c.app_id === appId)) {
             if (seenCompetitors.has(comp.store_app_id)) continue;
             seenCompetitors.add(comp.store_app_id);
             const position = results.find((r) => r.store_app_id === comp.store_app_id)?.position ?? null;
-            await db.upsert("aso_keyword_rank_snapshots", [
-              {
-                keyword_id: keyword.id,
-                store_app_id: comp.store_app_id,
-                app_kind: "competitor",
-                captured_at: new Date().toISOString(),
-                captured_on: capturedOn,
-                collection_key: `${capturedOn}:competitor:${keyword.id}:${comp.store_app_id}`,
-                rank: position,
-                found: position != null,
-                result_depth: depth,
-                previous_rank: null,
-                change_7d: null,
-                change_30d: null,
-                best_rank: null,
-                collection_status: "ok",
-                checksum,
-                source: "public_store",
-              },
-            ], "collection_key");
+            await db.upsert("aso_keyword_rank_snapshots", [{
+              keyword_id: keyword.id, store_app_id: comp.store_app_id, app_kind: "competitor",
+              captured_at: new Date().toISOString(), captured_on: capturedOn,
+              collection_key: `itunes:${capturedOn}:competitor:${keyword.id}:${comp.store_app_id}`,
+              rank: position, found: position != null, result_depth: depth,
+              previous_rank: null, change_7d: null, change_30d: null, best_rank: null,
+              collection_status: "ok", checksum, source: "itunes_catalog",
+            }], "collection_key");
           }
         }
-
-        counters.succeeded++;
+        itemSucceeded = true;
       } catch (error) {
         counters.failed++;
-        errors.push({ item: `keyword:${keyword.term}:${keyword.country}`, message: msg(error) });
+        errors.push({ item: `itunes:${keyword.term}:${keyword.country}`, message: msg(error) });
       }
+
+      try {
+        const web = await webPromise;
+        const capturedAt = new Date().toISOString();
+        if (web.status !== "failed" && Array.isArray(web.ordered) && web.ordered.length) {
+          const snapshot = buildKeywordSearchSnapshot("apple_web_search", web.ordered);
+          await db.upsert("aso_keyword_search_results", [{
+            keyword_id: keyword.id,
+            captured_at: capturedAt,
+            captured_on: capturedOn,
+            results: snapshot.results,
+            result_depth: snapshot.resultDepth,
+            checksum: web.checksum,
+            source: "apple_web_search",
+          }], "keyword_id,captured_on,source");
+          webSummary.stored_app_ids += snapshot.results.length;
+        }
+        const webRows = [];
+        for (const appId of linkedAppIds) {
+          const app = apps.find((a) => a.id === appId);
+          if (!app) continue;
+          const position = web.positions[String(app.store_app_id)] ?? null;
+          webRows.push({
+            keyword_id: keyword.id, store_app_id: app.store_app_id, app_kind: "owned",
+            captured_at: capturedAt, captured_on: capturedOn,
+            collection_key: `web:${capturedOn}:owned:${keyword.id}:${app.store_app_id}`,
+            rank: position, found: position != null, result_depth: web.depth,
+            previous_rank: null, change_7d: null, change_30d: null, best_rank: null,
+            collection_status: web.status, checksum: web.checksum, source: "apple_web_search",
+          });
+          for (const comp of competitors.filter((item) => item.app_id === appId)) {
+            webRows.push({
+              keyword_id: keyword.id, store_app_id: comp.store_app_id, app_kind: "competitor",
+              captured_at: capturedAt, captured_on: capturedOn,
+              collection_key: `web:${capturedOn}:competitor:${keyword.id}:${comp.store_app_id}`,
+              rank: web.positions[String(comp.store_app_id)] ?? null,
+              found: web.positions[String(comp.store_app_id)] != null, result_depth: web.depth,
+              previous_rank: null, change_7d: null, change_30d: null, best_rank: null,
+              collection_status: web.status, checksum: web.checksum, source: "apple_web_search",
+            });
+          }
+        }
+        await db.upsert("aso_keyword_rank_snapshots", webRows, "collection_key");
+        if (web.status === "failed") {
+          webSummary.failed++;
+          counters.warnings++;
+          errors.push({ item: `apple_web:${keyword.term}:${keyword.country}`, message: web.error ?? "Apple web search was unavailable." });
+        } else {
+          webSummary.succeeded++;
+          webSummary.explicit_ads += web.explicitAdCount;
+          itemSucceeded = true;
+        }
+      } catch (error) {
+        webSummary.failed++;
+        counters.warnings++;
+        errors.push({ item: `apple_web:${keyword.term}:${keyword.country}`, message: msg(error) });
+      }
+
+      if (itemSucceeded) counters.succeeded++;
+    }
+
+    if (scope === "rankings") {
+      const status = counters.failed === 0 && counters.warnings === 0 ? "ok" : counters.succeeded > 0 || counters.warnings > 0 ? "partial" : "failed";
+      await db.update("aso_sync_runs", {
+        finished_at: new Date().toISOString(), status, ...counters,
+        summary: { scope, apps: apps.length, competitors: competitors.length, keywords: trackedKeywords.length, keywords_total: allTrackedKeywords.length, itunes_catalog: { keywords: trackedKeywords.length, stored_app_ids: itunesStoredAppIds }, apple_web_search: webSummary },
+      }, `id=eq.${run.id}`);
+      if (errors.length) await db.insert("aso_sync_errors", errors.slice(0, 50).map((error) => ({ run_id: run.id, ...error })));
+      return { ok: status !== "failed", message: `Rankings-only collection ${status}: ${counters.succeeded}/${counters.processed} terms had an observed source result; iTunes ${trackedKeywords.length}, Apple web ${webSummary.succeeded}/${trackedKeywords.length}; ${trackedKeywords.length}/${allTrackedKeywords.length} terms in this sweep.`, runId: run.id };
     }
 
     // ── Public customer reviews ───────────────────────────────────────
@@ -418,7 +491,7 @@ async function runCollection(trigger) {
     // ── Insight engine ────────────────────────────────────────────────
     const created = await runInsightEngine(db);
 
-    const status = counters.failed === 0 ? "ok" : counters.succeeded > 0 ? "partial" : "failed";
+    const status = counters.failed === 0 && counters.warnings === 0 ? "ok" : counters.succeeded > 0 || counters.warnings > 0 ? "partial" : "failed";
     await db.update(
       "aso_sync_runs",
       {
@@ -426,10 +499,13 @@ async function runCollection(trigger) {
         status,
         ...counters,
         summary: {
+          scope,
           apps: apps.length,
           competitors: competitors.length,
           keywords: trackedKeywords.length,
           keywords_total: allTrackedKeywords.length,
+          itunes_catalog: { keywords: trackedKeywords.length, stored_app_ids: itunesStoredAppIds },
+          apple_web_search: webSummary,
           insights_created: created,
           reviews,
           sales,
@@ -457,6 +533,7 @@ async function runCollection(trigger) {
       .catch(() => undefined);
     return { ok: false, message: msg(error), runId: run.id };
   } finally {
+    await webBrowser?.close().catch(() => undefined);
     collectionInFlight = false;
     await db.rpc("aso_release_collection_lock", { p_holder: lockHolder }).catch(() => undefined);
   }
