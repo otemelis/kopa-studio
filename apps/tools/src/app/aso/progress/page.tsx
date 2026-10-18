@@ -2,7 +2,7 @@ import { AsoAcquisitionTrendChart, AsoSourceTrendChart } from "@/components/aso-
 import { AsoKeywordRankExplorer } from "@/components/aso-keyword-rank-explorer";
 import { PageShell } from "@/components/page-shell";
 import { requireUser } from "@/lib/auth";
-import { canonicalRankSource, rankMovement, sourceCaveat, sourceLabel } from "@/lib/aso/progress";
+import { canonicalRankSource, isCollectionRunStalled, rankMovement, sourceCaveat, sourceLabel } from "@/lib/aso/progress";
 import { getAsoProgressData } from "@/repositories/aso-progress-repository";
 import { listApps } from "@/repositories/apps-repository";
 
@@ -33,7 +33,7 @@ export default async function AsoProgressPage({ searchParams }: { searchParams: 
   const selectedCountry = filters.country === "all" ? "all" : (filters.country?.toLowerCase() || selectedApp.primaryCountry);
   const country = selectedCountry === "all" ? undefined : selectedCountry;
   const days: 1 | 7 | 28 = filters.window === "1" ? 1 : filters.window === "28" ? 28 : 7;
-  const data = await getAsoProgressData(selectedApp.id);
+  const data = await getAsoProgressData(selectedApp.id, country);
   const activeKeywords = data.keywords.filter((keyword) => !country || keyword.country === country);
   const activeKeywordIds = new Set(activeKeywords.map((keyword) => keyword.id));
   const scopedSnapshots = data.snapshots.filter((row) => activeKeywordIds.has(row.keyword_id));
@@ -73,6 +73,10 @@ export default async function AsoProgressPage({ searchParams }: { searchParams: 
   const latestSnapshotAt = scopedSnapshots.reduce<string | null>((latest, row) => !latest || row.captured_at > latest ? row.captured_at : latest, null);
   const latestMetricAt = scopedMetrics.reduce<string | null>((latest, row) => !latest || row.date > latest ? row.date : latest, null);
   const latestRankLabel = latestSnapshotAt ? new Date(latestSnapshotAt).toLocaleString("en-GB", { timeZone: "UTC", dateStyle: "medium", timeStyle: "short" }) + " UTC" : "No ranking observations yet";
+  const rankSourceFreshness = sourceNames.map((source) => {
+    const latest = scopedSnapshots.filter((row) => canonicalRankSource(row.source) === source).reduce<string | null>((value, row) => !value || row.captured_at > value ? row.captured_at : value, null);
+    return `${sourceLabel(source)}: ${latest ? new Date(latest).toLocaleDateString("en-GB", { timeZone: "UTC" }) : "no observations"}`;
+  });
   const marketOptions = [...new Set(data.keywords.map((row) => row.country))].sort();
   const windows: (1 | 7 | 28)[] = [1, 7, 28];
   const latestMetricDate = scopedMetrics.reduce<string | null>((latest, row) => !latest || row.date > latest ? row.date : latest, null);
@@ -116,7 +120,7 @@ export default async function AsoProgressPage({ searchParams }: { searchParams: 
       <article className="metric-card"><p>Visibility assessment</p><strong>Source-specific</strong><small>{assessments.map((item) => `${sourceLabel(item.source)}: ${item.assessment} (${item.compared})`).join(" · ") || "Waiting for comparable history"}</small></article>
       <article className="metric-card"><p>Active keywords</p><strong>{number(activeKeywords.length)}</strong><small>{country ? country.toUpperCase() : "All configured storefronts"}</small></article>
       <article className="metric-card"><p>Observed ranks · last 28 days</p><strong>{number(rankedCount)}</strong><small>{number(passedCount)} failed observations kept unavailable</small></article>
-      <article className="metric-card"><p>Latest ranking collection</p><strong>{latestSnapshotAt ? "Recorded" : "Waiting"}</strong><small>{latestRankLabel}</small></article>
+      <article className="metric-card"><p>Latest ranking observations</p><strong>{latestSnapshotAt ? "Recorded" : "Waiting"}</strong><small>{latestRankLabel}{rankSourceFreshness.length ? ` · ${rankSourceFreshness.join(" · ")}` : ""}</small></article>
     </section>
 
     <div className="section-head"><h2>Filters & comparison</h2><span>Rank sources remain separate</span></div>
@@ -169,6 +173,10 @@ export default async function AsoProgressPage({ searchParams }: { searchParams: 
     <div className="section-head"><h2>Metadata changes</h2><span>Recorded events in the most recent 36 days</span></div>
     <section className="quality-list">{scopedChanges.length ? scopedChanges.map((change, index) => <article className="quality-card" key={`${change.happened_at}:${index}`}><div><h2>{change.field ?? change.change_type ?? "Metadata change"}</h2><p>{change.country?.toUpperCase() ?? "All markets"} · {change.old_value ?? "(empty)"} → {change.new_value ?? "(empty)"}</p></div><span>{new Date(change.happened_at).toLocaleDateString("en-GB", { timeZone: "UTC" })}</span></article>) : <article className="quality-card"><div><h2>No metadata change events recorded</h2><p>Detected changes appear here when the collector records them; missing history is not interpreted as no changes.</p></div></article>}</section>
     <div className="section-head"><h2>Collection status</h2><span>{data.latestRun?.finished_at ? `Latest collector run ${new Date(data.latestRun.finished_at).toLocaleString("en-GB", { timeZone: "UTC" })} UTC` : "No completed collector run"}</span></div>
-    <section className="notice"><p>{data.latestRun ? `${data.latestRun.status.toUpperCase()} · ${data.latestRun.summary?.scope ?? "full"} scope · ${data.latestRun.succeeded}/${data.latestRun.processed} items succeeded · ${number(data.latestRun.failed)} failed · ${number(data.latestRun.warnings)} warnings.` : "Waiting for the first completed sync."} {latestMetricAt ? ` ASC data currently reaches ${latestMetricAt}; reporting may lag.` : " ASC reporting is unavailable in the current query window."}</p></section>
+    <section className="notice"><p>{data.latestRun ? (() => {
+      const staleRunning = isCollectionRunStalled(data.latestRun.status, data.latestRun.started_at);
+      const displayStatus = staleRunning ? "STALLED · over the 6-minute collection lease" : data.latestRun.status.toUpperCase();
+      return `${displayStatus} · ${data.latestRun.summary?.scope ?? "full"} scope · ${data.latestRun.succeeded}/${data.latestRun.processed} items succeeded · ${number(data.latestRun.failed)} failed · ${number(data.latestRun.warnings)} warnings.${staleRunning ? " This run likely timed out; a later collector invocation will mark the run failed." : ""}`;
+    })() : "Waiting for the first completed sync."} {latestMetricAt ? ` ASC data currently reaches ${latestMetricAt}; reporting may lag.` : " ASC reporting is unavailable in the current query window."}</p></section>
   </PageShell>;
 }

@@ -16,6 +16,10 @@ export type RankMovement = {
   positions: number | null;
 };
 
+export function isCollectionRunStalled(status: string, startedAt: string, now = Date.now()): boolean {
+  return status === "running" && now - Date.parse(startedAt) > 6 * 60_000;
+}
+
 export function rankMovement(rows: RankObservation[], days: 1 | 7 | 28): RankMovement {
   const usable = rows.filter((row) => row.collection_status !== "failed")
     .sort((a, b) => a.captured_at.localeCompare(b.captured_at));

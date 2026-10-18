@@ -6,13 +6,13 @@ import { listApps } from "@/repositories/apps-repository";
 import { getOverview } from "@/repositories/overview-repository";
 
 function relativeFreshness(value: string | null) {
-  if (!value) return "Waiting for first data";
+  if (!value) return "No completed sync";
   const minutes = Math.max(0, Math.round((Date.now() - new Date(value).getTime()) / 60000));
-  if (minutes < 2) return "Fresh now";
-  if (minutes < 60) return `Fresh ${minutes} minutes ago`;
+  if (minutes < 2) return "Just now";
+  if (minutes < 60) return `${minutes} min ago`;
   const hours = Math.round(minutes / 60);
-  if (hours < 48) return `Fresh ${hours} hours ago`;
-  return "Stale";
+  if (hours < 48) return `${hours} hr ago`;
+  return `Stale · ${Math.floor(hours / 24)} days ago`;
 }
 
 export async function PageShell({ title, children }: { title: string; children: React.ReactNode }) {

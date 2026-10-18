@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canonicalRankSource, observedRank, rankMovement, sourceCaveat, sourceLabel, type RankObservation } from "./progress";
+import { canonicalRankSource, isCollectionRunStalled, observedRank, rankMovement, sourceCaveat, sourceLabel, type RankObservation } from "./progress";
 
 const observation = (day: string, rank: number | null, found = rank != null): RankObservation => ({
   captured_at: `${day}T12:00:00.000Z`, captured_on: day, rank, found, result_depth: 100,
@@ -28,5 +28,12 @@ describe("ASO progress semantics", () => {
     expect(canonicalRankSource("apple_web_search")).toBe("apple_web_search");
     expect(sourceCaveat("itunes_catalog")).toContain("not native organic rank");
     expect(sourceCaveat("apple_web_search")).toContain("may be uncertain");
+  });
+
+  it("marks a collector run stalled only after its six-minute lease", () => {
+    const now = Date.parse("2026-10-18T18:00:00Z");
+    expect(isCollectionRunStalled("running", "2026-10-18T17:54:01Z", now)).toBe(false);
+    expect(isCollectionRunStalled("running", "2026-10-18T17:54:01Z", now + 2_000)).toBe(true);
+    expect(isCollectionRunStalled("failed", "2026-10-18T17:00:00Z", now)).toBe(false);
   });
 });
