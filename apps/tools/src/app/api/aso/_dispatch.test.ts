@@ -41,7 +41,7 @@ describe("ASO cron dispatch", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ ok: true });
     const [url, options] = fetchMock.mock.calls[0] as [URL, RequestInit];
-    expect(url.toString()).toBe(`https://collector.example/api/aso/collect?scope=${scope}`);
+    expect(url.toString()).toBe(`https://collector.example/api/aso/collect-${scope}`);
     expect(options).toEqual({
       headers: { Authorization: "Bearer test-secret", Accept: "application/json" },
       cache: "no-store",
