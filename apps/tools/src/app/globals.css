@@ -204,4 +204,10 @@ tr:last-child td { border-bottom: 0; }
 .rank-sparkline { display: block; height: 34px; width: 112px; }
 .rank-spark-empty { color: var(--muted); font-size: 11px; }
 .rank-explorer-note { color: var(--muted); font-size: 12px; line-height: 1.45; margin: 0; }
+.aso-filter-bar { align-items: end; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 18px; padding: 13px 15px; }
+.aso-filter-bar label { color: var(--muted-strong); display: grid; font-size: 11px; font-weight: 750; gap: 5px; min-width: 150px; }
+.aso-filter-bar select { background: var(--panel); border: 1px solid var(--line-strong); border-radius: 7px; color: var(--ink); min-width: 170px; padding: 9px 30px 9px 10px; }
+.aso-filter-bar button { background: var(--accent); border: 1px solid var(--accent); border-radius: 7px; color: #fff; cursor: pointer; font: inherit; font-size: 12px; font-weight: 750; padding: 9px 13px; }
+.aso-filter-bar button:hover { filter: brightness(1.08); }
 @media (max-width: 680px) { .rank-source-bar { align-items: flex-start; flex-direction: column; } .rank-chart-frame { height: 260px; } }
+@media (max-width: 680px) { .aso-filter-bar { align-items: stretch; flex-direction: column; } .aso-filter-bar label, .aso-filter-bar select, .aso-filter-bar button { width: 100%; } }

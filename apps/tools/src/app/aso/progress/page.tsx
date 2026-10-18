@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { AsoAcquisitionTrendChart, AsoSourceTrendChart } from "@/components/aso-source-trend-chart";
 import { AsoKeywordRankExplorer } from "@/components/aso-keyword-rank-explorer";
 import { PageShell } from "@/components/page-shell";
@@ -23,16 +22,6 @@ function getAssessment(values: (number | null)[]) {
   return gains === losses && gains > 0 ? "Mixed" : "No net movement";
 }
 
-function preserveQuery(filters: SearchParams, overrides: Partial<SearchParams> = {}) {
-  const values = { ...filters, ...overrides };
-  const params = new URLSearchParams();
-  if (values.app) params.set("app", values.app);
-  if (values.country) params.set("country", values.country);
-  if (values.window) params.set("window", values.window);
-  const query = params.toString();
-  return query ? `?${query}` : "";
-}
-
 export default async function AsoProgressPage({ searchParams }: { searchParams: Promise<SearchParams> }) {
   await requireUser();
   const filters = await searchParams;
@@ -41,7 +30,8 @@ export default async function AsoProgressPage({ searchParams }: { searchParams: 
     ?? apps.find((app) => /innertype/i.test(app.name))
     ?? apps[0];
   if (!selectedApp) return <PageShell title="ASO Progress"><p className="notice">No apps are configured for ASO tracking.</p></PageShell>;
-  const country = filters.country === "all" ? undefined : (filters.country?.toLowerCase() || selectedApp.primaryCountry);
+  const selectedCountry = filters.country === "all" ? "all" : (filters.country?.toLowerCase() || selectedApp.primaryCountry);
+  const country = selectedCountry === "all" ? undefined : selectedCountry;
   const days: 1 | 7 | 28 = filters.window === "1" ? 1 : filters.window === "28" ? 28 : 7;
   const data = await getAsoProgressData(selectedApp.id);
   const activeKeywords = data.keywords.filter((keyword) => !country || keyword.country === country);
@@ -130,12 +120,26 @@ export default async function AsoProgressPage({ searchParams }: { searchParams: 
     </section>
 
     <div className="section-head"><h2>Filters & comparison</h2><span>Rank sources remain separate</span></div>
-    <div className="workspace-tabs" aria-label="ASO progress filters">
-      {apps.map((app) => <Link key={app.id} className={app.id === selectedApp.id ? "active-child" : undefined} href={`/aso/progress${preserveQuery(filters, { app: app.id })}`}>{app.name}</Link>)}
-      <Link className={!country ? "active-child" : undefined} href={`/aso/progress${preserveQuery(filters, { app: selectedApp.id, country: "all" })}`}>All markets</Link>
-      {marketOptions.map((market) => <Link key={market} className={country === market ? "active-child" : undefined} href={`/aso/progress${preserveQuery(filters, { app: selectedApp.id, country: country === market ? "" : market })}`}>{market.toUpperCase()}</Link>)}
-      {windows.map((window) => <Link key={window} className={days === window ? "active-child" : undefined} href={`/aso/progress${preserveQuery(filters, { app: selectedApp.id, window: String(window) })}`}>{window}d</Link>)}
-    </div>
+    <form className="aso-filter-bar" action="/aso/progress" method="get" aria-label="ASO progress filters">
+      <label>App
+        <select name="app" defaultValue={selectedApp.id}>
+          {apps.map((app) => <option key={app.id} value={app.id}>{app.name}</option>)}
+        </select>
+      </label>
+      <label>Storefront
+        <select name="country" defaultValue={selectedCountry}>
+          <option value="all">All markets</option>
+          {marketOptions.map((market) => <option key={market} value={market}>{market.toUpperCase()}</option>)}
+        </select>
+      </label>
+      <label>Time range
+        <select name="window" defaultValue={String(days)}>
+          {windows.filter((window) => window !== 1).map((window) => <option key={window} value={window}>{window} days</option>)}
+          <option value="1">1 day</option>
+        </select>
+      </label>
+      <button type="submit">Apply filters</button>
+    </form>
 
     <div className="section-head"><h2>Ranking history</h2><span>Mean observed position by source; lower position number is better</span></div>
     <div className="structure-grid">

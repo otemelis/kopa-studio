@@ -154,7 +154,7 @@ export function AsoKeywordRankExplorer({ keywords, snapshots, days }: Props) {
 
       <section className="panel rank-selected-chart">
         <div className="panel-head">
-          <div><h2>Selected keyword trends</h2><p>Observed positions only · rank #1 is at the top · gaps are not interpolated</p></div>
+          <div><h2>Selected keyword trends</h2><p>Observed positions only · rank #1 is at the top · lines connect observations across missed collection days</p></div>
           <span>{days}-day window</span>
         </div>
         {plottedIds.length && chartRows.length ? (
@@ -170,7 +170,7 @@ export function AsoKeywordRankExplorer({ keywords, snapshots, days }: Props) {
                   const item = selectable.find(({ keyword }) => keyword.id === id);
                   if (!item) return null;
                   const color = COLORS[keywords.findIndex((keyword) => keyword.id === id) % COLORS.length];
-                  return <Line key={id} type="linear" dataKey={id} name={item.keyword.term} stroke={color} strokeWidth={2.5} connectNulls={false} dot={{ r: 2.5 }} activeDot={{ r: 5 }} isAnimationActive={false} />;
+                  return <Line key={id} type="linear" dataKey={id} name={item.keyword.term} stroke={color} strokeWidth={2.5} connectNulls dot={{ r: 2.5 }} activeDot={{ r: 5 }} isAnimationActive={false} />;
                 })}
               </LineChart>
             </ResponsiveContainer>
