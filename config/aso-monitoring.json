@@ -1,9 +1,10 @@
 {
   "version": 1,
-  "note": "Small InnerType pilot set. Every target must already be linked to the app in aso_app_keywords; update this file to change coverage.",
+  "note": "Small InnerType pilot set. snapshotAppName maps the validated ASC CSV label. Every target must already be linked to the app in aso_app_keywords; update this file to change coverage.",
   "apps": [
     {
       "name": "InnerType",
+      "snapshotAppName": "InnerType",
       "storeAppId": "6785764991",
       "countries": {
         "us": [

@@ -2,13 +2,13 @@
 
 The Signal ASO console now has an **ASO progress** tab. It starts with InnerType, supports its configured storefronts, and keeps Apple web observations separate from the legacy `public_store` series (whose collector uses the iTunes Search API). Neither series is called a verified native ranking. The view aligns the recent comparison end date to the latest day common to App Store Search records and the accepted first-time-download snapshot.
 
-The pilot keyword set lives in [`config/aso-monitoring.json`](../../config/aso-monitoring.json). It contains five already-tracked high-priority terms for each of the US and Germany. A term must also be linked and active in `aso_app_keywords`; the collector refuses to create a series for an untracked term.
+The pilot keyword set lives in [`config/aso-monitoring.json`](../../config/aso-monitoring.json). It contains five already-tracked high-priority terms for each of the US and Germany. `snapshotAppName` maps an App Store Connect CSV app label to its `aso_apps` record when those names differ. A term must also be linked and active in `aso_app_keywords`; the collector refuses to create a series for an untracked term.
 
 First-time downloads come from the already validated `reporting/portfolio/daily-acquisition-monetization.csv` App Store Connect snapshot. The view uses only its `first_time_downloads` summary rows with a validated value or validated zero status, reports coverage days, and keeps the all-storefront scope explicit. Current snapshot data covers InnerType from 14 September through 11 October 2026 (extracted 15 October); it does not invent earlier or later dates. The app's live `aso_daily_metrics` Sales Units remain separately labeled because they are not first-time-only.
 
 ### Current source-to-view reconciliation
 
-The view's recent comparison is aligned to the latest shared day in the Search table and accepted download snapshot: 11 October 2026. The displayed totals reconcile to those sources:
+The view's recent comparison is aligned to the latest shared day in the Search table and accepted download snapshot: 11 October 2026. Ranking observations are available through 18 October; the keyword table shows those latest observations, while progress assessments use observations no later than the shared comparison date. The displayed totals reconcile to their respective sources:
 
 | Period | US Search impressions | US Search product-page views | All-storefront first-time downloads | All-storefront Search-attributed first-time downloads |
 | --- | ---: | ---: | ---: | ---: |
@@ -33,7 +33,7 @@ node --env-file=/absolute/path/to/private.env scripts/aso/collect-web-progress.m
 
 It uses the repository's already installed Playwright package from the earlier App Store web experiment. It makes ordinary anonymous storefront page requests, uses the configured country locale, and stops on a challenge. It marks only explicit ad labels as ads. Other displayed cards remain uncertain; an absent app means **not observed within the returned page depth**, never “unranked.” Each persisted row includes its capture timestamp, storefront keyword, source label, result depth, and collection status. No full competitor list is imported, and no AppFollow calls are made.
 
-The first local preview ran on 18 October 2026 for all ten configured InnerType terms (five US, five DE), with no detected challenge. The ten observations were appended to Supabase under `apple_web_search` and independently read back with matching keyword, country, app ID, timestamp, position, depth, and `partial` collection status. Seven results contained the app within the returned page; three were not observed within depths of 11–12. The collector detected no explicit ad labels, but that does not establish the absence of unlabeled or differently marked sponsored placements. Treat these as dated web observations, not verified organic rankings.
+The first local preview ran on 18 October 2026 for all ten configured InnerType terms (five US, five DE), with no detected challenge. The ten observations were appended to Supabase under `apple_web_search` and independently read back with matching keyword, country, app ID, timestamp, position, depth, and `partial` collection status. Seven results contained the app within the returned page; three were not observed within depths of 11–12. The collector detected no explicit ad labels, but that does not establish the absence of unlabeled or differently marked sponsored placements. Treat these as dated web observations, not verified organic rankings. Since this is the first web sample, no previous web movement can be calculated; the web-series assessment remains insufficient evidence.
 
 ## Interpretation limits
 
