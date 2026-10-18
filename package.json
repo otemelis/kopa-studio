@@ -5,6 +5,17 @@
   "type": "module",
   "scripts": {
     "start": "python3 -m http.server 5173",
-    "check": "node ./scripts/check-levels.js"
+    "check": "node ./scripts/check-levels.js",
+    "portfolio": "node scripts/product-analytics/server.mjs",
+    "ads:refresh": "node scripts/apple-ads-verification/refresh.mjs",
+    "reports:refresh": "python3 scripts/app-store/refresh.py",
+    "test:aso": "node --test scripts/aso/*.test.mjs",
+    "aso:web": "node scripts/aso/collect-web-progress.mjs",
+    "test:reporting": "node --test scripts/reporting-tests/*.test.mjs",
+    "product": "node scripts/product-analytics/server.mjs"
+  },
+  "dependencies": {
+    "@sparticuz/chromium": "^153.0.0",
+    "playwright-core": "^1.64.1"
   }
 }
