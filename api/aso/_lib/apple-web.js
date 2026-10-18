@@ -2,15 +2,34 @@ import { chromium as playwright } from "playwright-core";
 import serverlessChromium from "@sparticuz/chromium";
 
 const TIMEOUT_MS = 25_000;
+const BROWSER_STARTUP_TIMEOUT_MS = 20_000;
 const CHALLENGE = /captcha|access denied|unusual traffic|verify you are human|temporarily blocked/i;
 
 export async function launchAppleWebBrowser() {
   serverlessChromium.setGraphicsMode = false;
-  return playwright.launch({
-    args: serverlessChromium.args,
-    executablePath: await serverlessChromium.executablePath(),
-    headless: true,
-  });
+  let timer;
+  const startup = (async () => {
+    const executablePath = await serverlessChromium.executablePath();
+    return playwright.launch({
+      args: serverlessChromium.args,
+      executablePath,
+      headless: true,
+      timeout: BROWSER_STARTUP_TIMEOUT_MS,
+    });
+  })();
+  try {
+    return await Promise.race([
+      startup,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error("Apple web browser startup exceeded 20 seconds.")), BROWSER_STARTUP_TIMEOUT_MS);
+      }),
+    ]);
+  } catch (error) {
+    startup.then((browser) => browser.close()).catch(() => undefined);
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export function classifyAppleWebCards(cards) {
