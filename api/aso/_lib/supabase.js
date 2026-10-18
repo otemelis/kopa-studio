@@ -13,6 +13,8 @@ function env(name) {
  * env vars are named NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY
  * (carried over from before), not the plain SUPABASE_URL / SUPABASE_ANON_KEY
  * names used elsewhere in this file's original version. */
+const DB_REQUEST_TIMEOUT_MS = 30_000;
+
 function envAny(names) {
   for (const name of names) {
     const v = process.env[name];
@@ -32,7 +34,11 @@ export function serviceClient() {
   const headers = { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" };
 
   async function request(path, init) {
-    const res = await fetch(`${url}/rest/v1/${path}`, { ...init, headers: { ...headers, ...(init?.headers ?? {}) } });
+    const res = await fetch(`${url}/rest/v1/${path}`, {
+      ...init,
+      signal: init?.signal ?? AbortSignal.timeout(DB_REQUEST_TIMEOUT_MS),
+      headers: { ...headers, ...(init?.headers ?? {}) },
+    });
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       throw new Error(`Supabase ${res.status} on ${path}: ${text.slice(0, 300)}`);
@@ -86,6 +92,7 @@ export async function requireAdmin(authorizationHeader) {
   const anonKey = envAny(["SUPABASE_ANON_KEY", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "VITE_SUPABASE_ANON_KEY"]);
   const userRes = await fetch(`${url}/auth/v1/user`, {
     headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
+    signal: AbortSignal.timeout(DB_REQUEST_TIMEOUT_MS),
   });
   if (!userRes.ok) throw Object.assign(new Error("Invalid or expired session."), { status: 401 });
   const user = await userRes.json();
