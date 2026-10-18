@@ -8,4 +8,4 @@ Each item retains its observed slot and app ID. iTunes items use `catalog_positi
 
 These observations support later competitor presence and movement analysis within the same source. Agreement between sources is not treated as independent verification, and an app absent from a snapshot is only known to be absent within that source's captured depth.
 
-The migration that allows same-day source-separated snapshots is `20261018000000_aso_source_separated_search_results.sql`. Applying it changes the live Supabase schema; it is prepared here but is not applied by local tests.
+The migration that allows same-day source-separated snapshots is `20261018154811_aso_source_separated_search_results.sql`. It is applied to the connected Supabase project; local tests do not apply migrations.
