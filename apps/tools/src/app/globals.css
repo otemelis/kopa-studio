@@ -184,3 +184,24 @@ tr:last-child td { border-bottom: 0; }
 :root[data-theme="dark"] .decision-grid article { background: #17251f; }
 :root[data-theme="dark"] .theme-toggle { background: #17251f; color: var(--ink); }
 :root[data-theme="dark"] .theme-toggle:hover { background: #21402f; color: #c7f0d5; }
+
+.rank-explorer { display: grid; gap: 14px; }
+.rank-source-bar { align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); display: flex; flex-wrap: wrap; gap: 14px 24px; justify-content: space-between; padding: 14px 16px; }
+.rank-source-bar strong { font-size: 13px; }
+.rank-source-bar p { color: var(--muted); font-size: 12px; margin: 4px 0 0; }
+.rank-source-options { display: flex; flex-wrap: wrap; gap: 7px; }
+.rank-source-options button { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; color: var(--muted-strong); cursor: pointer; font: inherit; font-size: 12px; font-weight: 700; padding: 7px 11px; }
+.rank-source-options button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.rank-chart-frame { height: 320px; min-width: 0; width: 100%; }
+.rank-table-wrap table { min-width: 920px; }
+.rank-table-wrap th, .rank-table-wrap td { vertical-align: middle; }
+.rank-table-wrap td strong { display: block; }
+.rank-table-wrap td small { color: var(--muted); display: block; font-size: 11px; margin-top: 4px; }
+.rank-table-wrap tr.is-plotted { background: color-mix(in srgb, var(--accent-soft) 45%, var(--panel)); }
+.rank-table-wrap input[type="checkbox"] { accent-color: var(--accent); height: 16px; width: 16px; }
+.rank-improved { color: var(--success); font-weight: 700; }
+.rank-declined { color: var(--danger); font-weight: 700; }
+.rank-sparkline { display: block; height: 34px; width: 112px; }
+.rank-spark-empty { color: var(--muted); font-size: 11px; }
+.rank-explorer-note { color: var(--muted); font-size: 12px; line-height: 1.45; margin: 0; }
+@media (max-width: 680px) { .rank-source-bar { align-items: flex-start; flex-direction: column; } .rank-chart-frame { height: 260px; } }

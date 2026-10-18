@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { AsoAcquisitionTrendChart, AsoSourceTrendChart } from "@/components/aso-source-trend-chart";
+import { AsoKeywordRankExplorer } from "@/components/aso-keyword-rank-explorer";
 import { PageShell } from "@/components/page-shell";
 import { requireUser } from "@/lib/auth";
-import { canonicalRankSource, rankMovement, observedRank, sourceCaveat, sourceLabel } from "@/lib/aso/progress";
+import { canonicalRankSource, rankMovement, sourceCaveat, sourceLabel } from "@/lib/aso/progress";
 import { getAsoProgressData } from "@/repositories/aso-progress-repository";
 import { listApps } from "@/repositories/apps-repository";
 
@@ -10,7 +11,6 @@ export const dynamic = "force-dynamic";
 
 type SearchParams = { app?: string; country?: string; window?: string };
 const number = (value: number) => new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value);
-const signed = (value: number | null) => value === null ? "—" : `${value > 0 ? "+" : ""}${value}`;
 const eventKey = (value: string) => value.toLowerCase().replace(/[^a-z]/g, "");
 
 function getAssessment(values: (number | null)[]) {
@@ -143,17 +143,12 @@ export default async function AsoProgressPage({ searchParams }: { searchParams: 
     </div>
     {!sourceNames.length ? <p className="notice">No ranking observations are available for this app and market yet.</p> : null}
 
-    <div className="section-head"><h2>Keyword movements</h2><span>Observed positions and movements stay source-separated</span></div>
-    <div className="table-wrap"><table><thead><tr><th>Keyword</th><th>Market</th>{sourceNames.flatMap((source) => [<th key={`${source}:position`}>{sourceLabel(source)} position</th>, <th key={`${source}:movement`}>{sourceLabel(source)} · {days}d</th>])}<th>Latest observation</th></tr></thead>
-      <tbody>{activeKeywords.map((keyword) => {
-        const movements = sourceNames.map((source) => ({ source, value: sourceMovements.get(source)?.get(keyword.id) }));
-        const observed = movements.flatMap(({ source, value }) => {
-          const rank = value?.current;
-          return [<td key={`${source}:position`}>{observedRank(rank ?? null)}{rank?.collection_status === "partial" ? <small> · partial web results</small> : null}</td>, <td key={`${source}:movement`}>{value?.state === "comparable" ? `${signed(value.positions)} positions` : value?.state === "not_observed" ? "Not comparable: unranked" : "Insufficient history"}</td>];
-        });
-        const latest = movements.map(({ value }) => value?.current?.captured_at).filter(Boolean).sort().at(-1);
-        return <tr key={keyword.id}><td>{keyword.term}</td><td>{keyword.country.toUpperCase()}</td>{observed}<td>{latest ? new Date(latest).toLocaleDateString("en-GB", { timeZone: "UTC" }) : "No snapshot"}</td></tr>;
-      })}{!activeKeywords.length ? <tr><td colSpan={3 + sourceNames.length * 2}>No active keywords in this market.</td></tr> : null}</tbody></table></div>
+    <div className="section-head"><h2>Keyword rankings</h2><span>Current rank, period change, best rank and selectable history</span></div>
+    <AsoKeywordRankExplorer
+      days={days}
+      keywords={activeKeywords.map(({ id, term, country }) => ({ id, term, country }))}
+      snapshots={scopedSnapshots.map(({ keyword_id, captured_at, captured_on, rank, found, result_depth, collection_status, source }) => ({ keyword_id, captured_at, captured_on, rank, found, result_depth, collection_status, source }))}
+    />
 
     <div className="section-head"><h2>Acquisition evidence</h2><span>{latestMetricAt ? `Latest source date ${latestMetricAt}` : "No ASC acquisition rows available"}</span></div>
     <AsoAcquisitionTrendChart points={acquisitionTrend} />
