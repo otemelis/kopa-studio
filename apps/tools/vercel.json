@@ -17,13 +17,5 @@
     "src/app/api/aso/collect-maintenance/route.ts": {
       "maxDuration": 60
     }
-  },
-  "crons": [
-    { "path": "/api/aso/collect-rankings?slot=1", "schedule": "30 0 * * *" },
-    { "path": "/api/aso/collect-rankings?slot=2", "schedule": "30 4 * * *" },
-    { "path": "/api/aso/collect-rankings?slot=3", "schedule": "30 8 * * *" },
-    { "path": "/api/aso/collect-rankings?slot=4", "schedule": "30 12 * * *" },
-    { "path": "/api/aso/collect-rankings?slot=5", "schedule": "30 16 * * *" },
-    { "path": "/api/aso/collect-maintenance", "schedule": "30 20 * * *" }
-  ]
+  }
 }
