@@ -281,7 +281,8 @@ export async function runCollection(trigger, scope = "full") {
     // Each slot processes a bounded batch with independent terms in parallel.
     // The iTunes provider still rate-limits requests; parallelism prevents a
     // slow web page for one term from holding every later term behind it.
-    // Five ranking runs cover up to 120 keywords/day; larger sets rotate fairly.
+    // Keep each proxied Hobby invocation comfortably below its 60s ceiling.
+    // Five ranking runs cover up to 50 keywords/day; larger sets rotate fairly.
     const capturedOn = toDateStr(new Date());
     const activeLinks = appKeywords.filter((ak) => ak.status === "active");
     const allTrackedKeywords = keywords.filter((k) => activeLinks.some((ak) => ak.keyword_id === k.id));
@@ -295,7 +296,7 @@ export async function runCollection(trigger, scope = "full") {
       if (!lastCollectedAt.has(r.keyword_id)) lastCollectedAt.set(r.keyword_id, r.captured_at);
     }
 
-    const MAX_KEYWORDS_PER_RUN = 24;
+    const MAX_KEYWORDS_PER_RUN = 10;
     const trackedKeywords = scope === "maintenance" ? [] : [...allTrackedKeywords]
       .sort((a, b) => (lastCollectedAt.get(a.id) ?? "").localeCompare(lastCollectedAt.get(b.id) ?? "") || a.country.localeCompare(b.country) || a.term.localeCompare(b.term) || a.id.localeCompare(b.id))
       .slice(0, MAX_KEYWORDS_PER_RUN);
