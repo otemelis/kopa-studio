@@ -18,7 +18,7 @@ let lastRequestAt = 0;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function politeFetchJson(url) {
+async function politeFetchJson(url, { maxRetries = MAX_RETRIES, timeoutMs = 15_000 } = {}) {
   const cached = cache.get(url);
   if (cached && cached.expires > Date.now()) return cached.body;
 
@@ -31,11 +31,12 @@ async function politeFetchJson(url) {
   await myTurn;
 
   let lastError = null;
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       const res = await fetch(url, {
         headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
         cache: "no-store",
+        signal: AbortSignal.timeout(timeoutMs),
       });
       if (res.status === 429 || res.status >= 500) throw new Error(`HTTP ${res.status}`);
       if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status}`), { permanent: true });
@@ -45,7 +46,7 @@ async function politeFetchJson(url) {
     } catch (e) {
       lastError = e instanceof Error ? e : new Error(String(e));
       if (lastError.permanent) break;
-      if (attempt < MAX_RETRIES) await sleep(1000 * 2 ** attempt + Math.random() * 500);
+      if (attempt < maxRetries) await sleep(1000 * 2 ** attempt + Math.random() * 500);
     }
   }
   throw lastError ?? new Error("fetch failed");
@@ -100,9 +101,9 @@ export async function lookupApp(storeAppId, country) {
   return mapLookupResult(r);
 }
 
-export async function searchApps(term, country, limit) {
+export async function searchApps(term, country, limit, options) {
   const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&country=${encodeURIComponent(country)}&entity=software&limit=${Math.min(limit, 200)}`;
-  const body = await politeFetchJson(url);
+  const body = await politeFetchJson(url, options);
   const results = Array.isArray(body?.results) ? body.results : [];
   return results
     .filter((r) => r.trackId != null)

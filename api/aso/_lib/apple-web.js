@@ -2,16 +2,39 @@ import { chromium as playwright } from "playwright-core";
 import serverlessChromium from "@sparticuz/chromium";
 import { classifyAppleWebCards } from "./search-results.js";
 
-const TIMEOUT_MS = 25_000;
+// A single slow web response must not hold a scheduled ranking batch open.
+// Unavailable observations are recorded as such and retried in a later slot.
+const TIMEOUT_MS = 12_000;
+const BROWSER_STARTUP_TIMEOUT_MS = 20_000;
 const CHALLENGE = /captcha|access denied|unusual traffic|verify you are human|temporarily blocked/i;
 
 export async function launchAppleWebBrowser() {
   serverlessChromium.setGraphicsMode = false;
-  return playwright.launch({
-    args: serverlessChromium.args,
-    executablePath: await serverlessChromium.executablePath(),
-    headless: true,
-  });
+  let timer;
+  const startup = (async () => {
+    const executablePath = await serverlessChromium.executablePath();
+    return playwright.launch({
+      args: serverlessChromium.args,
+      executablePath,
+      headless: true,
+      timeout: BROWSER_STARTUP_TIMEOUT_MS,
+    });
+  })();
+  try {
+    return await Promise.race([
+      startup,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error("Apple web browser startup exceeded 20 seconds.")), BROWSER_STARTUP_TIMEOUT_MS);
+      }),
+    ]);
+  } catch (error) {
+    // If Chromium starts after the outer deadline, close it rather than leave
+    // an orphaned browser process in the serverless invocation.
+    startup.then((browser) => browser.close()).catch(() => undefined);
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export async function collectAppleWebObservation(browser, country, term) {
@@ -34,7 +57,7 @@ export async function collectAppleWebObservation(browser, country, term) {
       // responses are returned below without a retry or an evasion attempt.
       response = await page.goto(url.toString(), { waitUntil: "domcontentloaded", timeout: TIMEOUT_MS });
     }
-    await page.waitForTimeout(1_800);
+    await page.waitForTimeout(500);
     const body = await page.evaluate(() => document.body?.innerText ?? "");
     if ((response?.status() ?? 0) >= 400 || CHALLENGE.test(body)) {
       return { status: "failed", depth: 0, positions: {}, explicitAdCount: 0, checksum: null, error: "Apple web search returned a block or challenge; no bypass or retry attempted." };
@@ -42,11 +65,11 @@ export async function collectAppleWebObservation(browser, country, term) {
     const cards = page.locator('section[data-test-id="shelf-wrapper"] li');
     let stablePasses = 0;
     let previousCount = 0;
-    for (let pass = 0; pass < 10; pass++) {
+    for (let pass = 0; pass < 8; pass++) {
       const currentCount = await cards.count();
       if (currentCount >= 100) break;
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-      await page.waitForTimeout(600);
+      await page.waitForTimeout(300);
       const nextCount = await cards.count();
       stablePasses = nextCount === previousCount ? stablePasses + 1 : 0;
       previousCount = nextCount;

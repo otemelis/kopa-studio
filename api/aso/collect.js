@@ -17,6 +17,7 @@ import { buildKeywordSearchSnapshot } from "./_lib/search-results.js";
 import { syncRecentReviews } from "./_lib/appstore-reviews.js";
 import { hasSalesReportsConfig, salesSyncMessage, syncDailySalesMetrics } from "./_lib/appstore-sales.js";
 import { syncDiscoveryAnalytics } from "./_lib/appstore-analytics.js";
+import { runBounded } from "./_lib/bounded-pool.js";
 import {
   competitorWinsDedupeKey,
   draftToInsertRow,
@@ -277,11 +278,10 @@ export async function runCollection(trigger, scope = "full") {
 
     // ── Keyword search + rank snapshots ──────────────────────────────
     //
-    // The Apple queue is deliberately rate-limited (~1 request/3.2s). The
-    // current Vercel Hobby project has a 60s function limit, so each scheduled
-    // slice stays small enough to leave time for browser startup and database
-    // writes. Five ranking runs cover up to 60 keywords/day; larger sets rotate
-    // fairly rather than being presented as fully refreshed every day.
+    // Each slot processes a bounded batch with independent terms in parallel.
+    // The iTunes provider still rate-limits requests; parallelism prevents a
+    // slow web page for one term from holding every later term behind it.
+    // Five ranking runs cover up to 120 keywords/day; larger sets rotate fairly.
     const capturedOn = toDateStr(new Date());
     const activeLinks = appKeywords.filter((ak) => ak.status === "active");
     const allTrackedKeywords = keywords.filter((k) => activeLinks.some((ak) => ak.keyword_id === k.id));
@@ -295,7 +295,7 @@ export async function runCollection(trigger, scope = "full") {
       if (!lastCollectedAt.has(r.keyword_id)) lastCollectedAt.set(r.keyword_id, r.captured_at);
     }
 
-    const MAX_KEYWORDS_PER_RUN = 12; // Keep each slice within Hobby's 60s function limit; five daily slots cover 60 keywords.
+    const MAX_KEYWORDS_PER_RUN = 24;
     const trackedKeywords = scope === "maintenance" ? [] : [...allTrackedKeywords]
       .sort((a, b) => (lastCollectedAt.get(a.id) ?? "").localeCompare(lastCollectedAt.get(b.id) ?? "") || a.country.localeCompare(b.country) || a.term.localeCompare(b.term) || a.id.localeCompare(b.id))
       .slice(0, MAX_KEYWORDS_PER_RUN);
@@ -311,8 +311,27 @@ export async function runCollection(trigger, scope = "full") {
       }
     }
 
-    for (const keyword of trackedKeywords) {
-      counters.processed++;
+    let completedKeywords = 0;
+    let checkpointTail = Promise.resolve();
+    let checkpointError = null;
+    const checkpointProgress = () => {
+      const progress = {
+        scope,
+        progress: { completed: completedKeywords, total: trackedKeywords.length },
+        itunes_catalog: { keywords: completedKeywords, stored_app_ids: itunesStoredAppIds },
+        apple_web_search: { ...webSummary },
+      };
+      checkpointTail = checkpointTail.then(() => db.update(
+        "aso_sync_runs",
+        { ...counters, summary: progress },
+        `id=eq.${run.id}`,
+      )).catch((error) => {
+        checkpointError ??= error;
+      });
+      return checkpointTail;
+    };
+
+    await runBounded(trackedKeywords, 4, async (keyword) => {
       const linkedAppIds = activeLinks.filter((ak) => ak.keyword_id === keyword.id).map((ak) => ak.app_id);
       const webPromise = webBrowser
         ? collectAppleWebObservation(webBrowser, keyword.country, keyword.term)
@@ -320,7 +339,7 @@ export async function runCollection(trigger, scope = "full") {
       let itemSucceeded = false;
 
       try {
-        const results = await searchApps(keyword.term, keyword.country, 100);
+        const results = await searchApps(keyword.term, keyword.country, 100, { maxRetries: 1, timeoutMs: 15_000 });
         const snapshot = buildKeywordSearchSnapshot("itunes_catalog", results);
         const depth = snapshot.resultDepth;
         const checksum = String(results.reduce((h, r) => (h * 31 + (Number(r.store_app_id) % 997)) % 1000000007, 7));
@@ -328,7 +347,7 @@ export async function runCollection(trigger, scope = "full") {
           keyword_id: keyword.id,
           captured_at: new Date().toISOString(),
           captured_on: capturedOn,
-          results: snapshot.results,
+          results: snapshot.results.slice(0, 100),
           result_depth: depth,
           checksum,
           source: "itunes_catalog",
@@ -385,7 +404,7 @@ export async function runCollection(trigger, scope = "full") {
             keyword_id: keyword.id,
             captured_at: capturedAt,
             captured_on: capturedOn,
-            results: snapshot.results,
+            results: snapshot.results.slice(0, 100),
             result_depth: snapshot.resultDepth,
             checksum: web.checksum,
             source: "apple_web_search",
@@ -434,7 +453,12 @@ export async function runCollection(trigger, scope = "full") {
       }
 
       if (itemSucceeded) counters.succeeded++;
-    }
+      counters.processed++;
+      completedKeywords++;
+      await checkpointProgress();
+    });
+
+    if (checkpointError) errors.push({ item: "ranking_progress", message: msg(checkpointError) });
 
     if (scope === "rankings") {
       const status = counters.failed === 0 && counters.warnings === 0 ? "ok" : counters.succeeded > 0 || counters.warnings > 0 ? "partial" : "failed";
