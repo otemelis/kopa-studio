@@ -38,12 +38,13 @@ export async function launchAppleWebBrowser() {
 }
 
 export async function collectAppleWebObservation(browser, country, term) {
-  const context = await browser.newContext({
-    locale: country === "de" ? "de-DE" : "en-US",
-    timezoneId: "UTC",
-    viewport: { width: 1440, height: 1000 },
-  });
+  let context;
   try {
+    context = await browser.newContext({
+      locale: country === "de" ? "de-DE" : "en-US",
+      timezoneId: "UTC",
+      viewport: { width: 1440, height: 1000 },
+    });
     const page = await context.newPage();
     const url = new URL(`https://apps.apple.com/${encodeURIComponent(country)}/iphone/search`);
     url.searchParams.set("term", term);
@@ -94,6 +95,6 @@ export async function collectAppleWebObservation(browser, country, term) {
   } catch (error) {
     return { status: "failed", depth: 0, positions: {}, explicitAdCount: 0, checksum: null, error: error instanceof Error ? error.message : String(error) };
   } finally {
-    await context.close().catch(() => undefined);
+    await context?.close().catch(() => undefined);
   }
 }

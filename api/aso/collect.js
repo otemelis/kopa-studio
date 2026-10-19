@@ -12,7 +12,6 @@
 import { deriveRankFields, toDateStr, compareWindows, addDays } from "./_lib/calc.js";
 import { diffMetadata, metadataChecksum } from "./_lib/metadata-diff.js";
 import { lookupApp, searchApps } from "./_lib/providers.js";
-import { launchAppleWebBrowser, collectAppleWebObservation } from "./_lib/apple-web.js";
 import { buildKeywordSearchSnapshot } from "./_lib/search-results.js";
 import { syncRecentReviews } from "./_lib/appstore-reviews.js";
 import { hasSalesReportsConfig, salesSyncMessage, syncDailySalesMetrics } from "./_lib/appstore-sales.js";
@@ -90,7 +89,7 @@ export async function runCollection(trigger, scope = "full") {
   const counters = { processed: 0, succeeded: 0, failed: 0, warnings: 0, retries: 0 };
   const errors = [];
   const startedAt = new Date().toISOString();
-  let webBrowser = null;
+  let webQueue = null;
 
   const [run] = await db.insert("aso_sync_runs", [
     { provider: "apple_public", trigger, started_at: startedAt, status: "running", ...counters },
@@ -304,12 +303,14 @@ export async function runCollection(trigger, scope = "full") {
     const webSummary = { succeeded: 0, failed: 0, explicit_ads: 0, stored_app_ids: 0 };
     let itunesStoredAppIds = 0;
     if (trackedKeywords.length) {
-      try {
-        webBrowser = await launchAppleWebBrowser();
-      } catch (error) {
-        counters.warnings++;
-        errors.push({ item: "apple_web_search:browser", message: msg(error) });
-      }
+      // Keep browser-only dependencies out of empty workloads and the
+      // rankings lifecycle tests. Vercel still bundles these modules, but a
+      // run with no eligible terms does not need to initialize Chromium.
+      const [{ launchAppleWebBrowser, collectAppleWebObservation }, { createAppleWebQueue }] = await Promise.all([
+        import("./_lib/apple-web.js"),
+        import("./_lib/apple-web-queue.js"),
+      ]);
+      webQueue = createAppleWebQueue({ launchBrowser: launchAppleWebBrowser, collectObservation: collectAppleWebObservation });
     }
 
     let completedKeywords = 0;
@@ -334,8 +335,8 @@ export async function runCollection(trigger, scope = "full") {
 
     await runBounded(trackedKeywords, 4, async (keyword) => {
       const linkedAppIds = activeLinks.filter((ak) => ak.keyword_id === keyword.id).map((ak) => ak.app_id);
-      const webPromise = webBrowser
-        ? collectAppleWebObservation(webBrowser, keyword.country, keyword.term)
+      const webPromise = webQueue
+        ? webQueue.observe(keyword.country, keyword.term)
         : Promise.resolve({ status: "failed", depth: 0, positions: {}, explicitAdCount: 0, checksum: null, error: "Chromium runtime was unavailable." });
       let itemSucceeded = false;
 
@@ -558,7 +559,7 @@ export async function runCollection(trigger, scope = "full") {
       .catch(() => undefined);
     return { ok: false, message: msg(error), runId: run.id };
   } finally {
-    await webBrowser?.close().catch(() => undefined);
+    await webQueue?.close().catch(() => undefined);
     collectionInFlight = false;
     await db.rpc("aso_release_collection_lock", { p_holder: lockHolder }).catch(() => undefined);
   }
