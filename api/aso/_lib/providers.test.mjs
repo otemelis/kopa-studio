@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { lookupApp, mapLookupResult, normalizeExactLocale } from "./providers.js";
+import { lookupApp, mapLookupResult, normalizeExactLocale, searchApps } from "./providers.js";
 
 test("exact App Store locale normalization accepts only language-region evidence", () => {
   assert.equal(normalizeExactLocale("en_us"), "en-US");
@@ -50,6 +50,18 @@ test("transient storefront lookup failures remain failures", async () => {
   globalThis.fetch = async () => new Response("Unavailable", { status: 503 });
   try {
     await assert.rejects(lookupApp("6785764991", "us"), /HTTP 503/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("keyword catalog fetches honor the per-attempt deadline", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (_url, { signal }) => new Promise((_, reject) => {
+    signal.addEventListener("abort", () => reject(signal.reason), { once: true });
+  });
+  try {
+    await assert.rejects(searchApps("deadline-test-unique", "de", 100, { maxRetries: 0, timeoutMs: 20 }), /timed out|timeout/i);
   } finally {
     globalThis.fetch = originalFetch;
   }

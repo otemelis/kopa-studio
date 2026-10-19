@@ -16,6 +16,7 @@ import { launchAppleWebBrowser, collectAppleWebObservation } from "./_lib/apple-
 import { syncRecentReviews } from "./_lib/appstore-reviews.js";
 import { hasSalesReportsConfig, salesSyncMessage, syncDailySalesMetrics } from "./_lib/appstore-sales.js";
 import { syncDiscoveryAnalytics } from "./_lib/appstore-analytics.js";
+import { runBounded } from "./_lib/bounded-pool.js";
 import {
   competitorWinsDedupeKey,
   draftToInsertRow,
@@ -309,8 +310,27 @@ export async function runCollection(trigger, scope = "full") {
       }
     }
 
-    for (const keyword of trackedKeywords) {
-      counters.processed++;
+    let completedKeywords = 0;
+    let checkpointTail = Promise.resolve();
+    let checkpointError = null;
+    const checkpointProgress = () => {
+      const progress = {
+        scope,
+        progress: { completed: completedKeywords, total: trackedKeywords.length },
+        itunes_catalog: { keywords: completedKeywords },
+        apple_web_search: { ...webSummary },
+      };
+      checkpointTail = checkpointTail.then(() => db.update(
+        "aso_sync_runs",
+        { ...counters, summary: progress },
+        `id=eq.${run.id}`,
+      )).catch((error) => {
+        checkpointError ??= error;
+      });
+      return checkpointTail;
+    };
+
+    await runBounded(trackedKeywords, 4, async (keyword) => {
       const linkedAppIds = activeLinks.filter((ak) => ak.keyword_id === keyword.id).map((ak) => ak.app_id);
       const webPromise = webBrowser
         ? collectAppleWebObservation(webBrowser, keyword.country, keyword.term)
@@ -318,7 +338,7 @@ export async function runCollection(trigger, scope = "full") {
       let itemSucceeded = false;
 
       try {
-        const results = await searchApps(keyword.term, keyword.country, 100);
+        const results = await searchApps(keyword.term, keyword.country, 100, { maxRetries: 1, timeoutMs: 15_000 });
         const depth = results.length;
         const checksum = String(results.reduce((h, r) => (h * 31 + (Number(r.store_app_id) % 997)) % 1000000007, 7));
         await db.upsert("aso_keyword_search_results", [{
@@ -417,13 +437,18 @@ export async function runCollection(trigger, scope = "full") {
       }
 
       if (itemSucceeded) counters.succeeded++;
-    }
+      counters.processed++;
+      completedKeywords++;
+      await checkpointProgress();
+    });
+
+    if (checkpointError) errors.push({ item: "ranking_progress", message: msg(checkpointError) });
 
     if (scope === "rankings") {
       const status = counters.failed === 0 && counters.warnings === 0 ? "ok" : counters.succeeded > 0 || counters.warnings > 0 ? "partial" : "failed";
       await db.update("aso_sync_runs", {
         finished_at: new Date().toISOString(), status, ...counters,
-        summary: { scope, apps: apps.length, competitors: competitors.length, keywords: trackedKeywords.length, keywords_total: allTrackedKeywords.length, itunes_catalog: trackedKeywords.length, apple_web_search: webSummary },
+        summary: { scope, apps: apps.length, competitors: competitors.length, keywords: trackedKeywords.length, keywords_total: allTrackedKeywords.length, progress: { completed: completedKeywords, total: trackedKeywords.length }, itunes_catalog: trackedKeywords.length, apple_web_search: webSummary },
       }, `id=eq.${run.id}`);
       if (errors.length) await db.insert("aso_sync_errors", errors.slice(0, 50).map((error) => ({ run_id: run.id, ...error })));
       return { ok: status !== "failed", message: `Rankings-only collection ${status}: ${counters.succeeded}/${counters.processed} terms had an observed source result; iTunes ${trackedKeywords.length}, Apple web ${webSummary.succeeded}/${trackedKeywords.length}; ${trackedKeywords.length}/${allTrackedKeywords.length} terms in this sweep.`, runId: run.id };
