@@ -280,7 +280,7 @@ export async function runCollection(trigger, scope = "full") {
     // The Apple queue is deliberately rate-limited (~1 request/3.2s). The
     // current Vercel Hobby project has a 60s function limit, so each scheduled
     // slice stays small enough to leave time for browser startup and database
-    // writes. Five ranking runs cover up to 60 keywords/day; larger sets rotate
+    // writes. Five ranking runs cover up to 50 keywords/day; larger sets rotate
     // fairly rather than being presented as fully refreshed every day.
     const capturedOn = toDateStr(new Date());
     const activeLinks = appKeywords.filter((ak) => ak.status === "active");
@@ -295,7 +295,7 @@ export async function runCollection(trigger, scope = "full") {
       if (!lastCollectedAt.has(r.keyword_id)) lastCollectedAt.set(r.keyword_id, r.captured_at);
     }
 
-    const MAX_KEYWORDS_PER_RUN = 12; // Keep each slice within Hobby's 60s function limit; five daily slots cover 60 keywords.
+    const MAX_KEYWORDS_PER_RUN = 10; // Keep each slice below the proxy cron function limit; five daily slots cover 50 keywords.
     const trackedKeywords = scope === "maintenance" ? [] : [...allTrackedKeywords]
       .sort((a, b) => (lastCollectedAt.get(a.id) ?? "").localeCompare(lastCollectedAt.get(b.id) ?? "") || a.country.localeCompare(b.country) || a.term.localeCompare(b.term) || a.id.localeCompare(b.id))
       .slice(0, MAX_KEYWORDS_PER_RUN);
