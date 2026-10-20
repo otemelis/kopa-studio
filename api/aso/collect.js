@@ -33,6 +33,11 @@ import { requireAdmin, serviceClient } from "./_lib/supabase.js";
 
 let collectionInFlight = false;
 
+// Five daily rankings cron entries × 48 keyword records = 240 daily slots.
+// This covers the current 231 active app-keyword records with nine slots of
+// headroom while preserving the four-hour spacing between scheduled runs.
+export const KEYWORDS_PER_RANKING_RUN = 48;
+
 export default async function handler(request, response) {
   response.setHeader("Cache-Control", "no-store");
 
@@ -304,10 +309,9 @@ export async function runCollection(trigger, scope = "full") {
       if (!lastCollectedAt.has(r.keyword_id)) lastCollectedAt.set(r.keyword_id, r.captured_at);
     }
 
-    const MAX_KEYWORDS_PER_RUN = 10;
     const trackedKeywords = scope === "maintenance" ? [] : [...allTrackedKeywords]
       .sort((a, b) => (lastCollectedAt.get(a.id) ?? "").localeCompare(lastCollectedAt.get(b.id) ?? "") || a.country.localeCompare(b.country) || a.term.localeCompare(b.term) || a.id.localeCompare(b.id))
-      .slice(0, MAX_KEYWORDS_PER_RUN);
+      .slice(0, KEYWORDS_PER_RANKING_RUN);
 
     const webSummary = { succeeded: 0, failed: 0, explicit_ads: 0, stored_app_ids: 0 };
     let itunesStoredAppIds = 0;

@@ -24,6 +24,12 @@ The preceding run (`9906856a-8c83-4660-b054-e3632332bf68`) began at 00:36:41 UTC
 - Bound browser launches based on the number of terms and one retry per term.
 - Move stale-run cleanup and new run-record creation under the collector's `try/finally`; release the holder-scoped database lock on every caught path, including ambiguous lock-RPC responses.
 
+## Daily keyword coverage
+
+The live database has 231 active app-keyword records: 151 InnerType, 40 PASSPORT, and 40 POIS, with no duplicate keyword IDs shared across apps. The earlier ten-keyword cap could process only 50 records across the five daily ranking cron entries. The cap is now 48 per run, giving 240 scheduled slots per day and nine slots of headroom. The least-recently-collected ordering makes successive slots rotate through the pool. Each run remains bounded; if upstream response time exhausts the web-collection budget, those observations are explicitly failed/deferred and are picked up by a later slot rather than counted as successful.
+
+The Apple web queue budget is 240 seconds within the route's 300-second platform limit, leaving 60 seconds for the independent iTunes/database work and finalization. A capacity regression test ties the five configured ranking jobs and the 231-record portfolio to the 240-slot daily target.
+
 ## Validation
 
 Synthetic tests cover a ten-keyword batch, repeated browser closures, a hung Playwright call, batch deadline expiry, browser startup failure, database run-record failure, ambiguous lock-acquisition response and subsequent warm-instance recovery. These tests use fake browsers and a fake Supabase REST response; they do not create production rows.

@@ -1,7 +1,9 @@
 const CLOSED_BROWSER = /target page, context or browser has been closed|browser has been closed/i;
 
 const DEFAULT_OBSERVATION_TIMEOUT_MS = 25_000;
-const DEFAULT_BATCH_TIMEOUT_MS = 210_000;
+// The rankings-only function has a 300s platform limit. Leave 60s for iTunes
+// persistence, final run/error writes, and lock release after the web queue.
+const DEFAULT_BATCH_TIMEOUT_MS = 240_000;
 const DEFAULT_CLOSE_TIMEOUT_MS = 1_000;
 
 function failed(error) {

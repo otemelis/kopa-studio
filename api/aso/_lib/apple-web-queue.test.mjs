@@ -71,6 +71,25 @@ test("ten-keyword batches keep collecting after repeated browser crashes instead
   }
 });
 
+test("a full 48-keyword scheduled batch is not limited by the old batch-wide restart cap", async () => {
+  let launches = 0;
+  const terms = Array.from({ length: 48 }, (_, index) => `term-${index + 1}`);
+  const queue = createAppleWebQueue({
+    maxBrowserLaunches: 97,
+    launchBrowser: async () => { launches++; return fakeBrowser(); },
+    collectObservation: async (_browser, _country, term) => partial(term),
+  });
+
+  try {
+    const results = await Promise.all(terms.map((term) => queue.observe("de", term)));
+    assert.equal(results.length, 48);
+    assert.ok(results.every((result) => result.status === "partial"));
+    assert.equal(launches, 48);
+  } finally {
+    await queue.close();
+  }
+});
+
 test("a browser-closure failure retries only that keyword and the following keywords continue", async () => {
   let launches = 0;
   let firstTermCalls = 0;
