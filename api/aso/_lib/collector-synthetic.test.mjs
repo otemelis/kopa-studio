@@ -84,3 +84,84 @@ test("rankings cron endpoint rejects missing and incorrect secrets without start
     else process.env.CRON_SECRET = oldCronSecret;
   }
 });
+
+test("a run-record failure always releases the database lock and the warm instance can recover", async () => {
+  const oldUrl = process.env.SUPABASE_URL;
+  const oldKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const oldCronSecret = process.env.CRON_SECRET;
+  const oldFetch = globalThis.fetch;
+  const calls = [];
+  let runInsertAttempts = 0;
+  process.env.SUPABASE_URL = "https://synthetic-db.example.test";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "synthetic-only";
+  process.env.CRON_SECRET = "synthetic-cron-only";
+
+  globalThis.fetch = async (input, init = {}) => {
+    const url = new URL(input);
+    const table = url.pathname.split("/rest/v1/")[1];
+    calls.push({ table, method: init.method });
+    if (table === "rpc/aso_try_acquire_collection_lock") return Response.json(true);
+    if (table === "aso_sync_runs" && init.method === "POST") {
+      runInsertAttempts++;
+      if (runInsertAttempts === 1) return new Response("synthetic insert failure", { status: 500 });
+      return Response.json([{ id: "recovered-run" }]);
+    }
+    return Response.json([]);
+  };
+
+  try {
+    const first = responseStub();
+    await rankingsHandler({ method: "GET", headers: { authorization: "Bearer synthetic-cron-only" }, query: {} }, first);
+    assert.equal(first.statusCode, 500);
+    assert.equal(first.body.runId, null);
+    assert.ok(calls.some((call) => call.table === "rpc/aso_release_collection_lock"), "failed startup releases the claimed lock");
+
+    const second = responseStub();
+    await rankingsHandler({ method: "GET", headers: { authorization: "Bearer synthetic-cron-only" }, query: {} }, second);
+    assert.equal(second.statusCode, 200);
+    assert.equal(second.body.runId, "recovered-run");
+  } finally {
+    globalThis.fetch = oldFetch;
+    if (oldUrl === undefined) delete process.env.SUPABASE_URL;
+    else process.env.SUPABASE_URL = oldUrl;
+    if (oldKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+    else process.env.SUPABASE_SERVICE_ROLE_KEY = oldKey;
+    if (oldCronSecret === undefined) delete process.env.CRON_SECRET;
+    else process.env.CRON_SECRET = oldCronSecret;
+  }
+});
+
+test("an ambiguous lock-RPC response triggers a holder-scoped release attempt", async () => {
+  const oldUrl = process.env.SUPABASE_URL;
+  const oldKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const oldCronSecret = process.env.CRON_SECRET;
+  const oldFetch = globalThis.fetch;
+  const calls = [];
+  process.env.SUPABASE_URL = "https://synthetic-db.example.test";
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "synthetic-only";
+  process.env.CRON_SECRET = "synthetic-cron-only";
+
+  globalThis.fetch = async (input) => {
+    const url = new URL(input);
+    const table = url.pathname.split("/rest/v1/")[1];
+    calls.push(table);
+    if (table === "rpc/aso_try_acquire_collection_lock") return new Response("synthetic lost response", { status: 500 });
+    return Response.json([]);
+  };
+
+  try {
+    const response = responseStub();
+    await rankingsHandler({ method: "GET", headers: { authorization: "Bearer synthetic-cron-only" }, query: {} }, response);
+    assert.equal(response.statusCode, 500);
+    assert.ok(calls.includes("rpc/aso_release_collection_lock"), "the holder-scoped release is attempted after an ambiguous acquire response");
+    assert.ok(!calls.includes("aso_sync_runs"), "no run is started without a confirmed lock acquisition");
+  } finally {
+    globalThis.fetch = oldFetch;
+    if (oldUrl === undefined) delete process.env.SUPABASE_URL;
+    else process.env.SUPABASE_URL = oldUrl;
+    if (oldKey === undefined) delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+    else process.env.SUPABASE_SERVICE_ROLE_KEY = oldKey;
+    if (oldCronSecret === undefined) delete process.env.CRON_SECRET;
+    else process.env.CRON_SECRET = oldCronSecret;
+  }
+});
