@@ -1,0 +1,36 @@
+[
+  {
+    "apple_campaign_id": "2144366771",
+    "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+    "metric_date": "2026-10-11",
+    "country": "all",
+    "spend": "0",
+    "currency": "EUR",
+    "impressions": 13,
+    "taps": 0,
+    "installs": 0,
+    "new_downloads": 0,
+    "redownloads": 0,
+    "source_synced_at": "2026-10-12 17:21:58.487+00",
+    "raw_total_installs": 0,
+    "raw_tap_installs": 0,
+    "raw_view_installs": 0
+  },
+  {
+    "apple_campaign_id": "2144366771",
+    "name": "KOPA_InnerType_UK_Post_Metadata_2026-08",
+    "metric_date": "2026-10-12",
+    "country": "all",
+    "spend": "0",
+    "currency": "EUR",
+    "impressions": 4,
+    "taps": 0,
+    "installs": 0,
+    "new_downloads": 0,
+    "redownloads": 0,
+    "source_synced_at": "2026-10-12 17:21:58.487+00",
+    "raw_total_installs": 0,
+    "raw_tap_installs": 0,
+    "raw_view_installs": 0
+  }
+]

@@ -1,0 +1,11 @@
+✔ DIAGNOSTIC: schema error is silently indistinguishable from successful empty results (1.251875ms)
+✔ DIAGNOSTIC: filtering invalid IDs renumbers the remaining result slots (0.153084ms)
+✔ DIAGNOSTIC: repeated request returns cached body, not a new observation (1.07725ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 84.47625

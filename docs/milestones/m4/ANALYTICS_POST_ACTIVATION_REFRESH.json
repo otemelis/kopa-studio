@@ -1,0 +1,22 @@
+{
+  "manifest": {
+    "schema_version": 1,
+    "csv": "daily-cd72a0c84418fcb8ee4f395dd9e9a121eaec021e29f90ba8344304303ca4b870.csv",
+    "sha256": "cd72a0c84418fcb8ee4f395dd9e9a121eaec021e29f90ba8344304303ca4b870",
+    "period_start": "2026-09-16",
+    "period_end": "2026-10-13",
+    "last_successful_refresh_utc": "2026-10-17T12:38:30.594745+00:00",
+    "run": "20261017T123714Z",
+    "validation": "independent SQL, raw checksums, daily-to-weekly Sales controls",
+    "historical_snapshot": true
+  },
+  "rows": 2184,
+  "series_reconciled": 78,
+  "independent_sql_values": 1204,
+  "weekly_equals_daily": true,
+  "weekly_sales_control_groups": 12,
+  "pending_analytics_cells": 420,
+  "pending_cells_all_blank": true,
+  "tests_passed": 17,
+  "configuration_failure_tests_passed": true
+}

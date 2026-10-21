@@ -1,5 +1,7 @@
 # Kopa ASO Product UX Plan
 
+> **Superseded. Do not use as the active implementation sequence.** See [`../KOPA_ACTIVE_ROADMAP.md`](../KOPA_ACTIVE_ROADMAP.md).
+
 ## Product Goal
 
 Kopa should feel like a weekly ASO operating system for a small studio: clear scope, trustworthy evidence, and a short path from signal to action.

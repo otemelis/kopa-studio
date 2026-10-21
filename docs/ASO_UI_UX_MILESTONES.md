@@ -1,5 +1,7 @@
 # Kopa ASO Console UI/UX Milestones
 
+> **Superseded. Do not use as the active implementation sequence.** See [`../KOPA_ACTIVE_ROADMAP.md`](../KOPA_ACTIVE_ROADMAP.md).
+
 ## Product Principle
 
 Kopa is an operating console for a small app studio, not a generic analytics dashboard. Every view should answer one of three questions quickly:

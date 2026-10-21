@@ -1,0 +1,6 @@
+// Bounded manual official-CSV publication. No API, database writes or daily allocation.
+import fs from'node:fs';import crypto from'node:crypto';import{validate}from'./validate.mjs';
+const files=process.argv.slice(2);if(!files.length)throw Error('Supply original Apple Ads Campaigns CSV files');const snapshots=files.map(file=>{const bytes=fs.readFileSync(file);return{...validate(bytes.toString('utf8')),source_sha256:crypto.createHash('sha256').update(bytes).digest('hex')};});
+for(const s of snapshots)if(s.currency!=='EUR'||s.timezone!=='UTC'||s.campaigns.some(c=>c.app!=='InnerType Personality Test'))throw Error('This checkpoint publishes validated InnerType EUR/UTC exports only; review other scope explicitly');
+const keys=snapshots.map(x=>[x.period_start,x.period_end,x.currency,x.timezone].join('|'));if(new Set(keys).size!==keys.length)throw Error('Duplicate reporting window');
+const output=new URL('../../reporting/portfolio/apple-ads-snapshot.json',import.meta.url),temp=new URL(output.href+'.tmp');fs.writeFileSync(temp,JSON.stringify({mode:'historical_official_csv',imported_at:new Date().toISOString(),snapshots},null,2)+'\n');fs.renameSync(temp,output);console.log('Published '+snapshots.length+' validated official CSV windows; source files unchanged.');

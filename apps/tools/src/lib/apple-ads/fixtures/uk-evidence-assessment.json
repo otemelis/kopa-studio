@@ -1,0 +1,35 @@
+{
+  "appId": "app-innertype",
+  "appName": "InnerType Personality Test",
+  "campaignId": "campaign-uk",
+  "campaignName": "KOPA_InnerType_UK_Research_Seed_2026-07",
+  "storefront": "GB",
+  "campaignStatus": "ENABLED",
+  "evidenceWindow": { "start": "2026-07-20", "end": "2026-07-27" },
+  "generatedAt": "2026-07-28T12:00:00.000Z",
+  "dataFreshness": "fresh",
+  "dataCompleteness": "complete",
+  "totals": { "impressions": 388, "taps": 4, "installs": 0, "spend": 1.9745, "currency": "EUR" },
+  "adGroups": [
+    { "id": "ad-group-exact", "searchMatchEnabled": false, "status": "ENABLED", "isDeleted": false },
+    { "id": "ad-group-broad", "searchMatchEnabled": false, "status": "ENABLED", "isDeleted": false },
+    { "id": "ad-group-search-match", "searchMatchEnabled": true, "status": "ENABLED", "isDeleted": false }
+  ],
+  "keywords": [
+    { "id": "keyword-personality-exact", "adGroupId": "ad-group-exact", "keywordText": "personality test", "matchType": "EXACT", "status": "ACTIVE", "isDeleted": false },
+    { "id": "keyword-relationship-exact", "adGroupId": "ad-group-exact", "keywordText": "relationship test", "matchType": "EXACT", "status": "ACTIVE", "isDeleted": false },
+    { "id": "keyword-personality-broad", "adGroupId": "ad-group-broad", "keywordText": "personality test", "matchType": "BROAD", "status": "ACTIVE", "isDeleted": false },
+    { "id": "keyword-relationship-broad", "adGroupId": "ad-group-broad", "keywordText": "relationship test", "matchType": "BROAD", "status": "ACTIVE", "isDeleted": false }
+  ],
+  "negativeKeywords": [
+    { "adGroupId": "ad-group-broad", "keywordText": "personality test", "matchType": "EXACT", "status": "ACTIVE", "isDeleted": false }
+  ],
+  "searchTerms": [
+    { "searchTerm": "lovense", "sourceKeywordText": "relationship test", "matchSource": "TARGETED", "adGroupId": null, "keywordId": null, "impressions": 52, "taps": 0, "installs": 0, "spend": 0 },
+    { "searchTerm": "lovense remote", "sourceKeywordText": "relationship test", "matchSource": "TARGETED", "adGroupId": null, "keywordId": null, "impressions": 19, "taps": 0, "installs": 0, "spend": 0 },
+    { "searchTerm": "y not", "sourceKeywordText": null, "matchSource": "AUTO", "adGroupId": null, "keywordId": null, "impressions": 15, "taps": 1, "installs": 0, "spend": 0.5747 },
+    { "searchTerm": "lovense", "sourceKeywordText": "relationship test", "matchSource": "TARGETED", "adGroupId": null, "keywordId": null, "impressions": 151, "taps": 0, "installs": 0, "spend": 0 },
+    { "searchTerm": "lovense remote", "sourceKeywordText": "relationship test", "matchSource": "TARGETED", "adGroupId": null, "keywordId": null, "impressions": 49, "taps": 0, "installs": 0, "spend": 0 },
+    { "searchTerm": "y not", "sourceKeywordText": null, "matchSource": "AUTO", "adGroupId": null, "keywordId": null, "impressions": 15, "taps": 1, "installs": 0, "spend": 0.5747 }
+  ]
+}

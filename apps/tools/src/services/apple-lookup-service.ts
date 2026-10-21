@@ -1,0 +1,10 @@
+type StoreApp = { storeAppId: string; bundleId: string | null; name: string; developer: string | null; description: string | null; iconUrl: string | null; category: string | null; currentVersion: string | null; releaseNotes: string | null; rating: number | null; ratingCount: number | null; price: number | null; currency: string | null; storeUrl: string | null; languages: string[] | null; screenshotUrls: string[] | null; lastStoreUpdateAt: string | null };
+
+function appId(input: string) { const match = input.match(/(?:id)?(\d{5,})/); if (!match) throw new Error("Enter an App Store URL or numeric app id."); return match[1]; }
+export async function lookupAppleApp(input: string, country: string): Promise<StoreApp> {
+  const response = await fetch(`https://itunes.apple.com/lookup?id=${encodeURIComponent(appId(input))}&country=${encodeURIComponent(country)}&entity=software`, { headers: { Accept: "application/json", "User-Agent": "KopaASOIntelligence/1.0" }, cache: "no-store" });
+  if (!response.ok) throw new Error("Apple lookup is unavailable. Try again shortly.");
+  const result = (await response.json()).results?.[0];
+  if (!result?.trackId) throw new Error("No app was found for that id in this storefront.");
+  return { storeAppId: String(result.trackId), bundleId: result.bundleId ?? null, name: result.trackName ?? "", developer: result.artistName ?? null, description: result.description ?? null, iconUrl: result.artworkUrl512 ?? result.artworkUrl100 ?? null, category: result.primaryGenreName ?? null, currentVersion: result.version ?? null, releaseNotes: result.releaseNotes ?? null, rating: typeof result.averageUserRating === "number" ? Math.round(result.averageUserRating * 100) / 100 : null, ratingCount: result.userRatingCount ?? null, price: typeof result.price === "number" ? result.price : null, currency: result.currency ?? null, storeUrl: result.trackViewUrl ?? null, languages: Array.isArray(result.languageCodesISO2A) ? result.languageCodesISO2A : null, screenshotUrls: Array.isArray(result.screenshotUrls) ? result.screenshotUrls : null, lastStoreUpdateAt: result.currentVersionReleaseDate ?? null };
+}

@@ -1,0 +1,20 @@
+/* Geometry and ticker refinements for the 2048 Run Merge launch page. */
+.number-cube{
+  width:230px;
+  height:220px;
+  padding:0;
+  transform:rotate(-6deg);
+  filter:drop-shadow(15px 18px 7px rgba(29,27,27,.17));
+}
+.number-cube svg{width:100%;height:100%;overflow:visible}
+.cube-top-face{fill:#f8d74e;stroke:#e4b81d;stroke-width:2}
+.cube-left-face{fill:#edc22e;stroke:#d7a813;stroke-width:2}
+.cube-right-face{fill:#c99d10;stroke:#ad8100;stroke-width:2}
+.cube-label{fill:#fff;font:800 29px Outfit,Arial,sans-serif;letter-spacing:-1.5px}
+.marquee div{
+  width:max(100%,1800px);
+  display:flex;
+  justify-content:space-between;
+  gap:30px;
+  animation-duration:30s;
+}

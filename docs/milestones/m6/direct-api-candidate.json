@@ -1,0 +1,13 @@
+{
+  "basis": "retained previously verified production source; current Vercel metadata read returns403, baseline recheck required before deployment",
+  "changedFiles": [
+    "apps/tools/src/app/reports/apple-ads/route.test.ts",
+    "apps/tools/src/app/reports/apple-ads/view.generated.ts",
+    "apps/tools/src/app/reports/apple-ads/route.ts"
+  ],
+  "sha256": {
+    "apps/tools/src/app/reports/apple-ads/route.test.ts": "5453c1d8fc6ed68817f6e00b57fd28adaa5543bc2b482749a33137dee4f1f8e3",
+    "apps/tools/src/app/reports/apple-ads/view.generated.ts": "aa48695ca6e411467cf89065228d7b6a2348b0281eb93372c0d5bd3ce3dfdbb7",
+    "apps/tools/src/app/reports/apple-ads/route.ts": "02118f1a51cc211dd842c97d4ca7900aa00098df21b4b9bd8e8c2d78a604b3e1"
+  }
+}

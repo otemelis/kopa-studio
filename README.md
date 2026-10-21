@@ -1,4 +1,16 @@
-# Lot Escape MVP
+> **Current development direction:** [approved milestone roadmap](docs/KOPA_ROADMAP.md), [short status](STATUS.md). Canonical accepted portfolio: `npm run portfolio` → http://127.0.0.1:4340/. Earlier Signal/product prototypes are archived experiments, not the current reporting baseline.
+
+# Kopa Studio
+
+This repository currently hosts the public Kopa Studio website, its legacy hidden studio console, and a parking-escape prototype. The new, independent internal ASO migration application lives in [`apps/tools`](apps/tools).
+
+See [MIGRATION_STATUS.md](MIGRATION_STATUS.md) for the current ASO migration handover, and [DEPLOYMENT.md](DEPLOYMENT.md) for the separate `tools.kopa.studio` deployment procedure.
+
+## Apple Ads Keyword Lab
+
+The internal Apple Ads Lab lives inside `apps/tools` at `/apple-ads-lab`. It is a read-only Apple Ads intelligence workspace with API v5 account import, campaign structure, reporting, search-term evidence, attribution intake and deterministic recommendation generation. Read [APPLE_ADS_LAB_STATUS.md](APPLE_ADS_LAB_STATUS.md) before continuing work; no campaign-mutation capability is present.
+
+## Parking escape prototype
 
 A small mobile-first parking escape puzzle prototype. It is dependency-free and runs in the browser, with gameplay split into level data, movement rules, rendering, and UI.
 

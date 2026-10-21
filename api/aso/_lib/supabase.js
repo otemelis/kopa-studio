@@ -8,6 +8,10 @@ function env(name) {
   return v;
 }
 
+// Bound every database round trip so a stalled PostgREST response cannot
+// leave a serverless collection marked "running" until the platform kills it.
+const DB_REQUEST_TIMEOUT_MS = 12_000;
+
 /** First defined env var among several accepted names — mirrors the same
  * fallback chain api/config.js already uses, since this project's Vercel
  * env vars are named NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -26,13 +30,17 @@ export function supabaseUrl() {
 }
 
 /** Service-role REST client — bypasses RLS. Server-side only, never expose. */
-export function serviceClient() {
+export function serviceClient({ requestTimeoutMs = DB_REQUEST_TIMEOUT_MS } = {}) {
   const url = supabaseUrl();
   const key = env("SUPABASE_SERVICE_ROLE_KEY");
   const headers = { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" };
 
   async function request(path, init) {
-    const res = await fetch(`${url}/rest/v1/${path}`, { ...init, headers: { ...headers, ...(init?.headers ?? {}) } });
+    const res = await fetch(`${url}/rest/v1/${path}`, {
+      ...init,
+      signal: init?.signal ?? AbortSignal.timeout(requestTimeoutMs),
+      headers: { ...headers, ...(init?.headers ?? {}) },
+    });
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       throw new Error(`Supabase ${res.status} on ${path}: ${text.slice(0, 300)}`);
@@ -86,6 +94,7 @@ export async function requireAdmin(authorizationHeader) {
   const anonKey = envAny(["SUPABASE_ANON_KEY", "NEXT_PUBLIC_SUPABASE_ANON_KEY", "VITE_SUPABASE_ANON_KEY"]);
   const userRes = await fetch(`${url}/auth/v1/user`, {
     headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
+    signal: AbortSignal.timeout(DB_REQUEST_TIMEOUT_MS),
   });
   if (!userRes.ok) throw Object.assign(new Error("Invalid or expired session."), { status: 401 });
   const user = await userRes.json();

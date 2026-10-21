@@ -1,0 +1,15 @@
+{
+  "checked_at_utc": "2026-10-17T13:00:30.105Z",
+  "endpoint": "http://127.0.0.1:4340/change-log.json",
+  "http_status": 200,
+  "cache_control": "no-store",
+  "content_type": "application/json",
+  "file_bytes_match": true,
+  "sha256": "8cf25270ac492a22df4b5e1317ac59b6dc7217daf2ea598e65b1bf348390b669",
+  "entries": 5,
+  "offline_regression_tests": 4,
+  "http_regression": "passed; temporary isolated server, unavailable SQL fails closed, evidence/private paths inaccessible",
+  "source_basis": "retained official deployment, internal-build and Analytics request responses; no fresh provider queries",
+  "ui_or_server_implementation_changed": false,
+  "production_mutations": false
+}

@@ -1,0 +1,28 @@
+{
+  "source_sha256": "4e01ca06e3baa5e2e34a184ff8a397d599d853c31599b6a6ed8635a167b0e5e3",
+  "source_exact_match": true,
+  "version": 3,
+  "verify_jwt": true,
+  "probes": [
+    {
+      "authenticated": false,
+      "status": 401,
+      "body": "{\"code\":\"UNAUTHORIZED_NO_AUTH_HEADER\",\"message\":\"Missing authorization header\"}"
+    },
+    {
+      "authenticated": true,
+      "status": 400,
+      "body": "{\"ok\":false,\"error\":\"days\"}"
+    }
+  ],
+  "migration_version": "20261016065705",
+  "aggregate_rows_after": 0,
+  "receipt_rows_after": 0,
+  "original_functions_acls_views_policies_unchanged": true,
+  "hosted_accepted_fixture_events": 0,
+  "receipt_rls": true,
+  "rpc_security_invoker": true,
+  "rpc_and_receipts_service_only": true,
+  "previous_simulator_tests_passed": 22,
+  "app_shipped": false
+}

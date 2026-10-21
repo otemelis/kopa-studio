@@ -1,0 +1,26 @@
+{
+  "verifiedAt": "2026-10-15T07:13:09.413Z",
+  "scope": {
+    "app": "innertype",
+    "start": "2026-09-17",
+    "end": "2026-10-14",
+    "country": "DE",
+    "version": "ALL",
+    "language": "ALL",
+    "source": "ALL",
+    "assessment": "ALL",
+    "funnel": "assessment",
+    "journey": "assessment_started",
+    "tab": "quality",
+    "query": "purchase"
+  },
+  "metrics": {
+    "events": 249,
+    "sessions": 7,
+    "purchaseSignals": 0,
+    "observedDays": 4
+  },
+  "exactApiReportMatch": true,
+  "rawIdentityIdsPresent": false,
+  "passed": true
+}

@@ -52,6 +52,25 @@ function number(value) {
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
+function date(value) {
+  const raw = clean(value);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+
+  const slash = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (slash) {
+    const [, month, day, year] = slash;
+    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  }
+
+  const yearFirstSlash = raw.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+  if (yearFirstSlash) {
+    const [, year, month, day] = yearFirstSlash;
+    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  }
+
+  return "";
+}
+
 /**
  * Apple's Summary Sales report is tab-separated. This parser intentionally
  * keeps only app-level rows and the fields this console can represent.
@@ -68,7 +87,11 @@ export function parseDailySalesSummary(text) {
     const row = Object.fromEntries(headers.map((header, index) => [header, clean(values[index])]));
     return {
       storeAppId: row["Apple Identifier"],
-      date: row["End Date"],
+      title: row.Title || null,
+      sku: row.SKU || null,
+      productTypeIdentifier: row["Product Type Identifier"] || null,
+      date: date(row["End Date"]),
+      rawDate: row["End Date"],
       country: row["Country Code"].toLowerCase(),
       downloads: number(row.Units),
       proceeds: number(row["Developer Proceeds"]),
@@ -79,7 +102,19 @@ export function parseDailySalesSummary(text) {
 
 export function salesSyncMessage(result) {
   if (result.noData || result.reportRows === 0) return "Apple returned no Summary Sales rows for the latest available day.";
-  if (result.imported === 0) return `Apple returned ${result.reportRows} sales row(s), but none match Kopa's tracked apps.`;
+  if (result.imported === 0) {
+    if (result.invalidRows && !result.unmatchedSamples?.length) {
+      const invalid = result.invalidSamples?.length
+        ? ` Sample rows: ${result.invalidSamples.map((row) => [row.storeAppId, row.title, row.rawDate ? `date ${row.rawDate}` : null, row.country ? `country ${row.country}` : "missing country"].filter(Boolean).join(" · ")).join("; ")}.`
+        : "";
+      return `Apple returned ${result.reportRows} sales row(s) for tracked apps, but their date or country fields were not importable.${invalid}`;
+    }
+    const unmatched = result.unmatchedSamples?.length
+      ? ` Apple report app IDs: ${result.unmatchedSamples.map((row) => [row.storeAppId, row.title].filter(Boolean).join(" · ")).join("; ")}.`
+      : "";
+    const tracked = result.trackedStoreAppIds?.length ? ` Kopa currently tracks: ${result.trackedStoreAppIds.join(", ")}.` : "";
+    return `Apple returned ${result.reportRows} sales row(s), but none match Kopa's tracked apps.${unmatched}${tracked}`;
+  }
   return `Sales sync imported ${result.imported} country row(s) for ${result.dates.join(", ")}.`;
 }
 
@@ -96,12 +131,21 @@ export async function syncDailySalesMetrics(db, ownedApps) {
   const appByStoreId = new Map(ownedApps.map((app) => [String(app.store_app_id), app]));
   const aggregates = new Map();
   let unmatchedRows = 0;
+  let invalidRows = 0;
+  const unmatchedSamples = [];
+  const invalidSamples = [];
 
   const reportRows = parseDailySalesSummary(report);
   for (const row of reportRows) {
     const app = appByStoreId.get(row.storeAppId);
-    if (!app || !/^\d{4}-\d{2}-\d{2}$/.test(row.date) || !row.country) {
+    if (!app) {
       unmatchedRows++;
+      if (unmatchedSamples.length < 5) unmatchedSamples.push({ storeAppId: row.storeAppId || "missing", title: row.title, sku: row.sku, productTypeIdentifier: row.productTypeIdentifier });
+      continue;
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(row.date) || !row.country) {
+      invalidRows++;
+      if (invalidSamples.length < 5) invalidSamples.push({ storeAppId: row.storeAppId || "missing", title: row.title, rawDate: row.rawDate, country: row.country });
       continue;
     }
     const key = `${app.id}:${row.date}:${row.country}`;
@@ -126,5 +170,5 @@ export async function syncDailySalesMetrics(db, ownedApps) {
   }));
 
   await db.upsert("aso_daily_metrics", rows, "app_id,date,country,source");
-  return { imported: rows.length, reportRows: reportRows.length, unmatchedRows, dates: [...new Set(rows.map((row) => row.date))] };
+  return { imported: rows.length, reportRows: reportRows.length, unmatchedRows, invalidRows, unmatchedSamples, invalidSamples, trackedStoreAppIds: [...appByStoreId.keys()], dates: [...new Set(rows.map((row) => row.date))] };
 }

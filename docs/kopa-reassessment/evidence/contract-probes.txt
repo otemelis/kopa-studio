@@ -1,0 +1,7 @@
+Synthetic contract probe only; not production observations.
+Malformed search response returns []
+Undated seven-day report row becomes [{"date":"2026-10-14","country":"all","campaignId":null,"adGroupId":null,"keywordId":null,"searchTerm":"contract-probe","sourceKeywordText":null,"matchSource":null,"impressions":7,"taps":2,"installs":0,"spend":0,"currency":null,"rawPayload":{"metadata":{"searchTermText":"contract-probe"},"total":{"impressions":7,"taps":2,"installs":0}}}]
+Per-unit proceeds parser [{"storeAppId":"123456789","title":null,"sku":null,"productTypeIdentifier":"1F","date":"2026-10-13","rawDate":"10/13/2026","country":"us","downloads":3,"proceeds":1.5,"proceedsCurrency":"USD"}]
+Currency-free summarizer accepts untyped mixed inputs {"impressions":2,"taps":2,"installs":2,"spend":5,"tapThroughRate":1,"conversionRate":1,"averageCpt":2.5,"averageCpa":2.5}
+Overlapping instances with older 10 / newer 12 => stored count 22 ; Apple replacement contract expects 12
+Three units at 1.50 per unit => stored proceeds 1.5 ; per-unit contract expects 4.50

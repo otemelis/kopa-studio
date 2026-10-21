@@ -19,9 +19,104 @@ import {
 } from "./calc.js";
 
 export const SUPPRESSION_DAYS = 14;
+export const METADATA_MISMATCH_PORTFOLIO_SCOPE = "portfolio";
+
+export function metadataMismatchDedupeKey(appId, country, locale = null) {
+  return `metadata_mismatch:${appId}:${country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE}:${normalizedLocale(locale) || "unknown"}`;
+}
+
+export function competitorWinsDedupeKey(appId, competitorId, country) {
+  return `competitor_wins_high_priority_terms:${appId}:${competitorId}:${country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE}`;
+}
+
+export function metadataEvidenceScopeKey(appId, country, locale = null) {
+  return `${appId}:${normalizedCountry(country) || METADATA_MISMATCH_PORTFOLIO_SCOPE}:${normalizedLocale(locale) || "unknown"}`;
+}
 
 function ev(label, value, source) {
   return { label, value, source };
+}
+
+const METADATA_CHANGE_EVENT_TOLERANCE_MS = 10 * 60 * 1000;
+
+function normalizedCountry(value) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
+function normalizedLocale(value) {
+  const raw = String(value ?? "").trim().replaceAll("_", "-");
+  const match = raw.match(/^([A-Za-z]{2,3})-([A-Za-z]{2})$/);
+  return match ? `${match[1].toLowerCase()}-${match[2].toUpperCase()}` : "";
+}
+
+function metadataVersionKey(snapshot) {
+  return snapshot.id ?? snapshot.checksum ?? snapshot.captured_at;
+}
+
+function metadataSnapshotContext(ctx, country, locale, options = {}) {
+  const targetCountry = normalizedCountry(country);
+  const targetLocale = normalizedLocale(locale);
+  if (!targetCountry || !targetLocale) return null;
+  const snapshots = (ctx.metadataSnapshots ?? [])
+    .filter((snapshot) =>
+      snapshot.app_id === ctx.app.id &&
+      normalizedCountry(snapshot.country) === targetCountry &&
+      normalizedLocale(snapshot.locale) === targetLocale &&
+      (!options.onOrAfter || snapshot.captured_at.slice(0, 10) >= options.onOrAfter),
+    )
+    .sort((left, right) => left.captured_at.localeCompare(right.captured_at));
+  const snapshot = options.oldest ? snapshots[0] : snapshots.at(-1);
+  if (!snapshot) return null;
+
+  const detectedChange = (ctx.changeEvents ?? [])
+    .filter((change) =>
+      change.app_id === ctx.app.id &&
+      change.origin === "detected" &&
+      normalizedCountry(change.country) === targetCountry &&
+      normalizedLocale(change.locale) === targetLocale &&
+      Math.abs(Date.parse(change.happened_at) - Date.parse(snapshot.captured_at)) <= METADATA_CHANGE_EVENT_TOLERANCE_MS,
+    )
+    .sort((left, right) =>
+      Math.abs(Date.parse(left.happened_at) - Date.parse(snapshot.captured_at)) -
+      Math.abs(Date.parse(right.happened_at) - Date.parse(snapshot.captured_at)),
+    )[0] ?? null;
+
+  return {
+    snapshot,
+    locale: targetLocale,
+    snapshotId: metadataVersionKey(snapshot),
+    version: snapshot.current_version ?? null,
+    checksum: snapshot.checksum,
+    observedAt: snapshot.captured_at,
+    changeAt: detectedChange?.happened_at ?? null,
+  };
+}
+
+function metadataContextEvidence(context) {
+  return [
+    ev("Metadata snapshot", String(context.snapshotId), "public_store"),
+    ev("Metadata locale", context.locale, "public_store"),
+    ev(
+      "Metadata version",
+      context.version ? `${context.version} · checksum ${context.checksum}` : `checksum ${context.checksum}`,
+      "public_store",
+    ),
+    ev("Metadata observed", context.observedAt, "public_store"),
+    ev("Metadata change time", context.changeAt ?? "No detected change event; first observed at the snapshot time", "public_store"),
+  ];
+}
+
+function ranksForMetadataVersion(snapshots, context) {
+  return snapshots.filter((snapshot) => snapshot.captured_at >= context.observedAt);
+}
+
+function rankWindowEvidence(snapshots) {
+  if (!snapshots.length) return ev("Rank evidence under metadata version", "No rank snapshots", "public_store");
+  return ev(
+    "Rank evidence under metadata version",
+    `${snapshots[0].captured_at} to ${snapshots.at(-1).captured_at}`,
+    "public_store",
+  );
 }
 
 const metricSource = (metrics) => (metrics.some((m) => m.source === "demo") ? "demo" : metrics[0]?.source ?? "calculated");
@@ -149,6 +244,7 @@ function ruleCompetitorWinsHighPriorityTerms(ctx) {
     out.push({
       rule_id: "competitor_wins_high_priority_terms",
       app_id: ctx.app.id,
+      competitor_id: competitor.id,
       keyword_id: losses[0].keyword.id,
       experiment_id: null,
       country: null,
@@ -168,7 +264,7 @@ function ruleCompetitorWinsHighPriorityTerms(ctx) {
       impact: "high",
       effort: "medium",
       priority: "high",
-      dedupe_key: `competitor_wins_high_priority_terms:${ctx.app.id}:${competitor.id}:${losses.map((item) => item.keyword.id).sort().join(",")}`,
+      dedupe_key: competitorWinsDedupeKey(ctx.app.id, competitor.id, null),
     });
   }
   return out;
@@ -292,8 +388,10 @@ function ruleKeywordRisingAfterChange(ctx) {
     if (daysAgo(changeDate, ctx.today) > 45 || daysAgo(changeDate, ctx.today) < 5) continue;
     for (const { keyword, priority, snapshots } of ctx.keywords) {
       if (change.country && change.country !== keyword.country) continue;
+      const metadata = metadataSnapshotContext(ctx, keyword.country, keyword.language, { onOrAfter: changeDate, oldest: true });
+      if (!metadata) continue;
       const before = snapshots.filter((s) => s.captured_at.slice(0, 10) < changeDate);
-      const after = snapshots.filter((s) => s.captured_at.slice(0, 10) >= changeDate);
+      const after = ranksForMetadataVersion(snapshots, metadata);
       if (before.length < 3 || after.length < 4) continue;
       const beforeRank = lastRanked(before);
       const recentAfter = after.slice(-4);
@@ -311,6 +409,7 @@ function ruleKeywordRisingAfterChange(ctx) {
         keyword_id: keyword.id,
         experiment_id: null,
         country: keyword.country,
+        locale: metadata.locale,
         title: `"${keyword.term}" (${keyword.country.toUpperCase()}) is rising after the ${change.change_type} change`,
         observation: `Since the ${change.change_type} change on ${changeDate}, "${keyword.term}" moved from ${formatRank(beforeRank)} to around #${Math.round(afterAvg)}, holding the gain across ${afterRanks.length} collection points.`,
         interpretation: "The metadata change plausibly contributed to the gain, though store-side factors may also play a role.",
@@ -320,13 +419,15 @@ function ruleKeywordRisingAfterChange(ctx) {
           ev("Recent average rank", `#${Math.round(afterAvg)}`, "calculated"),
           ev("Change event", `${change.change_type} on ${changeDate}`, change.origin === "manual" ? "manual" : "public_store"),
           ev("Sustained points", String(afterRanks.length), "public_store"),
+          ...metadataContextEvidence(metadata),
+          rankWindowEvidence(after),
         ],
-        comparison_window: `Before vs after ${changeDate}`,
+        comparison_window: `Before ${changeDate} vs metadata version observed ${metadata.observedAt}`,
         confidence: "medium_high",
         impact: "medium",
         effort: "low",
         priority: "medium",
-        dedupe_key: `keyword_rising_after_change:${keyword.id}:${changeDate}`,
+        dedupe_key: `keyword_rising_after_change:${keyword.id}:${changeDate}:${metadata.snapshotId}`,
       });
     }
   }
@@ -343,12 +444,14 @@ function ruleKeywordDeclinedAfterRemoval(ctx) {
     if (daysAgo(changeDate, ctx.today) > 45 || daysAgo(changeDate, ctx.today) < 5) continue;
     const removedText = (change.old_value ?? "").toLowerCase();
     const newText = (change.new_value ?? "").toLowerCase();
-    for (const { keyword, snapshots } of ctx.keywords) {
+    for (const { keyword, priority, snapshots } of ctx.keywords) {
       if (change.country && change.country !== keyword.country) continue;
       const term = keyword.term.toLowerCase();
       if (!removedText.includes(term) || newText.includes(term)) continue;
+      const metadata = metadataSnapshotContext(ctx, keyword.country, keyword.language, { onOrAfter: changeDate, oldest: true });
+      if (!metadata) continue;
       const before = snapshots.filter((s) => s.captured_at.slice(0, 10) < changeDate);
-      const after = snapshots.filter((s) => s.captured_at.slice(0, 10) >= changeDate);
+      const after = ranksForMetadataVersion(snapshots, metadata);
       if (before.length < 3 || after.length < 3) continue;
       const beforeRank = lastRanked(before);
       const afterRank = lastRanked(after);
@@ -361,6 +464,7 @@ function ruleKeywordDeclinedAfterRemoval(ctx) {
         keyword_id: keyword.id,
         experiment_id: null,
         country: keyword.country,
+        locale: metadata.locale,
         title: `"${keyword.term}" dropped after being removed from the ${change.change_type}`,
         observation: `"${keyword.term}" (${keyword.country.toUpperCase()}) went from ${formatRank(beforeRank)} to ${formatRank(afterRank)} after the ${change.change_type} change on ${changeDate} removed the term.`,
         interpretation: "Losing metadata coverage for a term usually costs ranking; the timing here matches, though other factors may contribute.",
@@ -370,13 +474,15 @@ function ruleKeywordDeclinedAfterRemoval(ctx) {
           ev("Rank now", formatRank(afterRank), "public_store"),
           ev("Change event", `${change.change_type} on ${changeDate}`, change.origin === "manual" ? "manual" : "public_store"),
           ev("Keyword priority", priority, "manual"),
+          ...metadataContextEvidence(metadata),
+          rankWindowEvidence(after),
         ],
-        comparison_window: `Before vs after ${changeDate}`,
+        comparison_window: `Before ${changeDate} vs metadata version observed ${metadata.observedAt}`,
         confidence: "medium_high",
         impact: priority === "high" ? "high" : "medium",
         effort: "low",
         priority: priority === "high" ? "high" : "medium",
-        dedupe_key: `keyword_declined_after_removal:${keyword.id}:${changeDate}`,
+        dedupe_key: `keyword_declined_after_removal:${keyword.id}:${changeDate}:${metadata.snapshotId}`,
       });
     }
   }
@@ -385,16 +491,19 @@ function ruleKeywordDeclinedAfterRemoval(ctx) {
 
 function ruleKeywordOpportunity(ctx) {
   const out = [];
-  const title = ctx.app.name.toLowerCase();
-  const subtitle = (ctx.app.subtitle ?? "").toLowerCase();
   for (const { keyword, priority, snapshots } of ctx.keywords) {
-    if (snapshots.length < 5) continue;
-    const last = snapshots[snapshots.length - 1];
+    const metadata = metadataSnapshotContext(ctx, keyword.country, keyword.language);
+    if (!metadata) continue;
+    const versionSnapshots = ranksForMetadataVersion(snapshots, metadata);
+    if (versionSnapshots.length < 5) continue;
+    const last = versionSnapshots.at(-1);
     if (last.rank == null || last.rank < 11 || last.rank > 50) continue;
     if (priority === "low") continue;
-    const weekAgo = rankChange(last.rank, snapshotRankNearDaysAgo(snapshots, 7, ctx.today));
+    const weekAgo = rankChange(last.rank, snapshotRankNearDaysAgo(versionSnapshots, 7, ctx.today));
     if (weekAgo != null && weekAgo < -3) continue;
     const term = keyword.term.toLowerCase();
+    const title = metadata.snapshot.name.toLowerCase();
+    const subtitle = (metadata.snapshot.subtitle ?? "").toLowerCase();
     const inTitle = title.includes(term);
     const inSubtitle = subtitle.includes(term);
     if (!inTitle && !inSubtitle) continue;
@@ -405,6 +514,7 @@ function ruleKeywordOpportunity(ctx) {
       keyword_id: keyword.id,
       experiment_id: null,
       country: keyword.country,
+      locale: metadata.locale,
       title: `Push "${keyword.term}" (${keyword.country.toUpperCase()}) — ranked ${formatRank(last.rank)} and within reach`,
       observation: `${ctx.app.name} holds ${formatRank(last.rank)} for "${keyword.term}" with ${weekAgo != null && weekAgo > 0 ? `a +${weekAgo} improvement over 7 days` : "a stable trend"}, and the term already appears in the ${inTitle ? "title" : "subtitle"}.`,
       interpretation: "Ranks 11–50 with existing coverage respond best to incremental pushes — conversion improvements or stronger placement of the term.",
@@ -414,13 +524,15 @@ function ruleKeywordOpportunity(ctx) {
         ev("7-day change", weekAgo != null ? (weekAgo > 0 ? `+${weekAgo}` : String(weekAgo)) : "—", "calculated"),
         ev("Metadata coverage", inTitle ? "In title" : "In subtitle", "public_store"),
         ev("Priority", priority, "manual"),
+        ...metadataContextEvidence(metadata),
+        rankWindowEvidence(versionSnapshots),
       ],
-      comparison_window: "Last 14 days",
+      comparison_window: `Rank evidence since metadata version observed ${metadata.observedAt}`,
       confidence: "medium",
       impact: priority === "high" ? "high" : "medium",
       effort: "low",
       priority: priority === "high" ? "high" : "medium",
-      dedupe_key: `keyword_opportunity:${keyword.id}`,
+      dedupe_key: `keyword_opportunity:${keyword.id}:${metadata.snapshotId}`,
     });
   }
   return out;
@@ -428,37 +540,55 @@ function ruleKeywordOpportunity(ctx) {
 
 function ruleMetadataMismatch(ctx) {
   const out = [];
-  const title = ctx.app.name.toLowerCase();
-  const subtitle = (ctx.app.subtitle ?? "").toLowerCase();
-  const missing = ctx.keywords.filter(({ keyword, priority }) => {
-    if (priority !== "high") return false;
-    const term = keyword.term.toLowerCase();
-    return !title.includes(term) && !subtitle.includes(term);
-  });
-  if (missing.length === 0) return out;
-  const terms = missing.map((m) => `"${m.keyword.term}" (${m.keyword.country.toUpperCase()})`);
-  out.push({
-    rule_id: "metadata_mismatch",
-    app_id: ctx.app.id,
-    keyword_id: missing[0].keyword.id,
-    experiment_id: null,
-    country: null,
-    title: `${missing.length} high-priority keyword${missing.length > 1 ? "s are" : " is"} missing from ${ctx.app.name}'s title and subtitle`,
-    observation: `${terms.join(", ")} ${missing.length > 1 ? "are" : "is"} tracked as high priority but appear${missing.length > 1 ? "" : "s"} in neither the title nor the subtitle.`,
-    interpretation: "Apple weights title and subtitle heavily; high-priority terms outside both usually can't rank competitively.",
-    recommendation: `Rework the subtitle to include ${terms[0]}${missing.length > 1 ? " (and review the others)" : ""}, moving lower-value words to the keyword field.`,
-    evidence: [
-      ev("Missing terms", terms.join(", "), "calculated"),
-      ev("Current title", ctx.app.name, "public_store"),
-      ev("Current subtitle", ctx.app.subtitle ?? "(none)", "public_store"),
-    ],
-    comparison_window: "Current metadata",
-    confidence: "high",
-    impact: "medium",
-    effort: "medium",
-    priority: "medium",
-    dedupe_key: `metadata_mismatch:${ctx.app.id}:${missing.map((m) => m.keyword.id).sort().join(",")}`,
-  });
+  const scopes = [...new Map((ctx.metadataSnapshots ?? [])
+    .filter((snapshot) => snapshot.app_id === ctx.app.id)
+    .map((snapshot) => ({
+      country: normalizedCountry(snapshot.country),
+      locale: normalizedLocale(snapshot.locale),
+    }))
+    .filter((scope) => scope.country && scope.locale)
+    .map((scope) => [`${scope.country}:${scope.locale}`, scope])).values()];
+  for (const { country, locale } of scopes) {
+    const metadata = metadataSnapshotContext(ctx, country, locale);
+    if (!metadata) continue;
+    const title = metadata.snapshot.name.toLowerCase();
+    const subtitle = (metadata.snapshot.subtitle ?? "").toLowerCase();
+    const missing = ctx.keywords.filter(({ keyword, priority }) => {
+      if (
+        priority !== "high" ||
+        normalizedCountry(keyword.country) !== country ||
+        normalizedLocale(keyword.language) !== locale
+      ) return false;
+      const term = keyword.term.toLowerCase();
+      return !title.includes(term) && !subtitle.includes(term);
+    });
+    if (missing.length === 0) continue;
+    const terms = missing.map((item) => `"${item.keyword.term}"`);
+    out.push({
+      rule_id: "metadata_mismatch",
+      app_id: ctx.app.id,
+      keyword_id: missing[0].keyword.id,
+      experiment_id: null,
+      country,
+      locale,
+      title: `${missing.length} high-priority ${country.toUpperCase()} keyword${missing.length > 1 ? "s are" : " is"} missing from the observed title and subtitle`,
+      observation: `${terms.join(", ")} ${missing.length > 1 ? "are" : "is"} tracked as high priority but appear${missing.length > 1 ? "" : "s"} in neither the ${country.toUpperCase()} ${locale} title nor subtitle observed in metadata snapshot ${metadata.snapshotId}.`,
+      interpretation: "This is an exact-country and exact-locale metadata coverage gap. It does not make a claim about markets or listing locales without their own observed snapshot.",
+      recommendation: `Review up to five ${country.toUpperCase()} metadata candidates, starting with ${terms[0]}, and validate relevance, rank evidence, and character capacity before editing.`,
+      evidence: [
+        ev("Missing terms", terms.join(", "), "calculated"),
+        ev("Observed title", metadata.snapshot.name, "public_store"),
+        ev("Observed subtitle", metadata.snapshot.subtitle ?? "(none)", "public_store"),
+        ...metadataContextEvidence(metadata),
+      ],
+      comparison_window: `Metadata version observed ${metadata.observedAt}`,
+      confidence: "high",
+      impact: "medium",
+      effort: "medium",
+      priority: "medium",
+      dedupe_key: metadataMismatchDedupeKey(ctx.app.id, country, locale),
+    });
+  }
   return out;
 }
 
@@ -712,7 +842,8 @@ const RULE_FNS = [
   ruleKeywordDeclinedAfterRemoval,
   ruleKeywordOpportunity,
   ruleMetadataMismatch,
-  ruleStorefrontUnderperformance,
+  // Disabled until storefront-specific localization evidence has a verified
+  // source and observation time. Legacy booleans cannot support this diagnosis.
   ruleRatingDeterioration,
   ruleReviewTopicSurge,
   ruleExperimentReady,
@@ -751,6 +882,380 @@ export function filterAgainstExisting(drafts, existing, now = new Date(), suppre
     seen.add(d.dedupe_key);
     return true;
   });
+}
+
+const INSIGHT_DRAFT_FIELDS = [
+  "rule_id",
+  "app_id",
+  "keyword_id",
+  "experiment_id",
+  "country",
+  "locale",
+  "title",
+  "observation",
+  "interpretation",
+  "recommendation",
+  "evidence",
+  "comparison_window",
+  "confidence",
+  "impact",
+  "effort",
+  "priority",
+  "dedupe_key",
+];
+
+const METADATA_VERSIONED_RULE_IDS = new Set([
+  "keyword_opportunity",
+  "keyword_rising_after_change",
+  "keyword_declined_after_removal",
+]);
+
+function sameValue(left, right) {
+  return typeof left === "object" || typeof right === "object"
+    ? JSON.stringify(left) === JSON.stringify(right)
+    : left === right;
+}
+
+function sameMetadataMismatchScope(row, draft) {
+  return (
+    row.rule_id === "metadata_mismatch" &&
+    row.app_id === draft.app_id &&
+    (row.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE) ===
+      (draft.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE) &&
+    normalizedLocale(row.locale) === normalizedLocale(draft.locale)
+  );
+}
+
+function sameMetadataVersionedScope(row, draft) {
+  return (
+    row.rule_id === draft.rule_id &&
+    row.app_id === draft.app_id &&
+    row.keyword_id === draft.keyword_id &&
+    normalizedCountry(row.country) === normalizedCountry(draft.country) &&
+    normalizedLocale(row.locale) === normalizedLocale(draft.locale)
+  );
+}
+
+export function reconcileMetadataVersionedInsights(drafts, existing, now = new Date(), evaluatedScopeKeys = []) {
+  const pendingDrafts = [];
+  const updates = [];
+  const processedScopes = new Set();
+  const evaluatedScopes = new Set(evaluatedScopeKeys);
+  const timestamp = now.toISOString();
+
+  for (const draft of drafts) {
+    if (!METADATA_VERSIONED_RULE_IDS.has(draft.rule_id)) {
+      pendingDrafts.push(draft);
+      continue;
+    }
+
+    const logicalScope = `${draft.rule_id}:${draft.app_id}:${draft.keyword_id}:${normalizedCountry(draft.country)}:${normalizedLocale(draft.locale)}`;
+    if (processedScopes.has(logicalScope)) continue;
+    processedScopes.add(logicalScope);
+    const active = existing
+      .filter((row) => row.status === "active" && sameMetadataVersionedScope(row, draft))
+      .sort((left, right) => String(right.created_at ?? "").localeCompare(String(left.created_at ?? "")));
+    const current = active[0];
+    if (!current) {
+      pendingDrafts.push(draft);
+      continue;
+    }
+
+    const patch = Object.fromEntries(INSIGHT_DRAFT_FIELDS.map((field) => [field, draft[field]]));
+    if (INSIGHT_DRAFT_FIELDS.some((field) => !sameValue(current[field], patch[field]))) {
+      updates.push({ id: current.id, patch: { ...patch, updated_at: timestamp } });
+    }
+    for (const historical of active.slice(1)) {
+      updates.push({
+        id: historical.id,
+        patch: {
+          status: "superseded",
+          snoozed_until: null,
+          note: `Superseded automatically by the current metadata-version conclusion on ${timestamp}.`,
+          updated_at: timestamp,
+        },
+      });
+    }
+  }
+
+  for (const row of existing) {
+    if (!METADATA_VERSIONED_RULE_IDS.has(row.rule_id) || row.status !== "active") continue;
+    if (!evaluatedScopes.has(metadataEvidenceScopeKey(row.app_id, row.country, row.locale))) continue;
+    const logicalScope = `${row.rule_id}:${row.app_id}:${row.keyword_id}:${normalizedCountry(row.country)}:${normalizedLocale(row.locale)}`;
+    if (processedScopes.has(logicalScope)) continue;
+    updates.push({
+      id: row.id,
+      patch: {
+        status: "superseded",
+        snoozed_until: null,
+        note: `Superseded automatically because current scoped metadata-version evidence no longer supports this conclusion on ${timestamp}.`,
+        updated_at: timestamp,
+      },
+    });
+  }
+
+  return { drafts: pendingDrafts, updates };
+}
+
+/**
+ * Reconcile the one-current-row contract for metadata mismatch insights.
+ * The newest active row is refreshed in place, while older active rows are
+ * retained as explicitly superseded history. When an evaluated app no longer
+ * emits a previously active exact-country or legacy portfolio rule, that row
+ * becomes superseded history.
+ * Unchanged reruns make no writes.
+ */
+export function reconcileMetadataMismatchInsights(drafts, existing, now = new Date(), evaluatedScopeKeys = []) {
+  const pendingDrafts = [];
+  const updates = [];
+  const processedScopes = new Set();
+  const evaluatedScopes = new Set(evaluatedScopeKeys);
+  const timestamp = now.toISOString();
+
+  for (const draft of drafts) {
+    if (draft.rule_id !== "metadata_mismatch") {
+      pendingDrafts.push(draft);
+      continue;
+    }
+
+    const scopeKey = metadataMismatchDedupeKey(draft.app_id, draft.country, draft.locale);
+    if (processedScopes.has(scopeKey)) continue;
+    processedScopes.add(scopeKey);
+
+    const active = existing
+      .filter((row) => row.status === "active" && sameMetadataMismatchScope(row, draft))
+      .sort((left, right) => {
+        const created = String(right.created_at ?? "").localeCompare(String(left.created_at ?? ""));
+        return created || String(right.id ?? "").localeCompare(String(left.id ?? ""));
+      });
+
+    const current = active[0];
+    if (!current) {
+      pendingDrafts.push(draft);
+      continue;
+    }
+
+    const patch = Object.fromEntries(INSIGHT_DRAFT_FIELDS.map((field) => [field, draft[field]]));
+    if (INSIGHT_DRAFT_FIELDS.some((field) => !sameValue(current[field], patch[field]))) {
+      updates.push({ id: current.id, patch: { ...patch, updated_at: timestamp } });
+    }
+
+    for (const historical of active.slice(1)) {
+      updates.push({
+        id: historical.id,
+        patch: {
+          status: "superseded",
+          snoozed_until: null,
+          note: `Superseded automatically by the current app-and-scope metadata mismatch insight on ${timestamp}.`,
+          updated_at: timestamp,
+        },
+      });
+    }
+  }
+
+  for (const row of existing) {
+    if (
+      row.rule_id !== "metadata_mismatch" ||
+      row.status !== "active"
+    ) {
+      continue;
+    }
+
+    const scopeKey = metadataMismatchDedupeKey(row.app_id, row.country, row.locale);
+    if (!evaluatedScopes.has(scopeKey)) continue;
+    if (processedScopes.has(scopeKey)) continue;
+
+    updates.push({
+      id: row.id,
+      patch: {
+        status: "superseded",
+        snoozed_until: null,
+        note: `Resolved automatically after current metadata no longer met the mismatch rule on ${timestamp}.`,
+        updated_at: timestamp,
+      },
+    });
+  }
+
+  return { drafts: pendingDrafts, updates };
+}
+
+function competitorIdFromInsight(row) {
+  if (row.competitor_id) return row.competitor_id;
+  if (row.rule_id !== "competitor_wins_high_priority_terms") return null;
+  return String(row.dedupe_key ?? "").split(":")[2] || null;
+}
+
+function sameCompetitorWinsScope(row, draft) {
+  return (
+    row.rule_id === "competitor_wins_high_priority_terms" &&
+    row.app_id === draft.app_id &&
+    competitorIdFromInsight(row) === draft.competitor_id &&
+    (row.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE) ===
+      (draft.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE)
+  );
+}
+
+/**
+ * Reconcile one current competitor-gap row per app, competitor, and scope.
+ * Legacy keys are understood during migration, so distinct competitors never
+ * share lifecycle state. When an evaluated rival no longer emits the rule,
+ * its current portfolio row becomes superseded history. Unchanged reruns
+ * remain write-free.
+ */
+export function reconcileCompetitorWinsInsights(drafts, existing, now = new Date(), evaluatedScopeKeys = []) {
+  const pendingDrafts = [];
+  const updates = [];
+  const processedScopes = new Set();
+  const evaluatedScopes = new Set(evaluatedScopeKeys);
+  const timestamp = now.toISOString();
+  const fields = [...INSIGHT_DRAFT_FIELDS, "competitor_id"];
+
+  for (const draft of drafts) {
+    if (draft.rule_id !== "competitor_wins_high_priority_terms") {
+      pendingDrafts.push(draft);
+      continue;
+    }
+
+    const scopeKey = competitorWinsDedupeKey(draft.app_id, draft.competitor_id, draft.country);
+    if (processedScopes.has(scopeKey)) continue;
+    processedScopes.add(scopeKey);
+
+    const active = existing
+      .filter((row) => row.status === "active" && sameCompetitorWinsScope(row, draft))
+      .sort((left, right) => {
+        const created = String(right.created_at ?? "").localeCompare(String(left.created_at ?? ""));
+        return created || String(right.id ?? "").localeCompare(String(left.id ?? ""));
+      });
+
+    const current = active[0];
+    if (!current) {
+      pendingDrafts.push(draft);
+      continue;
+    }
+
+    const patch = Object.fromEntries(fields.map((field) => [field, draft[field]]));
+    if (fields.some((field) => !sameValue(current[field], patch[field]))) {
+      updates.push({ id: current.id, patch: { ...patch, updated_at: timestamp } });
+    }
+
+    for (const historical of active.slice(1)) {
+      updates.push({
+        id: historical.id,
+        patch: {
+          status: "superseded",
+          snoozed_until: null,
+          note: `Superseded automatically by the current app-plus-competitor-and-scope insight on ${timestamp}.`,
+          updated_at: timestamp,
+        },
+      });
+    }
+  }
+
+  for (const row of existing) {
+    const competitorId = competitorIdFromInsight(row);
+    if (
+      row.rule_id !== "competitor_wins_high_priority_terms" ||
+      row.status !== "active" ||
+      !competitorId ||
+      row.country?.trim()
+    ) {
+      continue;
+    }
+
+    const scopeKey = competitorWinsDedupeKey(row.app_id, competitorId, null);
+    if (!evaluatedScopes.has(scopeKey) || processedScopes.has(scopeKey)) continue;
+
+    updates.push({
+      id: row.id,
+      patch: {
+        status: "superseded",
+        snoozed_until: null,
+        note: `Resolved automatically after the evaluated competitor no longer met the high-priority term-gap rule on ${timestamp}.`,
+        updated_at: timestamp,
+      },
+    });
+  }
+
+  return { drafts: pendingDrafts, updates };
+}
+
+function sameDataCollectionFailureScope(row, draft) {
+  return (
+    row.rule_id === "data_collection_failure" &&
+    row.app_id === draft.app_id &&
+    (row.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE) ===
+      (draft.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE)
+  );
+}
+
+/**
+ * Keep current operational warnings accurate and retire them when the
+ * deterministic rule no longer emits a failure for that app and scope.
+ * Recovery preserves the original row and evidence as superseded history.
+ */
+export function reconcileDataCollectionFailureInsights(drafts, existing, now = new Date()) {
+  const pendingDrafts = [];
+  const updates = [];
+  const emittedScopes = new Set();
+  const timestamp = now.toISOString();
+
+  for (const draft of drafts) {
+    if (draft.rule_id !== "data_collection_failure") {
+      pendingDrafts.push(draft);
+      continue;
+    }
+
+    const scopeKey = `${draft.app_id}:${draft.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE}`;
+    if (emittedScopes.has(scopeKey)) continue;
+    emittedScopes.add(scopeKey);
+
+    const active = existing
+      .filter((row) => row.status === "active" && sameDataCollectionFailureScope(row, draft))
+      .sort((left, right) => {
+        const created = String(right.created_at ?? "").localeCompare(String(left.created_at ?? ""));
+        return created || String(right.id ?? "").localeCompare(String(left.id ?? ""));
+      });
+
+    const current = active[0];
+    if (!current) {
+      pendingDrafts.push(draft);
+      continue;
+    }
+
+    const patch = Object.fromEntries(INSIGHT_DRAFT_FIELDS.map((field) => [field, draft[field]]));
+    if (INSIGHT_DRAFT_FIELDS.some((field) => !sameValue(current[field], patch[field]))) {
+      updates.push({ id: current.id, patch: { ...patch, updated_at: timestamp } });
+    }
+
+    for (const historical of active.slice(1)) {
+      updates.push({
+        id: historical.id,
+        patch: {
+          status: "superseded",
+          snoozed_until: null,
+          note: `Superseded automatically by the current data collection warning on ${timestamp}.`,
+          updated_at: timestamp,
+        },
+      });
+    }
+  }
+
+  for (const row of existing) {
+    if (row.rule_id !== "data_collection_failure" || row.status !== "active") continue;
+    const scopeKey = `${row.app_id}:${row.country?.trim().toLowerCase() || METADATA_MISMATCH_PORTFOLIO_SCOPE}`;
+    if (emittedScopes.has(scopeKey)) continue;
+    updates.push({
+      id: row.id,
+      patch: {
+        status: "superseded",
+        snoozed_until: null,
+        note: `Resolved automatically after current collection evidence no longer met the failure rule on ${timestamp}.`,
+        updated_at: timestamp,
+      },
+    });
+  }
+
+  return { drafts: pendingDrafts, updates };
 }
 
 export function draftToInsertRow(d) {

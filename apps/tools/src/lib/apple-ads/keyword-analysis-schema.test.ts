@@ -1,0 +1,2 @@
+import { expect,it } from "vitest";import { KeywordAnalysisSchema } from "./keyword-analysis-schema";
+it("rejects an unapproved AI action",()=>expect(KeywordAnalysisSchema.safeParse({keyword:"x",language:"en",intentCluster:"x",relevanceScore:1,productFitScore:1,commercialIntentScore:1,localizationQualityScore:1,ambiguityScore:1,riskFlags:[],expectedUserNeed:"x",recommendedDestinationAppId:null,recommendedAction:"EXECUTE",reasoning:"x",confidence:1}).success).toBe(false));

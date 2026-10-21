@@ -1,0 +1,13 @@
+{
+  "country": "gb",
+  "appWideLanguages": ["EN", "FR", "DE", "JA", "KO", "PL", "PT", "ES", "ZH"],
+  "legacyMetadataLocalised": false,
+  "legacyScreenshotsLocalised": false,
+  "legacyNotes": null,
+  "metadataSnapshot": null,
+  "activity": {
+    "trackedKeywords": 9,
+    "appStoreConnectRows": 7,
+    "appleAdsCampaigns": 1
+  }
+}

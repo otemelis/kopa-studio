@@ -1,0 +1,5 @@
+import test from'node:test';import assert from'node:assert/strict';import{productCell,productionTrend}from'../../reporting/portfolio/launch-model.mjs';
+test('failed product read never becomes zero or hides independent Apple source',()=>{assert.equal(productCell(null).value,'Unavailable');});
+test('unobserved production stays different from a measured zero',()=>{assert.equal(productCell({status:'production_not_observed'}).value,'Production not yet observed');const measured={status:'observed',metrics:{firstOpen:0,activation:0,active:1,paywall:0,trial:0},coverage:{}};assert.match(productCell(measured).value,/0 first launches/);});
+test('anonymous PASSPORT and empty source never acquire synthetic identities',()=>{assert.equal(productCell({status:'no_data_yet'}).value,'No data yet');assert.equal(productCell({status:'observed',metrics:null}).value,'Installation metrics unavailable');});
+test('TestFlight does not establish production launch date or trend',()=>{assert.match(productionTrend({status:'production_not_observed'}),/No launch date inferred/);});

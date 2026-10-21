@@ -1,0 +1,77 @@
+
+> kopa-tools@0.1.0 build
+> next build
+
+   ▲ Next.js 15.5.20
+
+   Creating an optimized production build ...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (106kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (253kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ✓ Compiled successfully in 8.2s
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/23) ...
+   Generating static pages (5/23)
+   Generating static pages (11/23)
+   Generating static pages (17/23)
+ ✓ Generating static pages (23/23)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                      Size  First Load JS
+┌ ƒ /                                         1.93 kB         108 kB
+├ ○ /_not-found                                 997 B         103 kB
+├ ƒ /analytics                                1.93 kB         108 kB
+├ ƒ /api/app-store-connect/sync                 194 B         103 kB
+├ ƒ /api/apple-ads/attribution                  194 B         103 kB
+├ ƒ /api/apple-ads/connections                  194 B         103 kB
+├ ƒ /api/apple-ads/mappings                     194 B         103 kB
+├ ƒ /api/apple-ads/recommendations/recompute    194 B         103 kB
+├ ƒ /api/apple-ads/reports/campaigns            194 B         103 kB
+├ ƒ /api/apple-ads/sync/campaigns               194 B         103 kB
+├ ƒ /api/apple-ads/sync/run                     194 B         103 kB
+├ ƒ /api/apple-ads/sync/run-owner               194 B         103 kB
+├ ƒ /api/apple-ads/sync/structure               194 B         103 kB
+├ ƒ /api/apple-ads/test                         194 B         103 kB
+├ ƒ /api/apps                                   194 B         103 kB
+├ ƒ /api/competitors                            194 B         103 kB
+├ ƒ /api/experiments                            194 B         103 kB
+├ ƒ /api/experiments/[id]                       194 B         103 kB
+├ ƒ /api/insights/[id]                          194 B         103 kB
+├ ƒ /api/jobs                                   194 B         103 kB
+├ ƒ /api/keywords                               194 B         103 kB
+├ ƒ /api/keywords/[linkId]                      194 B         103 kB
+├ ƒ /api/review-pack                            194 B         103 kB
+├ ƒ /app-store-connect                        1.92 kB         108 kB
+├ ƒ /apple-ads-lab                             1.4 kB         110 kB
+├ ƒ /apple-ads-lab/attribution                1.93 kB         108 kB
+├ ƒ /apple-ads-lab/data-quality               1.93 kB         108 kB
+├ ƒ /apple-ads-lab/keyword-intelligence       1.93 kB         108 kB
+├ ƒ /apple-ads-lab/recommendations            2.56 kB         108 kB
+├ ƒ /apple-ads-lab/reporting                  1.92 kB         108 kB
+├ ƒ /apple-ads-lab/research-planner           3.39 kB         109 kB
+├ ƒ /apple-ads-lab/structure                  1.93 kB         108 kB
+├ ƒ /apps                                     2.38 kB         108 kB
+├ ƒ /apps/[id]                                1.93 kB         108 kB
+├ ƒ /aso                                      1.92 kB         108 kB
+├ ƒ /auth/callback                              194 B         103 kB
+├ ƒ /auth/signout                               194 B         103 kB
+├ ƒ /collection                               1.83 kB         111 kB
+├ ƒ /competitors                              2.36 kB         108 kB
+├ ƒ /experiments                              3.58 kB         109 kB
+├ ƒ /insights                                 2.96 kB         109 kB
+├ ƒ /keywords                                 5.72 kB         112 kB
+├ ƒ /localizations                            1.93 kB         108 kB
+├ ƒ /login                                    65.7 kB         168 kB
+├ ƒ /rankings                                 1.92 kB         108 kB
+└ ○ /unauthorized                               165 B         106 kB
++ First Load JS shared by all                  102 kB
+  ├ chunks/1255-d90f22433f14e976.js           46.2 kB
+  ├ chunks/4bd1b696-f785427dddbba9fb.js       54.2 kB
+  └ other shared chunks (total)               1.93 kB
+
+
+ƒ Middleware                                  90.8 kB
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand

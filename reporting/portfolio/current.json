@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "csv": "daily-cb5715c4ae57aabb58ee64d5704bd5a9fb4b03e160d88b742f6b93763ba703c3.csv",
+  "sha256": "cb5715c4ae57aabb58ee64d5704bd5a9fb4b03e160d88b742f6b93763ba703c3",
+  "period_start": "2026-09-16",
+  "period_end": "2026-10-13",
+  "last_successful_refresh_utc": "2026-10-17T14:00:33.133822+00:00",
+  "run": "20261017T135904Z",
+  "validation": "independent SQL, raw checksums, daily-to-weekly Sales controls",
+  "historical_snapshot": true,
+  "analytics_availability": [
+    {
+      "app": "POIS",
+      "checkedAt": "2026-10-17T13:59:09.531Z",
+      "reports": [
+        {
+          "kind": "discovery",
+          "reportId": "r14-0a5174c1-f952-401f-abea-3f9fd6487a36",
+          "state": "awaiting_generation",
+          "instances": 0,
+          "latestProcessingDate": null
+        },
+        {
+          "kind": "downloads",
+          "reportId": "r3-0a5174c1-f952-401f-abea-3f9fd6487a36",
+          "state": "awaiting_generation",
+          "instances": 0,
+          "latestProcessingDate": null
+        },
+        {
+          "kind": "purchases",
+          "reportId": "r12-0a5174c1-f952-401f-abea-3f9fd6487a36",
+          "state": "awaiting_generation",
+          "instances": 0,
+          "latestProcessingDate": null
+        }
+      ]
+    },
+    {
+      "app": "PASSPORT",
+      "checkedAt": "2026-10-17T13:59:10.365Z",
+      "reports": [
+        {
+          "kind": "discovery",
+          "reportId": "r14-1a1002c3-3a07-4d10-afca-6352b89790d5",
+          "state": "awaiting_generation",
+          "instances": 0,
+          "latestProcessingDate": null
+        },
+        {
+          "kind": "downloads",
+          "reportId": "r3-1a1002c3-3a07-4d10-afca-6352b89790d5",
+          "state": "awaiting_generation",
+          "instances": 0,
+          "latestProcessingDate": null
+        },
+        {
+          "kind": "purchases",
+          "reportId": "r12-1a1002c3-3a07-4d10-afca-6352b89790d5",
+          "state": "awaiting_generation",
+          "instances": 0,
+          "latestProcessingDate": null
+        }
+      ]
+    },
+    {
+      "app": "LoveType",
+      "checkedAt": "2026-10-17T13:59:11.108Z",
+      "reports": [
+        {
+          "kind": "discovery",
+          "reportId": "r14-a602f763-4566-411c-9a6d-dd433363d545",
+          "state": "awaiting_generation",
+          "instances": 0,
+          "latestProcessingDate": null
+        },
+        {
+          "kind": "downloads",
+          "reportId": "r3-a602f763-4566-411c-9a6d-dd433363d545",
+          "state": "awaiting_generation",
+          "instances": 0,
+          "latestProcessingDate": null
+        },
+        {
+          "kind": "purchases",
+          "reportId": "r12-a602f763-4566-411c-9a6d-dd433363d545",
+          "state": "awaiting_generation",
+          "instances": 0,
+          "latestProcessingDate": null
+        }
+      ]
+    }
+  ]
+}

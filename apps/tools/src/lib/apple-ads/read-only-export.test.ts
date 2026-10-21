@@ -1,0 +1,15 @@
+import{describe,it,expect}from'vitest';import{exportScope,validateCampaignExport}from'./read-only-export';
+const now=new Date('2026-10-15T22:00:00Z'),scope=exportScope('2026-10-11','2026-10-11',now);
+const raw=(patch:Record<string,unknown>={})=>({data:{reportingDataResponse:{row:[{metadata:{campaignId:123},granularity:[{date:'2026-10-11',impressions:13,taps:0,localSpend:{amount:'0.00',currency:'EUR'},tapInstalls:0,viewInstalls:0,totalInstalls:0,totalNewDownloads:0,totalRedownloads:0,...patch}]}]}},pagination:{totalResults:1}});
+describe('bounded read-only export',()=>{
+ it('uses 28 complete UTC days by default',()=>expect(exportScope(null,null,now)).toEqual({start:'2026-09-17',end:'2026-10-14',days:28,timezone:'UTC'}));
+ it('rejects current, invalid, reversed and old ranges',()=>{for(const[s,e]of[['2026-10-15','2026-10-15'],['2026-02-30','2026-03-01'],['2026-10-12','2026-10-11'],['2026-09-16','2026-10-14']])expect(()=>exportScope(s,e,now)).toThrow();});
+ it('retains source zero/currency',()=>expect(validateCampaignExport(raw(),'123',scope).rows[0]).toMatchObject({impressions:13,spend:'0.00',currency:'EUR',totalInstalls:0}));
+ it('keeps nonzero attribution components separate',()=>expect(validateCampaignExport(raw({tapInstalls:2,viewInstalls:1,totalInstalls:3,totalNewDownloads:2,totalRedownloads:1}),'123',scope).rows[0]).toMatchObject({tapInstalls:2,viewInstalls:1,totalInstalls:3}));
+ it('fails malformed input while retaining empty as no rows',()=>{expect(()=>validateCampaignExport({},'123',scope)).toThrow();expect(validateCampaignExport({data:{reportingDataResponse:{row:[]}}},'123',scope).status).toBe('no_reported_rows');expect(()=>validateCampaignExport(raw({impressions:undefined}),'123',scope)).toThrow();});
+ it('rejects wrong IDs, truncation, duplicate and outside dates',()=>{expect(()=>validateCampaignExport(raw(),'wrong',scope)).toThrow();const r=raw();r.pagination.totalResults=2;expect(()=>validateCampaignExport(r,'123',scope)).toThrow();const dup=raw();dup.data.reportingDataResponse.row[0].granularity.push(dup.data.reportingDataResponse.row[0].granularity[0]);expect(()=>validateCampaignExport(dup,'123',scope)).toThrow();expect(()=>validateCampaignExport(raw({date:'2026-10-12'}),'123',scope)).toThrow();});
+ it('rejects missing money and inconsistent conversions',()=>{expect(()=>validateCampaignExport(raw({localSpend:{amount:'0.00'}}),'123',scope)).toThrow();expect(()=>validateCampaignExport(raw({totalInstalls:1}),'123',scope)).toThrow();});
+});
+
+it('preserves Apple API sub-cent spend strings without rounding',()=>{for(const amount of ['1.8153','0.2042','0.6526','0.916','0.4900'])expect(validateCampaignExport(raw({localSpend:{amount,currency:'EUR'}}),'123',scope).rows[0]).toMatchObject({spend:amount,currency:'EUR'});});
+it('rejects malformed and negative money rather than coercing it',()=>{for(const amount of ['-0.01','1e2','NaN','Infinity','', '0.', '.49',' 0.49'])expect(()=>validateCampaignExport(raw({localSpend:{amount,currency:'EUR'}}),'123',scope)).toThrow();});

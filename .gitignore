@@ -2,3 +2,9 @@
 .vercel-*
 .env*
 .DS_Store
+
+# Private official report retrievals and validation scratch
+scripts/app-store/private/
+scripts/app-store/runs/
+scripts/app-store/refresh.lock
+**/__pycache__/

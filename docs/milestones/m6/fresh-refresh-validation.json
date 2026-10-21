@@ -1,0 +1,30 @@
+{
+  "validator": "independent Python csv + Decimal",
+  "result": "PASS",
+  "coverage": {
+    "observedRows": 28,
+    "unavailableCoverageRows": 56
+  },
+  "observedTotals": {
+    "impressions": 331,
+    "taps": 14,
+    "tapInstalls": 8,
+    "viewInstalls": 1,
+    "totalInstalls": 9,
+    "newDownloads": 9,
+    "redownloads": 0
+  },
+  "spendExact": "5.7587",
+  "controls": [
+    {
+      "start": "2026-09-19",
+      "end": "2026-10-16",
+      "exactApiSpend": "5.7587",
+      "consoleSpend": "5.76",
+      "result": "PASS; absent API campaigns remain unavailable"
+    }
+  ],
+  "sourceSha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
+  "snapshotApiWindowsChecked": 33,
+  "weeklyComparisonsChecked": 4
+}

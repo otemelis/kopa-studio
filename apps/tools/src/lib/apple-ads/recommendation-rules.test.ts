@@ -1,0 +1,3 @@
+import { describe,expect,it } from "vitest";import { recommend } from "./recommendation-rules";
+const base={relevance:80,confidence:70,financialRisk:20,evidence:"INSTALL_EVIDENCE" as const,isControlledExact:false,isNegative:false,spend:1,learningCap:10,fresh:true,partialSync:false,protectedTerm:false,recentBidChange:false};
+describe("recommendation rules",()=>{it("blocks stale or partial data",()=>expect(recommend({...base,fresh:false})).toBe("INSUFFICIENT_EVIDENCE"));it("harvests qualified uncontrolled terms",()=>expect(recommend(base)).toBe("ADD_EXACT_KEYWORD"));it("never suggests a negative for protected terms",()=>expect(recommend({...base,relevance:1,confidence:90,spend:4,protectedTerm:true})).not.toBe("ADD_NEGATIVE_EXACT"));});

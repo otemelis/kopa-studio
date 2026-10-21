@@ -1,0 +1,6 @@
+import { NextResponse } from "next/server";
+import { requireOwner } from "@/lib/auth";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { experimentSchema } from "@/validators/api";
+
+export async function POST(request: Request) { await requireOwner(); const parsed = experimentSchema.safeParse(await request.json().catch(() => null)); if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid experiment." }, { status: 400 }); const value = parsed.data; const db = createAdminClient(); const { data: app } = await db.from("aso_apps").select("id").eq("id", value.appId).maybeSingle(); if (!app) return NextResponse.json({ error: "App not found." }, { status: 404 }); const { error } = await db.from("aso_experiments").insert({ app_id: value.appId, title: value.title, hypothesis: value.hypothesis ?? null, change_type: value.changeType, country: value.country, target_metric: value.targetMetric, start_date: value.startDate ?? null, status: value.startDate && value.status === "planned" ? "running" : value.status, result: value.result ?? null, conclusion: value.conclusion ?? null, next_action: value.nextAction ?? null, updated_at: new Date().toISOString() }); if (error) return NextResponse.json({ error: "Could not create experiment." }, { status: 500 }); return NextResponse.json({ ok: true }, { status: 201 }); }

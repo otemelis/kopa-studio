@@ -1,0 +1,9 @@
+
+> kopa-tools@0.1.0 lint
+> eslint .
+
+
+/Users/otastemelis/Documents/Codex/2026-10-14/files-pasted-by-the-user-kopa/work/kopa-signal/apps/tools/src/components/login-form.tsx
+  27:5  warning  Do not use `window.location.assign()` to navigate to internal Next.js pages. Use `redirect()` in the render phase, or `useRouter().push()` in Client Components' event handlers instead. See: https://nextjs.org/docs/messages/no-location-assign-relative-destination  @next/next/no-location-assign-relative-destination
+
+✖ 1 problem (0 errors, 1 warning)

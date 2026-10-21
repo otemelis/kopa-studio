@@ -1,0 +1,128 @@
+{
+  "activated_at_utc": "2026-10-17T12:35:54.813Z",
+  "requests": [
+    {
+      "app": "POIS",
+      "appId": "6820665225",
+      "requestId": "0a5174c1-f952-401f-abea-3f9fd6487a36",
+      "action": "created",
+      "attributes": {
+        "accessType": "ONGOING",
+        "stoppedDueToInactivity": false
+      },
+      "readerVerified": true,
+      "reportCount": 156,
+      "checkedAt": "2026-10-17T12:35:52.717Z"
+    },
+    {
+      "app": "PASSPORT",
+      "appId": "6822753543",
+      "requestId": "1a1002c3-3a07-4d10-afca-6352b89790d5",
+      "action": "created",
+      "attributes": {
+        "accessType": "ONGOING",
+        "stoppedDueToInactivity": false
+      },
+      "readerVerified": true,
+      "reportCount": 156,
+      "checkedAt": "2026-10-17T12:35:53.763Z"
+    },
+    {
+      "app": "LoveType",
+      "appId": "6786477464",
+      "requestId": "a602f763-4566-411c-9a6d-dd433363d545",
+      "action": "created",
+      "attributes": {
+        "accessType": "ONGOING",
+        "stoppedDueToInactivity": false
+      },
+      "readerVerified": true,
+      "reportCount": 156,
+      "checkedAt": "2026-10-17T12:35:54.813Z"
+    }
+  ],
+  "post_count": 3,
+  "post_statuses": [
+    201,
+    201,
+    201
+  ],
+  "instance_checks": [
+    {
+      "app": "POIS",
+      "requestId": "0a5174c1-f952-401f-abea-3f9fd6487a36",
+      "reportId": "r3-0a5174c1-f952-401f-abea-3f9fd6487a36",
+      "name": "App Downloads Standard",
+      "dailyInstances": 0,
+      "processingDates": []
+    },
+    {
+      "app": "POIS",
+      "requestId": "0a5174c1-f952-401f-abea-3f9fd6487a36",
+      "reportId": "r12-0a5174c1-f952-401f-abea-3f9fd6487a36",
+      "name": "App Store Purchases Standard",
+      "dailyInstances": 0,
+      "processingDates": []
+    },
+    {
+      "app": "POIS",
+      "requestId": "0a5174c1-f952-401f-abea-3f9fd6487a36",
+      "reportId": "r14-0a5174c1-f952-401f-abea-3f9fd6487a36",
+      "name": "App Store Discovery and Engagement Standard",
+      "dailyInstances": 0,
+      "processingDates": []
+    },
+    {
+      "app": "PASSPORT",
+      "requestId": "1a1002c3-3a07-4d10-afca-6352b89790d5",
+      "reportId": "r3-1a1002c3-3a07-4d10-afca-6352b89790d5",
+      "name": "App Downloads Standard",
+      "dailyInstances": 0,
+      "processingDates": []
+    },
+    {
+      "app": "PASSPORT",
+      "requestId": "1a1002c3-3a07-4d10-afca-6352b89790d5",
+      "reportId": "r12-1a1002c3-3a07-4d10-afca-6352b89790d5",
+      "name": "App Store Purchases Standard",
+      "dailyInstances": 0,
+      "processingDates": []
+    },
+    {
+      "app": "PASSPORT",
+      "requestId": "1a1002c3-3a07-4d10-afca-6352b89790d5",
+      "reportId": "r14-1a1002c3-3a07-4d10-afca-6352b89790d5",
+      "name": "App Store Discovery and Engagement Standard",
+      "dailyInstances": 0,
+      "processingDates": []
+    },
+    {
+      "app": "LoveType",
+      "requestId": "a602f763-4566-411c-9a6d-dd433363d545",
+      "reportId": "r3-a602f763-4566-411c-9a6d-dd433363d545",
+      "name": "App Downloads Standard",
+      "dailyInstances": 0,
+      "processingDates": []
+    },
+    {
+      "app": "LoveType",
+      "requestId": "a602f763-4566-411c-9a6d-dd433363d545",
+      "reportId": "r12-a602f763-4566-411c-9a6d-dd433363d545",
+      "name": "App Store Purchases Standard",
+      "dailyInstances": 0,
+      "processingDates": []
+    },
+    {
+      "app": "LoveType",
+      "requestId": "a602f763-4566-411c-9a6d-dd433363d545",
+      "reportId": "r14-a602f763-4566-411c-9a6d-dd433363d545",
+      "name": "App Store Discovery and Engagement Standard",
+      "dailyInstances": 0,
+      "processingDates": []
+    }
+  ],
+  "historical_snapshot_requests_created": 0,
+  "permission_changes": 0,
+  "app_release_changes": 0,
+  "paid_services_added": 0
+}

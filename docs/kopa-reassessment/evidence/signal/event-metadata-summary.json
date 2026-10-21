@@ -1,0 +1,71 @@
+{
+  "audit": "read-only latest-1000 events sample",
+  "sampleRows": 1000,
+  "columns": [
+    "id",
+    "app_id",
+    "environment",
+    "event_name",
+    "anonymous_id",
+    "session_id",
+    "platform",
+    "app_version",
+    "os_version",
+    "country",
+    "client_event_time",
+    "received_at",
+    "properties"
+  ],
+  "fieldPresence": {
+    "anonymous_id": 1000,
+    "session_id": 1000,
+    "client_event_time": 1000,
+    "received_at": 1000,
+    "schema_version": 0
+  },
+  "apps": {
+    "innertype": 991,
+    "pocket_panic": 9
+  },
+  "environments": {
+    "prod": 991,
+    "dev": 9
+  },
+  "eventNames": {
+    "session_start": 54,
+    "result_viewed": 23,
+    "session_end": 47,
+    "app_opened": 54,
+    "price_seen": 6,
+    "paywall_product_loaded": 6,
+    "premium_screen_viewed": 6,
+    "paywall_viewed": 6,
+    "question_answered": 696,
+    "assessment_completed": 19,
+    "assessment_started": 28,
+    "first_result_aha_reached": 6,
+    "rating_prompt_shown": 6,
+    "rating_prompt_dismissed": 5,
+    "app_first_open": 21,
+    "assessment_exited": 4,
+    "assessment_abandoned": 6,
+    "purchase_success": 1,
+    "premium_unlock_tapped": 1,
+    "purchase_tapped": 1,
+    "level_started": 1,
+    "game_started": 1,
+    "banner_shown": 1,
+    "rating_selected": 1
+  },
+  "dedupCandidate": "id",
+  "duplicateCandidateIds": 0,
+  "invalidClientTimes": 0,
+  "latestReceived": "2026-10-15T01:19:23.752414+00:00",
+  "oldestReceived": "2026-10-03T11:41:43.754156+00:00",
+  "catalogRows": 113,
+  "limitations": [
+    "Bounded recent sample, not complete history or stable-identity proof.",
+    "No raw identities, properties or credentials retained.",
+    "No rank accuracy, conversion or revenue statistic inferred."
+  ]
+}

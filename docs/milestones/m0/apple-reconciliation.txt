@@ -1,0 +1,56 @@
+{
+  "period": [
+    "2026-09-14",
+    "2026-10-11"
+  ],
+  "days": 28,
+  "segmentsVerified": 84,
+  "selectedRows": 998,
+  "dailyHTTP200": 23,
+  "dailyExplicitNoSales": 5,
+  "weeklyHTTP200": 4,
+  "weekly_control_days": 28,
+  "dailyEqualsWeekly": true,
+  "analyticsPurchasesEqualSalesByProductAndTerritory": true,
+  "innerTypeFirstDownloadsEqualAcrossAppleSources": true,
+  "sourcePurchaseCounts": {
+    "App Store search": 3,
+    "App referrer": 1
+  },
+  "reportRows": 52
+}
+{
+  "rows": 1456,
+  "dates": 28,
+  "apps": 2,
+  "baseline_series": 52,
+  "results": {
+    "ratio_components_match": 4,
+    "sum_matches": 32,
+    "unavailable_preserved": 15,
+    "undefined_preserved": 1
+  }
+}
+{
+  "dataset_sha256": "fda64c4a96820e93a850fb706ca1abc0fa504abc87430f0853c02388cf184bb4",
+  "baseline_sha256": "3ca04bd8b73d0cd7dae90b81ae82fdcf6d689889df40f2a3172d9d14b1274f51",
+  "rows": 1456,
+  "days": 28,
+  "apps": 2,
+  "series_reconciled": 52,
+  "daily_values_checked_against_independent_sql": 1036,
+  "weekly_sales_control_groups": 13,
+  "weekly_equals_daily": true,
+  "duplicate_and_calendar_failure_probes_passed": true,
+  "status_counts": {
+    "derived_event_ratio": 70,
+    "reported_value": 260,
+    "unavailable_no_analytics_request": 140,
+    "unavailable_source_capability": 280,
+    "undefined_zero_denominator": 70,
+    "zero_apple_no_sales": 35,
+    "zero_matching_rows": 8,
+    "zero_no_matching_sales_rows": 116,
+    "zero_no_rows_in_validated_standard_extract": 477
+  }
+}

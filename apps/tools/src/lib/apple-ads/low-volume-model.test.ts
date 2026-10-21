@@ -1,0 +1,3 @@
+import { describe, expect, it } from "vitest";
+import { betaPosterior, evidenceConfidence, evidenceStage, financialRisk, opportunityScore } from "./low-volume-model";
+describe("low-volume model",()=>{it("does not call a single install repeated evidence",()=>expect(evidenceStage({impressions:10,taps:1,installs:1,postInstallEvents:0})).toBe("INSTALL_EVIDENCE"));it("shrinks sparse conversion toward its prior",()=>expect(betaPosterior(1,1,.1).mean).toBeLessThan(.2));it("caps deterministic scores",()=>{expect(evidenceConfidence({impressions:1e9,taps:1e9,installs:1e9})).toBe(100);expect(financialRisk(20,10)).toBe(100);expect(opportunityScore({relevance:100,demand:100,conversionPosterior:1,organicGap:100})).toBe(100);});});

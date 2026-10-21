@@ -82,6 +82,7 @@ export function metadataChecksum(fields) {
     fields.current_version ?? "",
     fields.release_notes ?? "",
     fields.price ?? "",
+    ...(fields.locale ? [fields.locale] : []),
   ]);
   let hash = 5381;
   for (let i = 0; i < canonical.length; i++) {

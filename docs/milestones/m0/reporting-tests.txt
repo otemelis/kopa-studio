@@ -1,0 +1,19 @@
+✔ exact accepted source accepted; changed or empty bytes fail integrity (8.328542ms)
+✔ CSV handles BOM, escaped quotes, embedded commas and newlines (0.7685ms)
+✔ 28-day exact totals retain original currencies and supported zero (0.354333ms)
+✔ 7-day comparable period and absolute deltas preserve zero baselines (5.406666ms)
+✔ 28-day prior outside source is unavailable, never zero or repeated data (0.097208ms)
+✔ all displayed weekly count and currency series add exactly to 28-day totals (0.685875ms)
+✔ partial source, invalid status and unavailable numeric values are rejected (59.8465ms)
+✔ money precision is exact and fractional event counts are rejected (0.161375ms)
+✔ fresh, historical, complete period and exact last successful timestamp remain explicit (0.891458ms)
+✔ failed attempt retains truthful successful timestamp and reports failure, never zero (0.087542ms)
+✔ old successful data is stale, while a missing attempt is explicitly unavailable (0.076209ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 195.741583

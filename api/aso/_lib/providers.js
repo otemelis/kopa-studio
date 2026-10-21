@@ -18,7 +18,7 @@ let lastRequestAt = 0;
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function politeFetchJson(url) {
+async function politeFetchJson(url, { maxRetries = MAX_RETRIES, timeoutMs = 15_000 } = {}) {
   const cached = cache.get(url);
   if (cached && cached.expires > Date.now()) return cached.body;
 
@@ -31,11 +31,12 @@ async function politeFetchJson(url) {
   await myTurn;
 
   let lastError = null;
-  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       const res = await fetch(url, {
         headers: { "User-Agent": USER_AGENT, Accept: "application/json" },
         cache: "no-store",
+        signal: AbortSignal.timeout(timeoutMs),
       });
       if (res.status === 429 || res.status >= 500) throw new Error(`HTTP ${res.status}`);
       if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status}`), { permanent: true });
@@ -45,13 +46,19 @@ async function politeFetchJson(url) {
     } catch (e) {
       lastError = e instanceof Error ? e : new Error(String(e));
       if (lastError.permanent) break;
-      if (attempt < MAX_RETRIES) await sleep(1000 * 2 ** attempt + Math.random() * 500);
+      if (attempt < maxRetries) await sleep(1000 * 2 ** attempt + Math.random() * 500);
     }
   }
   throw lastError ?? new Error("fetch failed");
 }
 
-function mapLookupResult(r) {
+export function normalizeExactLocale(value) {
+  const raw = typeof value === "string" ? value.trim().replaceAll("_", "-") : "";
+  const match = raw.match(/^([A-Za-z]{2,3})-([A-Za-z]{2})$/);
+  return match ? `${match[1].toLowerCase()}-${match[2].toUpperCase()}` : null;
+}
+
+export function mapLookupResult(r) {
   return {
     store_app_id: String(r.trackId),
     bundle_id: r.bundleId ?? null,
@@ -68,6 +75,9 @@ function mapLookupResult(r) {
     price: typeof r.price === "number" ? r.price : null,
     currency: r.currency ?? null,
     store_url: r.trackViewUrl ?? null,
+    // The lookup API normally omits this. Never infer it from country or
+    // languageCodesISO2A; only preserve an explicit structured locale.
+    locale: normalizeExactLocale(r.locale),
     languages: Array.isArray(r.languageCodesISO2A) ? r.languageCodesISO2A : null,
     screenshot_urls: Array.isArray(r.screenshotUrls) ? r.screenshotUrls : null,
     last_store_update_at: r.currentVersionReleaseDate ?? null,
@@ -76,15 +86,24 @@ function mapLookupResult(r) {
 
 export async function lookupApp(storeAppId, country) {
   const url = `https://itunes.apple.com/lookup?id=${encodeURIComponent(storeAppId)}&country=${encodeURIComponent(country)}&entity=software`;
-  const body = await politeFetchJson(url);
+  let body;
+  try {
+    body = await politeFetchJson(url);
+  } catch (error) {
+    // Apple can return HTTP 404 for a listing that is not available in this
+    // storefront. Treat that as an unavailable observation, not a transient
+    // collector failure; callers preserve it as an explicit warning.
+    if (error instanceof Error && error.message === "HTTP 404") return null;
+    throw error;
+  }
   const r = body?.results?.[0];
   if (!r || r.trackId == null) return null;
   return mapLookupResult(r);
 }
 
-export async function searchApps(term, country, limit) {
+export async function searchApps(term, country, limit, options) {
   const url = `https://itunes.apple.com/search?term=${encodeURIComponent(term)}&country=${encodeURIComponent(country)}&entity=software&limit=${Math.min(limit, 200)}`;
-  const body = await politeFetchJson(url);
+  const body = await politeFetchJson(url, options);
   const results = Array.isArray(body?.results) ? body.results : [];
   return results
     .filter((r) => r.trackId != null)

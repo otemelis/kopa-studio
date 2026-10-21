@@ -1,0 +1,39 @@
+{
+  "id": 2149894706,
+  "name": "Discovery — Search Match",
+  "orgId": 23026890,
+  "status": "ENABLED",
+  "cpaGoal": null,
+  "deleted": false,
+  "endTime": null,
+  "startTime": "2026-07-20T22:00:00.000",
+  "campaignId": 2144314451,
+  "creationTime": "2026-07-21T15:18:30.132",
+  "pricingModel": "CPC",
+  "displayStatus": "RUNNING",
+  "servingStatus": "RUNNING",
+  "biddingStrategy": "MANUAL_CPT",
+  "defaultBidAmount": {
+    "amount": "0.2",
+    "currency": "EUR"
+  },
+  "modificationTime": "2026-07-21T15:18:30.268",
+  "servingStateReasons": null,
+  "targetingDimensions": {
+    "age": null,
+    "gender": null,
+    "country": null,
+    "daypart": null,
+    "locality": null,
+    "adminArea": null,
+    "deviceClass": {
+      "included": [
+        "IPHONE"
+      ]
+    },
+    "appCategories": null,
+    "appDownloaders": null
+  },
+  "automatedKeywordsOptIn": true,
+  "automatedKeywordsRequired": false
+}

@@ -1,0 +1,3 @@
+import { StatusBadge } from "@/components/status-badge";
+import type { AppleAdsSyncRunRow } from "@/repositories/apple-ads-sync-repository";
+export function AppleAdsSyncHealth({ runs }: { runs: AppleAdsSyncRunRow[] }) { return <div className="table-wrap"><table><thead><tr><th>Resource</th><th>Status</th><th>Rows</th><th>Error</th></tr></thead><tbody>{runs.length ? runs.map(run => <tr key={run.id}><td>{run.resourceType}</td><td><StatusBadge status={run.status}/></td><td>{run.rowsInserted}</td><td>{run.errorMessage??"—"}</td></tr>) : <tr><td colSpan={4}>No Apple Ads sync runs yet.</td></tr>}</tbody></table></div>; }

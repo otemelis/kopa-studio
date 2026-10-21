@@ -1,0 +1,49 @@
+{
+  "validation": "PASS",
+  "method": "Independent Python iteration over retained read-only source snapshot, compared to live restricted SQL API; no fixture data used",
+  "period": {
+    "start": "2026-09-17 00:00:00+00:00",
+    "end_exclusive": "2026-10-15 00:00:00+00:00"
+  },
+  "events": 324,
+  "metrics": {
+    "active": 3,
+    "firstOpen": 2,
+    "onboarding": 2,
+    "activation": 2,
+    "paywall": 1,
+    "trial": 1,
+    "nonTrial": 0,
+    "purchaseUnknown": 0
+  },
+  "funnel": {
+    "entrants": 2,
+    "eligible": 2,
+    "completed": 2,
+    "started": 2,
+    "finished": 2,
+    "paywall": 1,
+    "purchase": 1
+  },
+  "retention": {
+    "d1": {
+      "numerator": 1,
+      "denominator": 2,
+      "percent": 50,
+      "status": "observed"
+    },
+    "d7": {
+      "numerator": 0,
+      "denominator": 0,
+      "percent": null,
+      "status": "unavailable"
+    }
+  },
+  "usage": {
+    "started": 6,
+    "matched_completed": 6,
+    "tracked_seconds": 16643
+  },
+  "daily_values_checked": 28,
+  "checked_at": "2026-10-15T17:18:24.882Z"
+}

@@ -1,0 +1,78 @@
+{
+  "scope": {
+    "start": "2026-09-19",
+    "end": "2026-10-16",
+    "days": 28,
+    "timezone": "UTC"
+  },
+  "queriedAt": "2026-10-17T13:09:21.141Z",
+  "source_sha256": "74e36fb4c90312662001da5d1c30f8e25457652d18cc7115f302f2ac1a0f2b11",
+  "coverage": {
+    "campaigns": 3,
+    "observedCampaigns": 1,
+    "observedRows": 28,
+    "expectedCampaignDays": 84,
+    "unreportedCampaignDays": 56
+  },
+  "totalsOfObservedRows": {
+    "impressions": 331,
+    "taps": 14,
+    "tapInstalls": 8,
+    "viewInstalls": 1,
+    "totalInstalls": 9,
+    "newDownloads": 9,
+    "redownloads": 0,
+    "spend": "5.7587"
+  },
+  "checks": [
+    {
+      "periodStart": "2026-09-19",
+      "periodEnd": "2026-10-16",
+      "result": "PASS: observed API sums match console footer; absent campaign rows are not independently confirmed zeros",
+      "apiSpendExact": "5.7587",
+      "consoleSpendCents": 576,
+      "comparisons": [
+        {
+          "campaignId": "2144314451",
+          "result": "UNAVAILABLE: API has no rows; console-reported values retained independently",
+          "consoleMetrics": {
+            "Spend": 0,
+            "Impressions": 0,
+            "Taps": 0,
+            "Installs (Total)": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          }
+        },
+        {
+          "campaignId": "2144366771",
+          "result": "PASS: reported count sums match; exact API spend rounds to console amount",
+          "apiSpendExact": "5.7587",
+          "consoleSpendCents": 576,
+          "observedDays": 28
+        },
+        {
+          "campaignId": "2144314113",
+          "result": "UNAVAILABLE: API has no rows; console-reported values retained independently",
+          "consoleMetrics": {
+            "Spend": 0,
+            "Impressions": 0,
+            "Taps": 0,
+            "Installs (Total)": 0,
+            "Installs (Tap-Through)": 0,
+            "Installs (View-Through)": 0,
+            "New Downloads (Total)": 0,
+            "Redownloads (Total)": 0
+          }
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "Full-window console control reconciles.",
+    "Absent campaign/day rows remain unavailable, not zero.",
+    "Known stored campaigns only; no current account inventory verification."
+  ]
+}
