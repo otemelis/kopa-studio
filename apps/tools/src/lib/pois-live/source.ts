@@ -5,8 +5,8 @@ import { buildPoisReport, type PoisEvent } from "./report";
 
 const configSchema = z.object({
   project: z.literal("dsjgbxkerucutrjltgws"),
-  user: z.literal("kopa_report_reader"),
-  host: z.string().min(1),
+  user: z.literal("kopa_report_reader.dsjgbxkerucutrjltgws"),
+  host: z.literal("aws-1-us-east-1.pooler.supabase.com"),
   port: z.number().int(),
   database: z.literal("postgres"),
   password: z.string().min(1),
