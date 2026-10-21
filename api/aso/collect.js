@@ -12,7 +12,6 @@
 import { deriveRankFields, toDateStr, compareWindows, addDays } from "./_lib/calc.js";
 import { diffMetadata, metadataChecksum } from "./_lib/metadata-diff.js";
 import { lookupApp, searchApps } from "./_lib/providers.js";
-import { launchAppleWebBrowser, collectAppleWebObservation } from "./_lib/apple-web.js";
 import { buildKeywordSearchSnapshot } from "./_lib/search-results.js";
 import { syncRecentReviews } from "./_lib/appstore-reviews.js";
 import { hasSalesReportsConfig, salesSyncMessage, syncDailySalesMetrics } from "./_lib/appstore-sales.js";
@@ -33,6 +32,11 @@ import {
 import { requireAdmin, serviceClient } from "./_lib/supabase.js";
 
 let collectionInFlight = false;
+
+// Five daily rankings cron entries × 48 keyword records = 240 daily slots.
+// This covers the current 231 active app-keyword records with nine slots of
+// headroom while preserving the four-hour spacing between scheduled runs.
+export const KEYWORDS_PER_RANKING_RUN = 48;
 
 export default async function handler(request, response) {
   response.setHeader("Cache-Control", "no-store");
@@ -79,24 +83,33 @@ export async function runCollection(trigger, scope = "full") {
   if (collectionInFlight) return { ok: false, message: "A collection run is already in progress." };
   const db = serviceClient();
   const lockHolder = `${trigger}:${crypto.randomUUID()}`;
-  const acquired = await db.rpc("aso_try_acquire_collection_lock", { p_holder: lockHolder });
+  let acquired;
+  try {
+    acquired = await db.rpc("aso_try_acquire_collection_lock", { p_holder: lockHolder });
+  } catch (error) {
+    // The RPC may have acquired the row before a response/network failure.
+    // Releasing by the unique holder is safe and prevents an orphaned lease.
+    await db.rpc("aso_release_collection_lock", { p_holder: lockHolder }).catch(() => undefined);
+    return { ok: false, message: msg(error) };
+  }
   if (!acquired) return { ok: false, message: "A collection run is already in progress. Try again in a few minutes." };
   collectionInFlight = true;
-  await db.update(
-    "aso_sync_runs",
-    { finished_at: new Date().toISOString(), status: "failed", error: "Run exceeded its six-minute collection lease; closed by the next collector invocation." },
-    `provider=eq.apple_public&status=eq.running&started_at=lt.${new Date(Date.now() - 6 * 60_000).toISOString()}`,
-  ).catch(() => undefined);
   const counters = { processed: 0, succeeded: 0, failed: 0, warnings: 0, retries: 0 };
   const errors = [];
-  const startedAt = new Date().toISOString();
-  let webBrowser = null;
-
-  const [run] = await db.insert("aso_sync_runs", [
-    { provider: "apple_public", trigger, started_at: startedAt, status: "running", ...counters },
-  ]);
+  let webQueue = null;
+  let run = null;
 
   try {
+    await db.update(
+      "aso_sync_runs",
+      { finished_at: new Date().toISOString(), status: "failed", error: "Run exceeded its six-minute collection lease; closed by the next collector invocation." },
+      `provider=eq.apple_public&status=eq.running&started_at=lt.${new Date(Date.now() - 6 * 60_000).toISOString()}`,
+    ).catch(() => undefined);
+    [run] = await db.insert("aso_sync_runs", [
+      { provider: "apple_public", trigger, started_at: new Date().toISOString(), status: "running", ...counters },
+    ]);
+    if (!run?.id) throw new Error("Collector could not create its sync-run record.");
+
     const [apps, keywords, appKeywords, competitors] = await Promise.all([
       db.select("aso_apps", "platform=eq.ios&select=*"),
       db.select("aso_keywords", "select=*"),
@@ -296,20 +309,27 @@ export async function runCollection(trigger, scope = "full") {
       if (!lastCollectedAt.has(r.keyword_id)) lastCollectedAt.set(r.keyword_id, r.captured_at);
     }
 
-    const MAX_KEYWORDS_PER_RUN = 10;
     const trackedKeywords = scope === "maintenance" ? [] : [...allTrackedKeywords]
       .sort((a, b) => (lastCollectedAt.get(a.id) ?? "").localeCompare(lastCollectedAt.get(b.id) ?? "") || a.country.localeCompare(b.country) || a.term.localeCompare(b.term) || a.id.localeCompare(b.id))
-      .slice(0, MAX_KEYWORDS_PER_RUN);
+      .slice(0, KEYWORDS_PER_RANKING_RUN);
 
     const webSummary = { succeeded: 0, failed: 0, explicit_ads: 0, stored_app_ids: 0 };
     let itunesStoredAppIds = 0;
     if (trackedKeywords.length) {
-      try {
-        webBrowser = await launchAppleWebBrowser();
-      } catch (error) {
-        counters.warnings++;
-        errors.push({ item: "apple_web_search:browser", message: msg(error) });
-      }
+      // Keep browser-only dependencies out of empty workloads and the
+      // rankings lifecycle tests. Vercel still bundles these modules, but a
+      // run with no eligible terms does not need to initialize Chromium.
+      const [{ launchAppleWebBrowser, collectAppleWebObservation }, { createAppleWebQueue }] = await Promise.all([
+        import("./_lib/apple-web.js"),
+        import("./_lib/apple-web-queue.js"),
+      ]);
+      webQueue = createAppleWebQueue({
+        launchBrowser: launchAppleWebBrowser,
+        collectObservation: collectAppleWebObservation,
+        // Give each keyword one initial launch and one recovery launch while
+        // keeping the maximum browser count bounded for this serverless run.
+        maxBrowserLaunches: trackedKeywords.length * 2 + 1,
+      });
     }
 
     let completedKeywords = 0;
@@ -334,8 +354,8 @@ export async function runCollection(trigger, scope = "full") {
 
     await runBounded(trackedKeywords, 4, async (keyword) => {
       const linkedAppIds = activeLinks.filter((ak) => ak.keyword_id === keyword.id).map((ak) => ak.app_id);
-      const webPromise = webBrowser
-        ? collectAppleWebObservation(webBrowser, keyword.country, keyword.term)
+      const webPromise = webQueue
+        ? webQueue.observe(keyword.country, keyword.term)
         : Promise.resolve({ status: "failed", depth: 0, positions: {}, explicitAdCount: 0, checksum: null, error: "Chromium runtime was unavailable." });
       let itemSucceeded = false;
 
@@ -553,12 +573,14 @@ export async function runCollection(trigger, scope = "full") {
       runId: run.id,
     };
   } catch (error) {
-    await db
-      .update("aso_sync_runs", { finished_at: new Date().toISOString(), status: "failed", error: msg(error), ...counters }, `id=eq.${run.id}`)
-      .catch(() => undefined);
-    return { ok: false, message: msg(error), runId: run.id };
+    if (run?.id) {
+      await db
+        .update("aso_sync_runs", { finished_at: new Date().toISOString(), status: "failed", error: msg(error), ...counters }, `id=eq.${run.id}`)
+        .catch(() => undefined);
+    }
+    return { ok: false, message: msg(error), runId: run?.id ?? null };
   } finally {
-    await webBrowser?.close().catch(() => undefined);
+    await webQueue?.close().catch(() => undefined);
     collectionInFlight = false;
     await db.rpc("aso_release_collection_lock", { p_holder: lockHolder }).catch(() => undefined);
   }
