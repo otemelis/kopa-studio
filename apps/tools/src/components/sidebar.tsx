@@ -54,6 +54,7 @@ const workspaces = [
 ] as const;
 
 function withContext(href: string, params: { get(name: string): string | null }) {
+  if (href === "/analytics") return href;
   const next = new URLSearchParams();
   for (const key of ["app", "country", "period"]) {
     const value = params.get(key);
