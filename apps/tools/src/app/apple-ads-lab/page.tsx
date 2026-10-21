@@ -27,8 +27,9 @@ const formatDate = (value: string | null) => value ? value.slice(0, 10) : "-";
 const isActiveCampaign = (status: string | null | undefined) => formatAppleAdsEntityStatus(status).label === "Enabled";
 const attributionLabel = (state: "not_installed" | "receiving" | "ready_for_test") => state === "receiving" ? "Receiving" : state === "ready_for_test" ? "Ready for test" : "Not installed";
 
-export default async function AppleAdsLabPage() {
+export default async function AppleAdsLabPage({ searchParams }: { searchParams: Promise<{ app?: string }> }) {
   const user = await requireUser();
+  const requestedApp = (await searchParams).app;
   const now = new Date().toISOString();
   const [connections, mappings, apps, structure, reporting, recommendations, attribution, quality] = await Promise.all([
     listAppleAdsConnections(user.id),
@@ -41,6 +42,16 @@ export default async function AppleAdsLabPage() {
     getAppleAdsDataQuality(user.id),
   ]);
   const runs = await listAppleAdsSyncRuns(connections.map((connection) => connection.id));
+  if (requestedApp) {
+    const app = apps.find((item) => item.id === requestedApp || item.storeAppId === requestedApp || (requestedApp === "pois" && /^pois\b/i.test(item.name)));
+    if (!app) return <PageShell title="Apple Ads"><section className="notice"><h2>Unknown app</h2><p>No Apple Ads figures were shown because this app could not be resolved.</p></section></PageShell>;
+    const campaigns = structure.campaigns.filter((item) => item.appId === app.id);
+    const campaignIds = new Set(campaigns.map((item) => item.id));
+    const rows = reporting.rows.filter((item) => item.campaignId && campaignIds.has(item.campaignId));
+    const latest = rows.reduce<string | null>((value, item) => !value || (item.sourceSyncedAt && item.sourceSyncedAt > value) ? item.sourceSyncedAt : value, null);
+    const currencies = [...new Set(rows.map((item) => item.currency).filter(Boolean))];
+    return <PageShell title={`${app.name} · Apple Ads`}><section className="notice"><h2>App-scoped paid search</h2><p>Only campaigns explicitly mapped to {app.name} are counted. The portfolio’s historical campaigns and unmapped rows are excluded.</p></section><section className="metric-grid"><article className="metric-card"><p>Imported campaigns</p><strong>{campaigns.length || "Unavailable"}</strong><small>{campaigns.length ? "Current imported structure" : "No app mapping or campaign import"}</small></article><article className="metric-card"><p>Reported impressions</p><strong>{rows.length ? formatNumber(rows.reduce((sum, item) => sum + item.impressions, 0)) : "Unavailable"}</strong><small>{rows.length ? `${rows.length} imported daily rows` : "No app-scoped report rows"}</small></article><article className="metric-card"><p>Reported spend</p><strong>{rows.length && currencies.length === 1 ? formatMoney(rows.reduce((sum, item) => sum + item.spend, 0), currencies[0]) : "Unavailable"}</strong><small>{latest ? `Latest sync ${formatDate(latest)}` : "No successful app-scoped report sync"}</small></article></section><section className="notice"><h2>Connection health</h2><p>{runs[0] ? `Latest sync: ${runs[0].status}${runs[0].errorMessage ? ` · ${runs[0].errorMessage}` : ""}` : "No sync run recorded"}. These are Apple Ads reported measures, not verified paying customers.</p>{/^pois\b/i.test(app.name) ? <p><Link href="/pois-signals">Open POIS source overview</Link></p> : null}</section></PageShell>;
+  }
   const currency = reporting.rows.find((row) => row.currency)?.currency ?? structure.campaigns.find((campaign) => campaign.currency)?.currency ?? null;
   const today = now.slice(0, 10);
   const todayRows = reporting.rows.filter((row) => row.metricDate === today);

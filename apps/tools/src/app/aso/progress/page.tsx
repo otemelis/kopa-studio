@@ -26,10 +26,10 @@ export default async function AsoProgressPage({ searchParams }: { searchParams: 
   await requireUser();
   const filters = await searchParams;
   const apps = await listApps();
-  const selectedApp = apps.find((app) => app.id === filters.app)
-    ?? apps.find((app) => /innertype/i.test(app.name))
-    ?? apps[0];
-  if (!selectedApp) return <PageShell title="ASO Progress"><p className="notice">No apps are configured for ASO tracking.</p></PageShell>;
+  const selectedApp = filters.app
+    ? apps.find((app) => app.id === filters.app || app.storeAppId === filters.app || (filters.app === "pois" && /^pois\b/i.test(app.name)))
+    : apps.find((app) => /innertype/i.test(app.name)) ?? apps[0];
+  if (!selectedApp) return <PageShell title="ASO Progress"><p className="notice">{filters.app ? "The selected app was not found. No other app data was substituted." : "No apps are configured for ASO tracking."}</p></PageShell>;
   const selectedCountry = filters.country === "all" ? "all" : (filters.country?.toLowerCase() || selectedApp.primaryCountry);
   const country = selectedCountry === "all" ? undefined : selectedCountry;
   const days: 1 | 7 | 28 = filters.window === "1" ? 1 : filters.window === "28" ? 28 : 7;
