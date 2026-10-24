@@ -4,6 +4,8 @@ The owner-only `/lovetype-signals` page reads only `public.events` in the existi
 
 Website visit counts use distinct temporary visit IDs on `page_view`. App active and step counts use distinct app installation IDs. These identifiers are different and cannot be joined. Website country is inferred from browser language. App Store tap events are website clicks, not downloads. `purchase_completed` is a client event, not verified sales or proceeds. `is_mock=true` and `is_preview=true` paywall events are excluded from production purchase measures.
 
+The observed production website page view on 24 October omitted `page_index`, although the website notes describe it. Entry referrers and daily visit dates therefore use the earliest observed page view per visit ID, with missing-index coverage shown on the page. That is the first *observed* page, not proof that earlier pages were captured.
+
 Exact duplicate event rows (same app, event name, installation/visit ID, session ID, client timestamp and properties) are excluded from activity counts. This is provisional because the shared table has no client event ID. The page exposes the excluded row count. A durable event-ID/idempotency fix belongs in the collector/app transport, not this read-only view.
 
 Independent SQL control (run against the same 7-day window; compare when reviewing live results):

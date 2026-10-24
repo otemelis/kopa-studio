@@ -56,8 +56,8 @@ export default async function LoveTypeSignals({ searchParams }: { searchParams: 
         <Metric label="Observed visits" value={web.visits} detail="Distinct temporary visit IDs with a page view" />
         <Metric label="Page views" value={web.pageViews} detail="Deduplicated page_view events" />
         <Metric label="App Store tap visits" value={web.tapVisits} detail={`${web.taps} tap events · ${web.visits ? `${Math.round(web.tapVisits / web.visits * 100)}% of observed visits` : "rate unavailable"}`} />
-      </div><Bars title="New visits by day" points={web.dailyVisits} color="var(--web)" empty="No landing-page visit events in this period." />
-        <div className={styles.twoBreakdowns}><Breakdown title="Landing referrers" rows={web.referrers} empty="No first-page referrer observed." note="Visit IDs" />
+      </div><Bars title="Observed visits by day" points={web.dailyVisits} color="var(--web)" empty="No page-view visits observed in this period." />
+        <div className={styles.twoBreakdowns}><Breakdown title="Entry referrers" rows={web.referrers} empty="No first-observed-page referrer recorded." note="Visit IDs" />
         <Breakdown title="App Store buttons" rows={web.ctas} empty="No App Store taps observed." note="Tap visits" /></div>
         <div className={styles.twoBreakdowns}><Breakdown title="Pages reached" rows={web.paths} empty="No page views observed." note="Visit IDs" />
         <Breakdown title="UTM campaigns" rows={web.campaigns} empty="No tagged landing visits observed." note="First page only" /></div>
@@ -93,7 +93,7 @@ export default async function LoveTypeSignals({ searchParams }: { searchParams: 
 
     <section className={styles.quality}><div className={styles.sectionTitle}><h3>Measurement notes</h3><span>Read directly from Supabase public.events · no fixtures</span></div>
       <ul><li>Website country is inferred from browser language, so it is not a reliable location or an attribution join key.</li>
-        <li>Website “visits” are temporary tab/session IDs, not unique people. App “installations” are anonymous installation IDs, not App Store downloads.</li>
+        <li>Website “visits” are temporary tab/session IDs, not unique people. App “installations” are anonymous installation IDs, not App Store downloads. The first observed page is used for entry referrer and visit date; {web.available ? `${web.firstPagesWithoutIndex} visits lacked page_index` : "page-index coverage is unavailable"}.</li>
         <li>App events are production-tagged, but this early sample may include developer activity. New paywall context requires a shipped app build; {app.available ? `${app.paywallContextCount} paywall-view IDs were observed in this period` : "its coverage is unavailable"}.</li>
         <li>Exact repeated app rows excluded from activity counts: <strong>{app.available ? app.exactCopies : "unavailable"}</strong>. This is a provisional duplicate fingerprint because source event IDs are not stored.</li>
         <li>First observed: website {web.available ? utc(web.firstObserved) : "unavailable"}; app {app.available ? utc(app.firstObserved) : "unavailable"}. Empty days before these dates do not establish zero traffic.</li></ul></section>
