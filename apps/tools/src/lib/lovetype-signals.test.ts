@@ -12,11 +12,13 @@ describe("LoveType live source contract", () => {
   it("counts installations and visits separately and removes exact replays", () => {
     const started = event(1, "lovetype", "onboarding_started", "installation-1", { source: "unknown" });
     const report = summarizeLoveType(source([started, { ...started, id: 2 }, event(3, "lovetype", "test_started", "installation-1", { test_type: "attachment" })]),
-      source([event(4, "lovetype-web", "page_view", "visit-1", { page_index: 1, referrer: "direct" }),
+      source([event(4, "lovetype-web", "page_view", "visit-1", { referrer: "direct" }),
         event(5, "lovetype-web", "app_store_tap", "visit-1", { cta: "hero" })]));
     expect(report.app).toMatchObject({ activeInstallations: 1, onboardingStarts: 1, testStarts: 1, exactCopies: 1 });
     expect(report.web).toMatchObject({ visits: 1, pageViews: 1, tapVisits: 1, taps: 1 });
     expect(report.web.referrers).toEqual([{ label: "direct", count: 1 }]);
+    expect(report.web.dailyVisits).toEqual([{ date: "2026-10-24", value: 1 }]);
+    expect(report.web.firstPagesWithoutIndex).toBe(1);
   });
 
   it("keeps unavailable distinct from observed zero, and excludes dev rows upstream", () => {

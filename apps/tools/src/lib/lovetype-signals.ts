@@ -114,8 +114,17 @@ export function summarizeLoveType(appSource: SourceResult, webSource: SourceResu
   const paywallPurchases = paywall.filter((event) => event.event_name === "purchase_completed");
   const viewIds = new Set(paywallViews.map((event) => stringProperty(event, "paywall_view_id")).filter(Boolean));
   const tappedViewIds = new Set(paywallTaps.map((event) => stringProperty(event, "paywall_view_id")).filter((id) => id && viewIds.has(id)));
-  const landing = web.filter((event) => event.event_name === "page_view" && event.properties?.page_index === 1);
-  const visitIds = new Set(web.filter((event) => event.event_name === "page_view")
+  const pageViews = web.filter((event) => event.event_name === "page_view");
+  // Some deployed website rows omit page_index despite the site notes. The earliest
+  // observed page for a visit is the reproducible entry point in either schema.
+  const firstPageByVisit = new Map<string, LoveTypeEvent>();
+  for (const event of [...pageViews].sort((a, b) =>
+    (a.client_event_time ?? a.received_at).localeCompare(b.client_event_time ?? b.received_at) || a.id - b.id)) {
+    const visitId = event.session_id ?? event.anonymous_id;
+    if (visitId && !firstPageByVisit.has(visitId)) firstPageByVisit.set(visitId, event);
+  }
+  const firstPages = [...firstPageByVisit.values()];
+  const visitIds = new Set(pageViews
     .map((event) => event.session_id ?? event.anonymous_id).filter(Boolean));
   const tapVisitIds = new Set(web.filter((event) => event.event_name === "app_store_tap")
     .map((event) => event.session_id ?? event.anonymous_id).filter(Boolean));
@@ -152,17 +161,18 @@ export function summarizeLoveType(appSource: SourceResult, webSource: SourceResu
       available: webSource.available, rawRows: webSource.events.length,
       exactCopies: webSource.events.length - web.length, lastReceived: last(webSource.events),
       firstObserved: web.reduce<string | null>((first, e) => !first || (e.client_event_time && e.client_event_time < first) ? e.client_event_time : first, null),
-      visits: visitIds.size, pageViews: web.filter((e) => e.event_name === "page_view").length,
+      visits: visitIds.size, pageViews: pageViews.length,
+      firstPagesWithoutIndex: firstPages.filter((event) => event.properties?.page_index == null).length,
       tapVisits: tapVisitIds.size, taps: web.filter((e) => e.event_name === "app_store_tap").length,
       compareCodeVisits: distinctIds(web, "compare_code_decoded"),
       pairPickerVisits: distinctIds(web, "pair_picked"),
       starterCopyVisits: distinctIds(web, "starter_line_copied"),
       paths: breakdown(web, "path", "page_view"),
-      referrers: countLandingValues(landing, "referrer"),
-      utmSources: countLandingValues(landing, "utm_source"),
-      campaigns: countLandingValues(landing, "utm_campaign"),
+      referrers: countLandingValues(firstPages, "referrer"),
+      utmSources: countLandingValues(firstPages, "utm_source"),
+      campaigns: countLandingValues(firstPages, "utm_campaign"),
       ctas: breakdown(web, "cta", "app_store_tap"),
-      dailyVisits: byDay(web.filter((e) => e.event_name === "page_view" && e.properties?.page_index === 1), "page_view", true),
+      dailyVisits: byDay(firstPages, "page_view", true),
     },
   };
 }
