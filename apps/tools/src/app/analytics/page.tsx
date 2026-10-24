@@ -6,6 +6,7 @@ import { PageShell } from "@/components/page-shell";
 import { PoisLive } from "@/components/product-analytics/pois-live";
 import { readPoisReport } from "@/lib/pois-live/source";
 import { requireUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
 export const dynamic = "force-dynamic";
 type Params = Promise<Record<string, string | string[] | undefined>>;
 export async function generateMetadata({
@@ -35,6 +36,7 @@ export default async function Page({ searchParams }: { searchParams: Params }) {
   const params = Object.fromEntries(
     Object.entries(raw).map(([k, v]) => [k, Array.isArray(v) ? v[0] : v]),
   );
+  if (params.app === "lovetype") redirect("/lovetype-signals");
   if (!params.app || params.app === "pois") {
     await requireUser();
     const days = params.days === "28" ? 28 : 7;
