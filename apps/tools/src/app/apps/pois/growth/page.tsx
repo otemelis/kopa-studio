@@ -29,8 +29,10 @@ export default async function PoisGrowthPage({ searchParams }: { searchParams: P
   ]);
   const source = sourceResult.status === "fulfilled" ? sourceResult.value : null;
   const product = productResult.status === "fulfilled" ? productResult.value : null;
-  const since = new Date(currentTime() - days * 86_400_000).toISOString().slice(0, 10);
-  const store = source ? summarizePoisSources(source.metrics, source.sales, source.paidSearch, country, since) : null;
+  const now = currentTime();
+  const since = new Date(now - days * 86_400_000).toISOString().slice(0, 10);
+  const through = new Date(now - 86_400_000).toISOString().slice(0, 10);
+  const store = source ? summarizePoisSources(source.metrics, source.sales, source.paidSearch, country, since, through) : null;
   const query = (patch: Partial<Params>) => {
     const next = new URLSearchParams({ days: String(days), country, channel, ...(product?.version ? { version: product.version } : {}) });
     for (const [key, value] of Object.entries(patch)) if (value) next.set(key, value); else next.delete(key);
@@ -43,7 +45,7 @@ export default async function PoisGrowthPage({ searchParams }: { searchParams: P
         <label>App events <select name="channel" defaultValue={channel}><option value="appstore">Production</option><option value="testflight">TestFlight</option></select></label>{" "}
         {product?.availableVersions.length ? <label>Version <select name="version" defaultValue={product.version ?? ""}>{product.availableVersions.map((value) => <option key={value} value={value}>{value}</option>)}</select></label> : null}{" "}
         <button type="submit">Apply</button></form>
-      <p>App events: {channel === "appstore" ? "production" : "TestFlight"}{product?.version ? ` · v${product.version}` : ""} · all storefronts · UTC event time, {date(product?.latestReceivedAt ?? null)} latest receipt. Apple rows: {country} · source report dates. <Link href={query({ days: days === 7 ? "28" : "7" })}>Switch to {days === 7 ? "28" : "7"} days</Link></p></section>
+      <p>App events: {channel === "appstore" ? "production" : "TestFlight"}{product?.version ? ` · v${product.version}` : ""} · all storefronts · rolling {days}×24h UTC event window, {date(product?.latestReceivedAt ?? null)} latest receipt. Apple rows: {country} · {since}–{through} complete UTC report dates. <Link href={query({ days: days === 7 ? "28" : "7" })}>Switch to {days === 7 ? "28" : "7"} days</Link></p></section>
     <div className="section-head"><h2>App Store acquisition</h2><Link href="/app-store-connect">Source detail</Link></div>
     <section className="metric-grid">
       <Metric label="Impressions" value={number(store?.impressions)} note={`App Store Connect Analytics · latest ${date(store?.ascLatest ?? null)}`} />
@@ -69,6 +71,6 @@ export default async function PoisGrowthPage({ searchParams }: { searchParams: P
       <Metric label="Real paywall viewers" value={number(product?.activation.realPaywallViewers)} note="paywall_viewed with preview=false" />
       <Metric label="Client purchase completions" value={number(product?.purchaseCompletions)} note="Client signal only; not verified paid transactions" />
     </section>
-    <section className="notice"><h2>Subscription truth and data health</h2><p>Trials, verified first charges, renewals, active paid subscribers, cancellations, refunds, proceeds and CAC are unavailable. Current POIS RevenueCat webhook rows are sandbox-only and the production subscription-state table has no rows. Client purchase completions cannot establish revenue.</p><p>{product ? `${number(product.eventCount)} deduplicated events · ${number(product.activation.unmatchedSessionEnds)} unmatched session endings · selected version ${product.version ?? "unavailable"}.` : "Product event source unavailable; no substitute events shown."} {source ? `ASC latest ${date(store?.ascLatest ?? null)}; Sales latest ${date(store?.salesLatest ?? null)}; Ads latest ${date(store?.adsLatest ?? null)}.` : "App Store/Ads source unavailable; no substitute metrics shown."}</p></section>
+    <section className="notice"><h2>Subscription truth and data health</h2><p>Trials, verified first charges, renewals, active paid subscribers, cancellations, refunds, proceeds and CAC are unavailable from connected reporting sources. At the 28 October audit, POIS RevenueCat webhook rows were sandbox-only and the production subscription-state table had no rows; this page does not recheck those tables live. Client purchase completions cannot establish revenue.</p><p>{product ? `${number(product.eventCount)} deduplicated events · ${number(product.activation.unmatchedSessionEnds)} unmatched session endings · selected version ${product.version ?? "unavailable"}.` : "Product event source unavailable; no substitute events shown."} {source ? `ASC latest ${date(store?.ascLatest ?? null)}; Sales latest ${date(store?.salesLatest ?? null)}; Ads latest ${date(store?.adsLatest ?? null)}.` : "App Store/Ads source unavailable; no substitute metrics shown."}</p></section>
   </PageShell>;
 }
