@@ -28,4 +28,24 @@ describe("POIS owner report", () => {
     expect(() => buildPoisReport([event("1", "a", "app_opened", 1, "testflight")], "appstore", "a", "b"))
       .toThrow("Mixed POIS build channels");
   });
+
+  it("uses observed properties, matched session IDs and evaluated seconds for activation", () => {
+    const withProps = (id: string, installation: string, name: string, minute: number,
+      properties: Record<string, unknown>, sessionId: string | null = null): PoisEvent =>
+      ({ ...event(id, installation, name, minute), sessionId, properties });
+    const report = buildPoisReport([
+      withProps("1", "a", "app_opened", 1, { first_launch: true }),
+      withProps("1", "a", "app_opened", 1, { first_launch: true }), // retransmission
+      withProps("2", "a", "airpods_state_changed", 2, { state: "sensing" }),
+      withProps("3", "a", "proof_cue_actually_played", 3, {}),
+      withProps("4", "a", "session_started", 4, {}, "real-a"),
+      withProps("5", "a", "session_ended", 5, { tracked_seconds: 600, wall_clock_seconds: 900 }, "real-a"),
+      withProps("6", "b", "session_ended", 6, { tracked_seconds: 1200 }, "missing-start"),
+      withProps("7", "a", "paywall_viewed", 7, { preview: true }),
+      withProps("8", "a", "paywall_viewed", 8, { preview: false }),
+    ], "appstore", "2026-10-21T11:00:00Z", "2026-10-21T12:00:00Z");
+    expect(report.eventCount).toBe(8);
+    expect(report.activation).toEqual({ firstOpens: 1, confirmedSensing: 1, proofHeard: 1,
+      realSessionStarters: 1, meaningfulSessions: 1, realPaywallViewers: 1, unmatchedSessionEnds: 1 });
+  });
 });
