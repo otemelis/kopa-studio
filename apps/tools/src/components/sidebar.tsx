@@ -8,6 +8,7 @@ const workspaces = [
   { label: "Dashboard", href: "/" },
   { label: "Product Analytics", href: "/analytics" },
   { label: "POIS signals", href: "/pois-signals" },
+  { label: "POIS Growth", href: "/apps/pois/growth" },
   { label: "LoveType signals", href: "/lovetype-signals" },
   { label: "Apps", href: "/apps" },
   {

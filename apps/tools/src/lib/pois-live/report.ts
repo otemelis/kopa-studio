@@ -22,7 +22,8 @@ export function buildPoisReport(events: PoisEvent[], channel: string, since: str
   // The source query is channel-scoped too. This check prevents accidental cross-channel displays.
   if (events.some((event) => event.buildChannel !== channel))
     throw new Error("Mixed POIS build channels");
-  const ordered = [...events].sort((a, b) =>
+  const deduplicated = [...new Map(events.map((event) => [event.eventId, event])).values()];
+  const ordered = deduplicated.sort((a, b) =>
     a.occurredAt.localeCompare(b.occurredAt) || a.eventId.localeCompare(b.eventId),
   );
   const installations = new Set(ordered.map((e) => e.installationId));
@@ -60,6 +61,16 @@ export function buildPoisReport(events: PoisEvent[], channel: string, since: str
   }
   const uniqueFor = (name: string) => byName.get(name)?.installations.size ?? 0;
   const observedSessions = new Set(ordered.filter((e) => e.sessionId).map((e) => e.sessionId)).size;
+  const installationsFor = (predicate: (event: PoisEvent) => boolean) =>
+    new Set(ordered.filter(predicate).map((event) => event.installationId)).size;
+  const starts = new Set(ordered.filter((event) => event.name === "session_started" && event.sessionId)
+    .map((event) => `${event.installationId}:${event.sessionId}`));
+  const matchedEnds = ordered.filter((event) => event.name === "session_ended" && event.sessionId &&
+    starts.has(`${event.installationId}:${event.sessionId}`));
+  const meaningfulSessions = new Set(matchedEnds.filter((event) => {
+    const seconds = event.properties.tracked_seconds;
+    return typeof seconds === "number" && Number.isFinite(seconds) && seconds >= 600;
+  }).map((event) => event.installationId)).size;
   return {
     channel, since, until,
     eventCount: ordered.length,
@@ -69,6 +80,16 @@ export function buildPoisReport(events: PoisEvent[], channel: string, since: str
     journey,
     paywallViews: uniqueFor("paywall_viewed"),
     purchaseCompletions: uniqueFor("purchase_completed"),
+    activation: {
+      firstOpens: installationsFor((event) => event.name === "app_opened" && event.properties.first_launch === true),
+      confirmedSensing: installationsFor((event) => event.name === "airpods_state_changed" && event.properties.state === "sensing"),
+      proofHeard: uniqueFor("proof_cue_actually_played"),
+      realSessionStarters: installationsFor((event) => event.name === "session_started" && Boolean(event.sessionId)),
+      meaningfulSessions,
+      realPaywallViewers: installationsFor((event) => event.name === "paywall_viewed" && event.properties.preview === false),
+      unmatchedSessionEnds: ordered.filter((event) => event.name === "session_ended" && (!event.sessionId ||
+        !starts.has(`${event.installationId}:${event.sessionId}`))).length,
+    },
     daily: [...byDay].sort(([a], [b]) => a.localeCompare(b)).map(([date, ids]) => ({ date, installations: ids.size })),
     events: [...byName].sort(([a], [b]) => a.localeCompare(b)).map(([name, value]) => ({ name, events: value.events, installations: value.installations.size })),
     versions: [...new Set(ordered.map((e) => e.appVersion).filter(Boolean))].sort(),

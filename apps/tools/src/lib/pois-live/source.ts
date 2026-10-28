@@ -31,7 +31,7 @@ function readerPool() {
   return pool;
 }
 
-export async function readPoisReport(days: 7 | 28, channel: "appstore" | "testflight") {
+export async function readPoisReport(days: 7 | 28, channel: "appstore" | "testflight", requestedVersion?: string) {
   const until = new Date().toISOString();
   const since = new Date(Date.now() - days * 86_400_000).toISOString();
   const client = await readerPool().connect();
@@ -42,15 +42,25 @@ export async function readPoisReport(days: 7 | 28, channel: "appstore" | "testfl
     );
     if (identity[0]?.role !== "kopa_report_reader" || identity[0]?.read_only !== "on" || identity[0]?.can_write)
       throw new Error("POIS source role is not read-only");
+    const { rows: versionRows } = await client.query(
+      `SELECT DISTINCT app_version FROM form.events
+        WHERE build_channel = $1 AND occurred_at >= $2 AND occurred_at <= $3
+          AND app_version IS NOT NULL`, [channel, since, until],
+    );
+    const availableVersions = versionRows.map((row) => String(row.app_version))
+      .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+    const version = requestedVersion && availableVersions.includes(requestedVersion)
+      ? requestedVersion : availableVersions[0] ?? null;
     const { rows } = await client.query(
       `SELECT event_id::text AS "eventId", installation_id::text AS "installationId",
               session_id::text AS "sessionId", event_name AS name,
               occurred_at AS "occurredAt", received_at AS "receivedAt",
-              app_version AS "appVersion", build_channel AS "buildChannel"
+              app_version AS "appVersion", build_channel AS "buildChannel", properties
          FROM form.events
         WHERE build_channel = $1 AND occurred_at >= $2 AND occurred_at <= $3
+          AND app_version = $4
         ORDER BY occurred_at, event_id LIMIT 10001`,
-      [channel, since, until],
+      [channel, since, until, version],
     );
     if (rows.length > 10000) throw new Error("POIS report row limit reached");
     await client.query("COMMIT");
@@ -58,9 +68,9 @@ export async function readPoisReport(days: 7 | 28, channel: "appstore" | "testfl
       ...row,
       occurredAt: row.occurredAt.toISOString(),
       receivedAt: row.receivedAt.toISOString(),
-      properties: {},
+      properties: row.properties ?? {},
     }));
-    return buildPoisReport(events, channel, since, until);
+    return { ...buildPoisReport(events, channel, since, until), version, availableVersions };
   } catch (error) {
     await client.query("ROLLBACK");
     throw error;
