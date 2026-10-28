@@ -82,6 +82,10 @@ export function buildPoisReport(events: PoisEvent[], channel: string, since: str
     purchaseCompletions: uniqueFor("purchase_completed"),
     activation: {
       firstOpens: installationsFor((event) => event.name === "app_opened" && event.properties.first_launch === true),
+      onboardingStarters: uniqueFor("onboarding_started"),
+      onboardingCompleters: uniqueFor("onboarding_completed"),
+      noHeadphonesExplorers: installationsFor((event) => event.name === "exploration_entered" && event.properties.entry_reason === "missing"),
+      demoCompleters: uniqueFor("demo_completed"),
       confirmedSensing: installationsFor((event) => event.name === "airpods_state_changed" && event.properties.state === "sensing"),
       proofHeard: uniqueFor("proof_cue_actually_played"),
       realSessionStarters: installationsFor((event) => event.name === "session_started" && Boolean(event.sessionId)),
