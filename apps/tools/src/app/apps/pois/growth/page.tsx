@@ -64,6 +64,10 @@ export default async function PoisGrowthPage({ searchParams }: { searchParams: P
     <section className="metric-grid">
       <Metric label="Observed active installations" value={number(product?.installationCount)} note="Distinct installation IDs in selected channel and version" />
       <Metric label="First observed opens" value={number(product?.activation.firstOpens)} note="app_opened with first_launch=true; not downloads" />
+      <Metric label="Onboarding started" value={number(product?.activation.onboardingStarters)} note="Distinct installations with onboarding_started" />
+      <Metric label="Onboarding completed" value={number(product?.activation.onboardingCompleters)} note="Explicit onboarding_completed event; demo completion is separate" />
+      <Metric label="No-headphones exploration" value={number(product?.activation.noHeadphonesExplorers)} note="exploration_entered with entry_reason=missing; not sensing activation" />
+      <Metric label="Demo completed" value={number(product?.activation.demoCompleters)} note="Distinct installations; preview only, not a real session or proof" />
       <Metric label="Confirmed sensing" value={number(product?.activation.confirmedSensing)} note="Distinct installations with sensing state" />
       <Metric label="Proof heard" value={number(product?.activation.proofHeard)} note="Actual cue played; not proof started" />
       <Metric label="Real session starters" value={number(product?.activation.realSessionStarters)} note="session_started with session ID" />

@@ -46,6 +46,25 @@ describe("POIS owner report", () => {
     ], "appstore", "2026-10-21T11:00:00Z", "2026-10-21T12:00:00Z");
     expect(report.eventCount).toBe(8);
     expect(report.activation).toEqual({ firstOpens: 1, confirmedSensing: 1, proofHeard: 1,
+      onboardingStarters: 0, onboardingCompleters: 0, noHeadphonesExplorers: 0, demoCompleters: 0,
       realSessionStarters: 1, meaningfulSessions: 1, realPaywallViewers: 1, unmatchedSessionEnds: 1 });
+  });
+
+  it("keeps the no-headphones demo branch separate from real activation", () => {
+    const withProps = (id: string, name: string, minute: number, properties: Record<string, unknown> = {}): PoisEvent =>
+      ({ ...event(id, "new-install", name, minute), properties });
+    const report = buildPoisReport([
+      withProps("1", "app_opened", 1, { first_launch: true }),
+      withProps("2", "onboarding_started", 2),
+      withProps("3", "exploration_entered", 3, { entry_reason: "missing" }),
+      withProps("4", "demo_started", 4, { headphone_state: "missing" }),
+      withProps("5", "demo_cue_played", 5),
+      withProps("6", "demo_completed", 6, { cue_outcome: "played" }),
+    ], "appstore", "2026-10-21T11:00:00Z", "2026-10-21T12:00:00Z");
+    expect(report.activation).toMatchObject({
+      firstOpens: 1, onboardingStarters: 1, onboardingCompleters: 0,
+      noHeadphonesExplorers: 1, demoCompleters: 1,
+      confirmedSensing: 0, proofHeard: 0, realSessionStarters: 0,
+    });
   });
 });
