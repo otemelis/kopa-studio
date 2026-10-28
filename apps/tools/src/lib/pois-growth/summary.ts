@@ -7,12 +7,12 @@ export function completeTotal(values: (number | null)[]): number | null {
 
 export function summarizePoisSources(
   metrics: ProgressMetric[], sales: SalesMetric[], paid: PaidSearchMetric[],
-  country: string, since: string,
+  country: string, since: string, through: string,
 ) {
   const market = country.toUpperCase();
-  const asc = metrics.filter((row) => row.country.toUpperCase() === market && row.date >= since);
-  const units = sales.filter((row) => row.country.toUpperCase() === market && row.date >= since && row.source === "appstore_connect_sales");
-  const ads = paid.filter((row) => row.country?.toUpperCase() === market && row.metric_date >= since);
+  const asc = metrics.filter((row) => row.country.toUpperCase() === market && row.date >= since && row.date <= through);
+  const units = sales.filter((row) => row.country.toUpperCase() === market && row.date >= since && row.date <= through && row.source === "appstore_connect_sales");
+  const ads = paid.filter((row) => row.country?.toUpperCase() === market && row.metric_date >= since && row.metric_date <= through);
   const counts = (event: string, pageType?: string) => completeTotal(asc.filter((row) =>
     row.event.toLowerCase() === event.toLowerCase() && (!pageType || row.page_type?.toLowerCase() === pageType.toLowerCase()),
   ).map((row) => row.count));
