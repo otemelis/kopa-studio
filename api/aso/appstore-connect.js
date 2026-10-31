@@ -73,7 +73,7 @@ export default async function handler(request, response) {
 
   if (action === "sync_analytics") {
     try {
-      const apps = await db.select("aso_apps", "platform=eq.ios&appstore_connect_id=not.is.null&select=id,name,appstore_connect_id");
+      const apps = await db.select("aso_apps", "platform=eq.ios&appstore_connect_id=not.is.null&select=id,name,appstore_connect_id,store_app_id");
       const result = await syncDiscoveryAnalytics(db, apps);
       const message = result.state === "partial"
         ? `Partially imported ${result.rawRows} storefront metric row(s) from ${result.segments} Apple report segment(s); ${result.rejectedRows} invalid source row(s) were excluded.`
