@@ -26,4 +26,14 @@ describe("POIS source summaries", () => {
     }));
     expect(summarizePoisSources(rows, [], [], "AU", "2026-10-21", "2026-10-21").impressions).toBe(1);
   });
+  it("keeps Analytics first-time downloads separate from Sales units", () => {
+    const rows = [
+      { date: "2026-10-25", country: "AU", downloads: 1, proceeds: null, proceeds_currency: null, source: "appstore_connect_first_time_downloads" },
+      { date: "2026-10-25", country: "AU", downloads: 2, proceeds: null, proceeds_currency: null, source: "appstore_connect_sales" },
+    ];
+    const result = summarizePoisSources([], rows, [], "AU", "2026-10-25", "2026-10-25");
+    expect(result.firstTimeDownloads).toBe(1);
+    expect(result.salesUnits).toBe(2);
+    expect(result.firstTimeDownloadsLatest).toBe("2026-10-25");
+  });
 });

@@ -7,6 +7,8 @@ import {
   DiscoveryReportParseError,
   inspectDiscoveryReport,
   parseDiscoveryReport,
+  inspectDownloadsReport,
+  latestProcessingRows,
 } from "./appstore-analytics.js";
 
 const productionFixture = readFileSync(new URL("./fixtures/appstore-discovery-innertype-sanitized.tsv", import.meta.url), "utf8");
@@ -135,4 +137,26 @@ test("parseDiscoveryReport keeps legacy comma-delimited fixture support", () => 
       uniqueCount: 40,
     },
   ]);
+});
+
+test("latest processing partition wins without losing multiple segments for its date", () => {
+  const header = productionFixture.split("\n")[0];
+  const original = productionFixture.split("\n")[1];
+  const newer = original.replace("\t12\t10", "\t5\t5");
+  const files = [
+    { text: `${header}\n${original}\n`, processingDate: "2026-07-28", segmentId: "old" },
+    { text: `${header}\n${newer}\n`, processingDate: "2026-07-29", segmentId: "new-a" },
+    { text: `${header}\n${newer}\n`, processingDate: "2026-07-29", segmentId: "new-b" },
+  ];
+  const selected = latestProcessingRows(files, inspectDiscoveryReport, "6785764991");
+  assert.deepEqual(selected.map((row) => row.file.segmentId), ["new-a", "new-b"]);
+  assert.equal(selected.reduce((sum, row) => sum + row.count, 0), 10);
+  assert.throws(() => latestProcessingRows(files, inspectDiscoveryReport, "6820665225"), /app ID/);
+});
+
+test("Downloads parser selects first-time downloads and rejects invalid counts", () => {
+  const header = "Date\tApp Apple Identifier\tDownload Type\tSource Type\tTerritory\tCounts";
+  const text = `${header}\n2026-10-25\t6820665225\tFirst-time download\tApp Store search\tAU\t1\n2026-10-25\t6820665225\tRedownload\tApp Store search\tAU\t2\n`;
+  assert.deepEqual(inspectDownloadsReport(text).rows.map((row) => [row.date, row.country, row.count]), [["2026-10-25", "au", 1]]);
+  assert.throws(() => inspectDownloadsReport(`${header}\n2026-10-25\t6820665225\tFirst-time download\tApp Store search\tAU\tbad\n`), /invalid rows/);
 });

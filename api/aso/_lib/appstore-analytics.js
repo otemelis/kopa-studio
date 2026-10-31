@@ -1,4 +1,5 @@
 import { gunzipSync } from "node:zlib";
+import { createHash } from "node:crypto";
 import {
   appStoreConnectJson,
   createAnalyticsProvisioningToken,
@@ -6,6 +7,9 @@ import {
 } from "./appstore-connect.js";
 
 const DISCOVERY_REPORT = "App Store Discovery and Engagement Standard";
+const DOWNLOADS_REPORT = "App Downloads Standard";
+const POIS_APPLE_ID = "6820665225";
+const POIS_APPROVED_REQUEST_ID = "0a5174c1-f952-401f-abea-3f9fd6487a36";
 export const DISCOVERY_PARSER_VERSION = "discovery-v2";
 const REQUIRED_DISCOVERY_HEADERS = ["Date", "Event", "Page Type", "Source Type", "Territory", "Counts"];
 
@@ -187,26 +191,57 @@ export function parseDiscoveryReport(csv) {
 }
 
 async function downloadSegment(url) {
+  if (!url) throw new Error("Analytics segment URL is missing.");
+  const parsed = new URL(url);
+  if (parsed.protocol !== "https:" || !["asp-us-west-2.s3.us-west-2.amazonaws.com"].includes(parsed.hostname)) throw new Error("Unexpected Analytics segment host.");
   const response = await fetch(url, { cache: "no-store" });
   if (!response.ok) throw new Error(`Analytics segment download failed (${response.status}).`);
   const bytes = Buffer.from(await response.arrayBuffer());
-  return (bytes[0] === 0x1f && bytes[1] === 0x8b ? gunzipSync(bytes) : bytes).toString("utf8");
+  return bytes;
 }
 
-async function discoverySegments(requestId) {
+export function latestProcessingRows(files, parse, expectedAppleId) {
+  const latestByDate = new Map();
+  const parsed = files.map((file) => {
+    const result = parse(file.text);
+    if (result.rejectedRowCount) throw new DiscoveryReportParseError("Apple report contains rejected rows; import aborted.", result);
+    for (const row of result.rows) {
+      if (expectedAppleId && row.rawPayload["App Apple Identifier"] !== expectedAppleId) throw new DiscoveryReportParseError("Apple report app ID did not match the selected app.");
+      const prior = latestByDate.get(row.date);
+      if (!prior || String(file.processingDate) > prior) latestByDate.set(row.date, String(file.processingDate));
+    }
+    return { file, result };
+  });
+  return parsed.flatMap(({ file, result }) => result.rows.filter((row) => String(file.processingDate) === latestByDate.get(row.date)).map((row) => ({ ...row, file })));
+}
+
+export function inspectDownloadsReport(csv) {
+  const rows = delimitedRows(csv);
+  const headers = (rows[0] ?? []).map((header) => clean(header).replace(/^\uFEFF/, ""));
+  const required = ["Date", "App Apple Identifier", "Download Type", "Source Type", "Territory", "Counts"];
+  if (required.some((header) => !headers.includes(header))) throw new DiscoveryReportParseError("Apple returned an unexpected Downloads report format.", { headers });
+  const parsed = rows.slice(1).map((values) => Object.fromEntries(headers.map((header, index) => [header, clean(values[index])])));
+  const invalid = parsed.filter((row) => !/^\d{4}-\d{2}-\d{2}$/.test(row.Date) || !row.Territory || !parsedCount(row.Counts).valid);
+  if (invalid.length) throw new DiscoveryReportParseError("Apple Downloads report contains invalid rows.", { rejectedRowCount: invalid.length });
+  return { rejectedRowCount: 0, rows: parsed.filter((row) => row["Download Type"] === "First-time download").map((row) => ({ date: row.Date, country: row.Territory.toLowerCase(), sourceType: row["Source Type"] || "Unavailable", count: parsedCount(row.Counts).value, rawPayload: row })) };
+}
+
+async function reportSegments(requestId, reportName, maxInstances = 4) {
   const reports = (await appStoreConnectJson(`/v1/analyticsReportRequests/${encodeURIComponent(requestId)}/reports?limit=50`)).data ?? [];
-  const report = reports.find((item) => item.attributes?.name === DISCOVERY_REPORT);
+  const report = reports.find((item) => item.attributes?.name === reportName);
   if (!report) return [];
   const instances = (await appStoreConnectJson(`/v1/analyticsReports/${encodeURIComponent(report.id)}/instances?filter[granularity]=DAILY&limit=200`)).data ?? [];
   const recent = [...instances]
     .sort((a, b) => String(b.attributes?.processingDate ?? "").localeCompare(String(a.attributes?.processingDate ?? "")))
-    .slice(0, 4);
+    .slice(0, maxInstances);
   const files = [];
   for (const instance of recent) {
     const segments = (await appStoreConnectJson(`/v1/analyticsReportInstances/${encodeURIComponent(instance.id)}/segments?limit=200`)).data ?? [];
     for (const segment of segments) {
+      const bytes = await downloadSegment(segment.attributes?.url);
+      if (bytes.length !== Number(segment.attributes?.sizeInBytes) || createHash("md5").update(bytes).digest("hex") !== segment.attributes?.checksum) throw new Error("Apple Analytics segment size or checksum mismatch.");
       files.push({
-        text: await downloadSegment(segment.attributes?.url),
+        text: (bytes[0] === 0x1f && bytes[1] === 0x8b ? gunzipSync(bytes) : bytes).toString("utf8"),
         segmentId: segment.id,
         instanceId: instance.id,
         processingDate: instance.attributes?.processingDate ?? null,
@@ -218,6 +253,14 @@ async function discoverySegments(requestId) {
 
 export async function syncDiscoveryAnalytics(db, apps) {
   const requests = await db.select("aso_analytics_report_requests", "select=*");
+  const pois = apps.find((app) => app.store_app_id === POIS_APPLE_ID && app.appstore_connect_id === POIS_APPLE_ID);
+  if (pois && !requests.some((request) => request.app_id === pois.id)) {
+    const remote = await remoteRequests(POIS_APPLE_ID);
+    const approved = remote.find((request) => request.id === POIS_APPROVED_REQUEST_ID && request.attributes?.accessType === "ONGOING");
+    if (!approved) throw new Error("Approved POIS Analytics request is not available; no POIS data imported.");
+    await db.upsert("aso_analytics_report_requests", [{ app_id: pois.id, appstore_connect_request_id: approved.id, access_type: "ONGOING", status: "requested", last_checked_at: new Date().toISOString(), last_error: null }], "app_id");
+    requests.push(...await db.select("aso_analytics_report_requests", `app_id=eq.${pois.id}&select=*`));
+  }
   const appById = new Map(apps.map((app) => [app.id, app]));
   const raw = new Map();
   const requestOutcomes = [];
@@ -228,7 +271,7 @@ export async function syncDiscoveryAnalytics(db, apps) {
     const app = appById.get(request.app_id);
     if (!app) continue;
     try {
-      const files = await discoverySegments(request.appstore_connect_request_id);
+      const files = await reportSegments(request.appstore_connect_request_id, DISCOVERY_REPORT, app.store_app_id === POIS_APPLE_ID ? 35 : 4);
       segments += files.length;
       const headers = new Set();
       const issues = [];
@@ -236,14 +279,15 @@ export async function syncDiscoveryAnalytics(db, apps) {
       let requestSourceRows = 0;
       let requestImportedRows = 0;
       let requestRejectedRows = 0;
+      const selected = latestProcessingRows(files, inspectDiscoveryReport, String(app.store_app_id));
       for (const file of files) {
         const result = inspectDiscoveryReport(file.text);
         result.headers.forEach((header) => headers.add(header));
         requestSourceRows += result.sourceRowCount;
-        requestImportedRows += result.importedRowCount;
+        requestImportedRows += selected.filter((item) => item.file === file).length;
         requestRejectedRows += result.rejectedRowCount;
         issues.push(...result.issues.map((issue) => ({ segmentId: file.segmentId, ...issue })));
-        for (const row of result.rows) {
+        for (const { file: selectedFile, ...row } of selected.filter((item) => item.file === file)) {
           dates.push(row.date);
           const key = `${app.id}:${row.date}:${row.country}:${row.event}:${row.pageType}:${row.sourceType}`;
           const existing = raw.get(key);
@@ -251,7 +295,7 @@ export async function syncDiscoveryAnalytics(db, apps) {
             existing.count += row.count;
             existing.uniqueCount += row.uniqueCount;
             existing.rawPayloads.push({
-              segmentId: file.segmentId,
+              segmentId: selectedFile.segmentId,
               instanceId: file.instanceId,
               processingDate: file.processingDate,
               row: row.rawPayload,
@@ -261,7 +305,7 @@ export async function syncDiscoveryAnalytics(db, apps) {
               app,
               ...row,
               rawPayloads: [{
-                segmentId: file.segmentId,
+                segmentId: selectedFile.segmentId,
                 instanceId: file.instanceId,
                 processingDate: file.processingDate,
                 row: row.rawPayload,
@@ -311,6 +355,20 @@ export async function syncDiscoveryAnalytics(db, apps) {
     }
   }
 
+  const downloadDaily = new Map();
+  for (const { request } of requestOutcomes) {
+    const app = appById.get(request.app_id);
+    if (app?.store_app_id !== POIS_APPLE_ID) continue;
+    const files = await reportSegments(request.appstore_connect_request_id, DOWNLOADS_REPORT, 35);
+    const selected = latestProcessingRows(files, inspectDownloadsReport, POIS_APPLE_ID);
+    for (const row of selected) {
+      const key = `${app.id}:${row.date}:${row.country}`;
+      const entry = downloadDaily.get(key) ?? { app, date: row.date, country: row.country, downloads: 0, sourceRows: [] };
+      entry.downloads += row.count;
+      entry.sourceRows.push({ segmentId: row.file.segmentId, instanceId: row.file.instanceId, processingDate: row.file.processingDate, row: row.rawPayload });
+      downloadDaily.set(key, entry);
+    }
+  }
   const rawRows = [...raw.values()].map((row) => ({
     app_id: row.app.id,
     date: row.date,
@@ -351,6 +409,20 @@ export async function syncDiscoveryAnalytics(db, apps) {
     raw_payload: { derivedFromStorefrontImportKeys: row.importKeys },
   }));
   await db.upsert("aso_daily_metrics", dailyRows, "app_id,date,country,source");
+  if (downloadDaily.size) await db.upsert("aso_daily_metrics", [...downloadDaily.values()].map((row) => ({
+    app_id: row.app.id,
+    date: row.date,
+    country: row.country,
+    impressions: null,
+    page_views: null,
+    downloads: row.downloads,
+    proceeds: null,
+    proceeds_currency: null,
+    import_key: `appstore_connect_first_time_downloads:${row.app.id}:${row.date}:${row.country}`,
+    source: "appstore_connect_first_time_downloads",
+    parser_version: DISCOVERY_PARSER_VERSION,
+    raw_payload: { definition: "App Downloads Standard; Download Type=First-time download; UTC Analytics day", sourceRows: row.sourceRows },
+  })), "app_id,date,country,source");
   const now = new Date().toISOString();
   for (const outcome of requestOutcomes) {
     const detail = outcome.state === "success"

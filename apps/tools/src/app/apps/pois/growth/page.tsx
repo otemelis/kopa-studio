@@ -50,7 +50,7 @@ export default async function PoisGrowthPage({ searchParams }: { searchParams: P
     <section className="metric-grid">
       <Metric label="Impressions" value={number(store?.impressions)} note={`App Store Connect Analytics · latest ${date(store?.ascLatest ?? null)}`} />
       <Metric label="Product-page views" value={number(store?.pageViews)} note="ASC Product page only; missing reports are unavailable" />
-      <Metric label="First-time downloads" value="Unavailable" note="Not supplied by current POIS daily Analytics rows" />
+      <Metric label="First-time downloads" value={number(store?.firstTimeDownloads)} note={`ASC App Downloads; observed report rows only, UTC · latest ${date(store?.firstTimeDownloadsLatest ?? null)}`} />
       <Metric label="Sales-report units" value={number(store?.salesUnits)} note={`Sales and Trends units, not first-time downloads · latest ${date(store?.salesLatest ?? null)}`} />
     </section>
     <div className="section-head"><h2>Apple Ads delivery</h2><Link href="/apple-ads-lab/reporting">Reporting</Link></div>
