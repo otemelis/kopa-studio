@@ -63,7 +63,7 @@ export function createAppleWebQueue({
 
   const remainingBatchMs = () => batchTimeoutMs - (Date.now() - batchStartedAt);
 
-  async function observeOne(country, term) {
+  async function observeOne(country, term, locale) {
     let lastError = "Apple web observation failed after one browser restart.";
 
     for (let attempt = 0; attempt < 2; attempt++) {
@@ -98,7 +98,7 @@ export function createAppleWebQueue({
         if (observationBudget <= 0) return failed("Apple web batch time budget reached; remaining observations deferred to the next scheduled run.");
 
         const result = await withTimeout(
-          collectObservation(browser, country, term),
+          collectObservation(browser, country, term, locale),
           observationBudget,
           "Apple web observation exceeded its time budget.",
         );
@@ -120,9 +120,9 @@ export function createAppleWebQueue({
   }
 
   return {
-    observe(country, term) {
+    observe(country, term, locale) {
       if (closed) return Promise.resolve(failed("Apple web collection queue is closed."));
-      const next = tail.then(() => observeOne(country, term), () => observeOne(country, term));
+      const next = tail.then(() => observeOne(country, term, locale), () => observeOne(country, term, locale));
       // Keep the serialized queue alive after a per-keyword failure.
       tail = next.catch(() => undefined);
       return next;
