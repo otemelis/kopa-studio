@@ -33,9 +33,8 @@ import { requireAdmin, serviceClient } from "./_lib/supabase.js";
 
 let collectionInFlight = false;
 
-// Five daily rankings cron entries × 48 keyword records = 240 daily slots.
-// This covers the current 231 active app-keyword records with nine slots of
-// headroom while preserving the four-hour spacing between scheduled runs.
+// Eight daily rankings cron entries × 48 distinct country/term queries = 384
+// daily slots. Each run selects the least recently collected queries first.
 export const KEYWORDS_PER_RANKING_RUN = 48;
 
 export default async function handler(request, response) {
@@ -295,7 +294,8 @@ export async function runCollection(trigger, scope = "full") {
     // The iTunes provider still rate-limits requests; parallelism prevents a
     // slow web page for one term from holding every later term behind it.
     // Keep each proxied Hobby invocation comfortably below its 60s ceiling.
-    // Five ranking runs cover up to 50 keywords/day; larger sets rotate fairly.
+    // Scheduled runs select the least recently collected queries first;
+    // larger sets rotate fairly when daily capacity is exceeded.
     const capturedOn = toDateStr(new Date());
     const activeLinks = appKeywords.filter((ak) => ak.status === "active");
     const allTrackedKeywords = keywords.filter((k) => activeLinks.some((ak) => ak.keyword_id === k.id));
