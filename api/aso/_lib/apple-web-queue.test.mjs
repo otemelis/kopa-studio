@@ -44,6 +44,23 @@ test("Apple web observations are serialized and use an isolated browser per keyw
   }
 });
 
+test("Apple web queue forwards the recorded search locale", async () => {
+  const observed = [];
+  const queue = createAppleWebQueue({
+    launchBrowser: async () => fakeBrowser(),
+    collectObservation: async (_browser, country, term, locale) => {
+      observed.push({ country, term, locale });
+      return partial(term);
+    },
+  });
+  try {
+    await queue.observe("ca", "rappel de posture", "fr-CA");
+    assert.deepEqual(observed, [{ country: "ca", term: "rappel de posture", locale: "fr-CA" }]);
+  } finally {
+    await queue.close();
+  }
+});
+
 test("ten-keyword batches keep collecting after repeated browser crashes instead of cascading failures", async () => {
   const attemptsByTerm = new Map();
   let launches = 0;

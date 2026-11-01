@@ -1,0 +1,16 @@
+# PASSPORT and POIS locale tracking completion — 1 November 2026
+
+The user supplied App Store Connect localization menus for PASSPORT and POIS. We compared those menus with active Kopa `aso_app_keywords` rows, then checked each app's public Apple listing by exact app ID and country. The accompanying CSV contains **160 newly activated keyword candidates: 10 per missing app/locale group**. They are exploratory search terms, not measured search demand, private App Store Connect keywords, or verified organic positions.
+
+| App | Newly covered query locales | Notes from public listing |
+| --- | --- | --- |
+| PASSPORT | en-GB, it-IT, ja-JP, pl-PL, pt-BR, pt-PT, es-MX | GB, IT, JP, BR, PT and MX show corresponding public copy; PL currently returns English copy despite the Polish localization listed in App Store Connect. |
+| POIS | ar-SA, en-AU, en-CA, fr-CA, en-GB, pl-PL, pt-BR, pt-PT, es-MX | AU, CA English, CA French, GB, BR, PT and MX show corresponding public copy. SA Arabic and PL currently return English copy; their local-language terms test opportunities, not current optimization. |
+
+The Arabic App Store Connect localization is monitored using Saudi Arabia (`SA`) as an initial Arabic storefront. This is a market choice, not a claim that Arabic localization is limited to Saudi Arabia. The Canadian French set uses `CA` + `fr-CA`; English Canada is a separate query set in the same country. Public Apple Lookup with `lang=fr_ca` returned French Canadian POIS copy, whereas the default CA lookup returned English copy.
+
+Already tracked groups were preserved: PASSPORT US/DE/FR/ES and POIS US/DE/FR/ES. No App Store Connect settings or app metadata were changed. The 160 new rows were activated in the existing keyword tables; after activation Kopa had **533 active app-keyword links** and **520 distinct country/term queries**. The first snapshot for each new term is pending. Until a successful source observation exists, the rank is *not yet observed*, not *unranked*.
+
+The existing eight scheduled collector runs can cover at most 384 distinct queries per day. A scoped change adds four runs for 12 × 48 = 576 query attempts per day. The Apple web collector also passes each keyword's stored locale to its browser context, including `fr-CA`; previously it used `en-US` outside Germany. The iTunes Search request remains scoped by country and term and must not be described as a locale-specific native ranking. This is scheduling capacity, not a successful-data guarantee. Vercel Hobby cron timing may vary within an hour, provider responses may be incomplete, and a late final run may cross UTC midnight. Verification must reconcile actual per-day source rows and collection statuses after deployment; Apple web and iTunes catalog observations remain separate and are not native iPhone ranks. The locale-method change takes effect only for observations collected after deployment, so compare pre/post web series with that method break in mind.
+
+Sources: user-supplied App Store Connect localization screenshots (1 November 2026); public Apple Lookup by app ID `6822753543` (PASSPORT) and `6820665225` (POIS) and country; live Kopa Supabase tracking read-back on 1 November 2026. No AppFollow credits were used.

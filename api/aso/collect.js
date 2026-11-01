@@ -33,7 +33,7 @@ import { requireAdmin, serviceClient } from "./_lib/supabase.js";
 
 let collectionInFlight = false;
 
-// Eight daily rankings cron entries × 48 distinct country/term queries = 384
+// Twelve daily rankings cron entries × 48 distinct country/term queries = 576
 // daily slots. Each run selects the least recently collected queries first.
 export const KEYWORDS_PER_RANKING_RUN = 48;
 
@@ -355,7 +355,7 @@ export async function runCollection(trigger, scope = "full") {
     await runBounded(trackedKeywords, 4, async (keyword) => {
       const linkedAppIds = activeLinks.filter((ak) => ak.keyword_id === keyword.id).map((ak) => ak.app_id);
       const webPromise = webQueue
-        ? webQueue.observe(keyword.country, keyword.term)
+        ? webQueue.observe(keyword.country, keyword.term, keyword.language)
         : Promise.resolve({ status: "failed", depth: 0, positions: {}, explicitAdCount: 0, checksum: null, error: "Chromium runtime was unavailable." });
       let itemSucceeded = false;
 
