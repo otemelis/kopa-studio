@@ -1,0 +1,73 @@
+app,country,search_locale,keyword,assessment,metadata_source,tracking_status
+LoveType,DE,de-DE,bindungstyp test,candidate,apple_public_lookup_2026-11-01,active
+LoveType,DE,de-DE,bindungstheorie test,candidate,apple_public_lookup_2026-11-01,active
+LoveType,DE,de-DE,bindungsstil test,candidate,apple_public_lookup_2026-11-01,active
+LoveType,DE,de-DE,ängstlicher bindungsstil,candidate,apple_public_lookup_2026-11-01,active
+LoveType,DE,de-DE,vermeidender bindungsstil,candidate,apple_public_lookup_2026-11-01,active
+LoveType,DE,de-DE,beziehungstest,candidate,apple_public_lookup_2026-11-01,active
+LoveType,DE,de-DE,paar test,candidate,apple_public_lookup_2026-11-01,active
+LoveType,DE,de-DE,liebesstil test,candidate,apple_public_lookup_2026-11-01,active
+LoveType,DE,de-DE,liebesprache test,candidate,apple_public_lookup_2026-11-01,active
+LoveType,DE,de-DE,beziehungskompatibilität,candidate,apple_public_lookup_2026-11-01,active
+LoveType,FR,fr-FR,test style attachement,candidate,apple_public_lookup_2026-11-01,active
+LoveType,FR,fr-FR,style d'attachement,candidate,apple_public_lookup_2026-11-01,active
+LoveType,FR,fr-FR,attachement anxieux,candidate,apple_public_lookup_2026-11-01,active
+LoveType,FR,fr-FR,attachement évitant,candidate,apple_public_lookup_2026-11-01,active
+LoveType,FR,fr-FR,test de couple,candidate,apple_public_lookup_2026-11-01,active
+LoveType,FR,fr-FR,test de compatibilité amoureuse,candidate,apple_public_lookup_2026-11-01,active
+LoveType,FR,fr-FR,langages de l'amour,candidate,apple_public_lookup_2026-11-01,active
+LoveType,FR,fr-FR,test relation amoureuse,candidate,apple_public_lookup_2026-11-01,active
+LoveType,FR,fr-FR,style amoureux,candidate,apple_public_lookup_2026-11-01,active
+LoveType,FR,fr-FR,gestion des conflits couple,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,FR,fr-FR,pays visités,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,FR,fr-FR,compteur de pays,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,FR,fr-FR,pays visités carte,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,FR,fr-FR,carte des voyages,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,FR,fr-FR,carnet de voyage,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,FR,fr-FR,journal de voyage,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,FR,fr-FR,passeport voyage,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,FR,fr-FR,tampons de passeport,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,FR,fr-FR,suivi des voyages,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,FR,fr-FR,pays du monde visités,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,ES,es-ES,países visitados,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,ES,es-ES,contador de países,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,ES,es-ES,mapa países visitados,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,ES,es-ES,mapa de viajes,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,ES,es-ES,diario de viaje,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,ES,es-ES,registro de viajes,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,ES,es-ES,pasaporte viajero,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,ES,es-ES,sellos de pasaporte,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,ES,es-ES,lugares visitados,candidate,apple_public_lookup_2026-11-01,active
+PASSPORT,ES,es-ES,seguimiento de viajes,candidate,apple_public_lookup_2026-11-01,active
+POIS,FR,fr-FR,rappel de posture,candidate,apple_public_lookup_2026-11-01,active
+POIS,FR,fr-FR,application posture,candidate,apple_public_lookup_2026-11-01,active
+POIS,FR,fr-FR,suivi posture,candidate,apple_public_lookup_2026-11-01,active
+POIS,FR,fr-FR,alerte posture,candidate,apple_public_lookup_2026-11-01,active
+POIS,FR,fr-FR,posture au bureau,candidate,apple_public_lookup_2026-11-01,active
+POIS,FR,fr-FR,rappel se redresser,candidate,apple_public_lookup_2026-11-01,active
+POIS,FR,fr-FR,position de la tête,candidate,apple_public_lookup_2026-11-01,active
+POIS,FR,fr-FR,posture avec airpods,candidate,apple_public_lookup_2026-11-01,active
+POIS,FR,fr-FR,tête penchée,candidate,apple_public_lookup_2026-11-01,active
+POIS,FR,fr-FR,rappel position assise,candidate,apple_public_lookup_2026-11-01,active
+POIS,ES,es-ES,recordatorio de postura,candidate,apple_public_lookup_2026-11-01,active
+POIS,ES,es-ES,app de postura,candidate,apple_public_lookup_2026-11-01,active
+POIS,ES,es-ES,control de postura,candidate,apple_public_lookup_2026-11-01,active
+POIS,ES,es-ES,alerta de postura,candidate,apple_public_lookup_2026-11-01,active
+POIS,ES,es-ES,postura en el escritorio,candidate,apple_public_lookup_2026-11-01,active
+POIS,ES,es-ES,recordatorio enderezarse,candidate,apple_public_lookup_2026-11-01,active
+POIS,ES,es-ES,posición de la cabeza,candidate,apple_public_lookup_2026-11-01,active
+POIS,ES,es-ES,postura con airpods,candidate,apple_public_lookup_2026-11-01,active
+POIS,ES,es-ES,cabeza inclinada,candidate,apple_public_lookup_2026-11-01,active
+POIS,ES,es-ES,recordatorio postura sentado,candidate,apple_public_lookup_2026-11-01,active
+LoveType,ES,es-ES,test de estilo de apego,candidate,apple_public_lookup_2026-11-01,active
+LoveType,ES,es-ES,test de compatibilidad de pareja,candidate,apple_public_lookup_2026-11-01,active
+LoveType,ES,es-ES,test de lenguaje del amor,candidate,apple_public_lookup_2026-11-01,active
+LoveType,ES,es-ES,test de conflictos de pareja,candidate,apple_public_lookup_2026-11-01,active
+LoveType,BR,pt-BR,teste estilo de apego,candidate,apple_public_lookup_2026-11-01,active
+LoveType,BR,pt-BR,teste de compatibilidade amorosa,candidate,apple_public_lookup_2026-11-01,active
+LoveType,BR,pt-BR,teste linguagem do amor,candidate,apple_public_lookup_2026-11-01,active
+LoveType,BR,pt-BR,teste de conflitos no relacionamento,candidate,apple_public_lookup_2026-11-01,active
+LoveType,JP,ja-JP,愛着スタイルテスト,candidate,apple_public_lookup_2026-11-01,active
+LoveType,JP,ja-JP,カップル診断,candidate,apple_public_lookup_2026-11-01,active
+LoveType,JP,ja-JP,恋愛相性テスト,candidate,apple_public_lookup_2026-11-01,active
+LoveType,JP,ja-JP,恋愛コミュニケーション診断,candidate,apple_public_lookup_2026-11-01,active
