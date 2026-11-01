@@ -194,6 +194,12 @@ tr:last-child td { border-bottom: 0; }
 .rank-source-options button[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
 .rank-chart-frame { height: 320px; min-width: 0; width: 100%; }
 .rank-table-wrap table { min-width: 920px; }
+.rank-table-wrap td a { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.listing-subhead { margin-top: 18px !important; }
+.listing-description { white-space: pre-wrap; }
+.listing-screenshots { display: flex; gap: 12px; overflow-x: auto; padding: 2px 2px 16px; }
+.listing-screenshots a { display: block; flex: 0 0 auto; }
+.listing-screenshots img { border: 1px solid var(--line); border-radius: var(--radius); display: block; height: 250px; object-fit: contain; }
 .rank-table-wrap th, .rank-table-wrap td { vertical-align: middle; }
 .rank-table-wrap td strong { display: block; }
 .rank-table-wrap td small { color: var(--muted); display: block; font-size: 11px; margin-top: 4px; }
