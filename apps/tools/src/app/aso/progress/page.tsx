@@ -5,6 +5,8 @@ import { requireUser } from "@/lib/auth";
 import { canonicalRankSource, isCollectionRunStalled, rankMovement, sourceCaveat, sourceLabel } from "@/lib/aso/progress";
 import { getAsoProgressData } from "@/repositories/aso-progress-repository";
 import { listApps } from "@/repositories/apps-repository";
+import { getPublicListing } from "@/repositories/public-listing-repository";
+import { listingCoverage } from "@/lib/aso/listing-coverage";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +35,7 @@ export default async function AsoProgressPage({ searchParams }: { searchParams: 
   const selectedCountry = filters.country === "all" ? "all" : (filters.country?.toLowerCase() || selectedApp.primaryCountry);
   const country = selectedCountry === "all" ? undefined : selectedCountry;
   const days: 1 | 7 | 28 = filters.window === "1" ? 1 : filters.window === "28" ? 28 : 7;
-  const data = await getAsoProgressData(selectedApp.id, country);
+  const [data, listing] = await Promise.all([getAsoProgressData(selectedApp.id, country), country ? getPublicListing(selectedApp.storeAppId, country) : Promise.resolve(null)]);
   const activeKeywords = data.keywords.filter((keyword) => !country || keyword.country === country);
   const activeKeywordIds = new Set(activeKeywords.map((keyword) => keyword.id));
   const scopedSnapshots = data.snapshots.filter((row) => activeKeywordIds.has(row.keyword_id));
@@ -156,6 +158,8 @@ export default async function AsoProgressPage({ searchParams }: { searchParams: 
       days={days}
       keywords={activeKeywords.map(({ id, term, country }) => ({ id, term, country }))}
       snapshots={scopedSnapshots.map(({ keyword_id, captured_at, captured_on, rank, found, result_depth, collection_status, source }) => ({ keyword_id, captured_at, captured_on, rank, found, result_depth, collection_status, source }))}
+      listingCoverage={Object.fromEntries(activeKeywords.map((keyword) => [keyword.id, listingCoverage(keyword.term, listing)]))}
+      listingHref={country ? `/aso/listings?app=${selectedApp.id}&country=${country}` : undefined}
     />
 
     <div className="section-head"><h2>Acquisition evidence</h2><span>{latestMetricAt ? `Latest source date ${latestMetricAt}` : "No ASC acquisition rows available"}</span></div>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
+import { listingCoverageLabel, type ListingCoverage } from "@/lib/aso/listing-coverage";
 import {
   CartesianGrid,
   Legend,
@@ -21,7 +23,7 @@ import {
 
 type Keyword = { id: string; term: string; country: string };
 type Snapshot = RankObservation & { keyword_id: string };
-type Props = { keywords: Keyword[]; snapshots: Snapshot[]; days: 1 | 7 | 28 };
+type Props = { keywords: Keyword[]; snapshots: Snapshot[]; days: 1 | 7 | 28; listingCoverage?: Record<string, ListingCoverage>; listingHref?: string };
 
 const COLORS = ["#5969c6", "#d18443", "#238b78", "#a14f83", "#638844"];
 const signed = (value: number | null) =>
@@ -76,7 +78,7 @@ function Sparkline({ rows, color, label }: { rows: DailySnapshot[]; color: strin
   );
 }
 
-export function AsoKeywordRankExplorer({ keywords, snapshots, days }: Props) {
+export function AsoKeywordRankExplorer({ keywords, snapshots, days, listingCoverage: coverage = {}, listingHref }: Props) {
   const sourceNames = useMemo(
     () => [...new Set(snapshots.map((row) => canonicalRankSource(row.source)))].sort(),
     [snapshots],
@@ -181,7 +183,7 @@ export function AsoKeywordRankExplorer({ keywords, snapshots, days }: Props) {
       <div className="section-head"><h2>Keyword rankings</h2><span>Best rank is the lowest position number observed in this window and source</span></div>
       <div className="table-wrap rank-table-wrap">
         <table aria-label="Keyword rankings">
-          <thead><tr><th>Plot</th><th>Keyword</th><th>Market</th><th>Latest rank</th><th>Change · {days}d</th><th>Best · {days}d</th><th>Trend</th><th>Observed</th></tr></thead>
+          <thead><tr><th>Plot</th><th>Keyword</th><th>Market</th><th>Listing match</th><th>Latest rank</th><th>Change · {days}d</th><th>Best · {days}d</th><th>Trend</th><th>Observed</th></tr></thead>
           <tbody>{withRows.map(({ keyword, rows, daily, latest, best, movement }, index) => {
             const color = COLORS[index % COLORS.length];
             const latestStatus = latest?.collection_status === "failed" ? "Unavailable" : latest?.collection_status === "partial" ? "Partial results" : "Observed";
@@ -191,16 +193,17 @@ export function AsoKeywordRankExplorer({ keywords, snapshots, days }: Props) {
               <td><input type="checkbox" aria-label={`Plot ${keyword.term}`} checked={activeSelected.includes(keyword.id)} disabled={!rows.length && !activeSelected.includes(keyword.id)} onChange={() => toggle(keyword.id)} /></td>
               <td><strong>{keyword.term}</strong></td>
               <td>{keyword.country.toUpperCase()}</td>
+              <td>{listingHref ? <><Link href={listingHref}>{listingCoverageLabel(coverage[keyword.id] ?? "unavailable")}</Link>{coverage[keyword.id] === "not_visible" && currentIsLatestFromWindow && latest?.found && latest.rank !== null && latest.rank <= 10 ? <small>Top 10 here · review metadata</small> : null}</> : "Choose one market"}</td>
               <td><strong>{currentIsLatestFromWindow ? rankText(latest) : "No recent observation"}</strong><small>{latest?.collection_status === "partial" ? "Partial web results" : latest?.collection_status === "failed" ? "Collection failed" : latest && !latest.found ? `Not found in first ${latest.result_depth}` : ""}</small></td>
               <td className={movement.positions === null ? "" : movement.positions >= 0 ? "rank-improved" : "rank-declined"}>{movementText}</td>
               <td>{best === null ? "Unavailable" : `#${best}`}</td>
               <td><Sparkline rows={daily} color={color} label={`${keyword.term} observed rank trend for the last ${days} days`} /></td>
               <td>{latest ? <><span>{latestStatus}</span><small>{new Date(latest.captured_at).toLocaleDateString("en-GB", { timeZone: "UTC" })} UTC</small></> : "No snapshot"}</td>
             </tr>;
-          })}{!withRows.length ? <tr><td colSpan={8}>No tracked keywords in this market.</td></tr> : null}</tbody>
+          })}{!withRows.length ? <tr><td colSpan={9}>No tracked keywords in this market.</td></tr> : null}</tbody>
         </table>
       </div>
-      <p className="rank-explorer-note">Change is previous position minus current position, so positive means improved. Unranked means absent within the source’s observed result depth; unavailable means the collection failed. Sources are never combined.</p>
+      <p className="rank-explorer-note">Listing match checks the current public catalog name and description, not Apple&apos;s private keyword field. A strong rank without a visible match is worth reviewing, not proof of a metadata gap. Change is previous position minus current position, so positive means improved. Unranked means absent within the source&apos;s observed result depth; unavailable means the collection failed. Sources are never combined.</p>
     </section>
   );
 }
