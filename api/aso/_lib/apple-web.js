@@ -37,11 +37,13 @@ export async function launchAppleWebBrowser() {
   }
 }
 
-export async function collectAppleWebObservation(browser, country, term) {
+export async function collectAppleWebObservation(browser, country, term, locale) {
   let context;
   try {
     context = await browser.newContext({
-      locale: country === "de" ? "de-DE" : "en-US",
+      locale: typeof locale === "string" && /^[a-z]{2,3}(?:-[a-zA-Z0-9]{2,8})*$/.test(locale)
+        ? Intl.getCanonicalLocales(locale)[0]
+        : country === "de" ? "de-DE" : "en-US",
       timezoneId: "UTC",
       viewport: { width: 1440, height: 1000 },
     });

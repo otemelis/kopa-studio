@@ -51,6 +51,22 @@
       "schedule": "30 10 * * *"
     },
     {
+      "path": "/api/aso/collect-rankings?slot=9",
+      "schedule": "30 14 * * *"
+    },
+    {
+      "path": "/api/aso/collect-rankings?slot=10",
+      "schedule": "30 18 * * *"
+    },
+    {
+      "path": "/api/aso/collect-rankings?slot=11",
+      "schedule": "30 21 * * *"
+    },
+    {
+      "path": "/api/aso/collect-rankings?slot=12",
+      "schedule": "30 23 * * *"
+    },
+    {
       "path": "/api/aso/collect-maintenance",
       "schedule": "30 20 * * *"
     }
