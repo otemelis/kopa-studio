@@ -10,6 +10,7 @@ const workspaces = [
   { label: "POIS signals", href: "/pois-signals" },
   { label: "POIS Growth", href: "/apps/pois/growth" },
   { label: "LoveType signals", href: "/lovetype-signals" },
+  { label: "PASSPORT signals", href: "/passport-signals" },
   { label: "Apps", href: "/apps" },
   {
     label: "ASO Intelligence",

@@ -13,7 +13,7 @@ const configSchema = z.object({
 });
 let pool: Pool | undefined;
 
-function readerPool() {
+export function readerPool() {
   if (pool) return pool;
   const value = process.env.KOPA_POIS_READER_CONFIG;
   const ca = process.env.KOPA_POIS_READER_CA;
