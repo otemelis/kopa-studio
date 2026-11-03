@@ -18,6 +18,8 @@ The 7-day selection on 3 November covers 28 October–3 November inclusive. The 
 
 The website values were verified via the connected Vercel account. They appear in Kopa only when the server-side Vercel read credential is configured. Without it, the page explicitly says **Unavailable**. This check does not establish website-to-app attribution. The app table has no installation ID, so user-level conversion and retention are unavailable.
 
+App Store Connect Analytics impressions and product-page views are restricted to PASSPORT's primary US storefront in this page, preventing a total row and country rows from being summed together. No validated rows appeared for this 7-day window, so both values display **Unavailable**. Sales units remain a separate all-territory Sales and Trends measure.
+
 ## Website access gate
 
 Vercel's documented Web Analytics count and aggregate endpoints require an API bearer token. The current `kopa-tools` project has no such token. Create a **project-scoped** token for the `meetpassport` Vercel project, with an expiration and a name such as `kopa-passport-analytics`; do not create a full-account token. After separate owner approval for the credential grant, store it in the `kopa-tools` project as the secret environment variable `KOPA_VERCEL_ANALYTICS_TOKEN` for production and preview. Do not paste the token into Git, logs, chat, or a browser-facing variable. The page uses four read-only requests per load: count, daily, page and referrer aggregates. No website rows are copied into Supabase.

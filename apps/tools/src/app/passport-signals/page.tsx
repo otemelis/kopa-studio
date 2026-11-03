@@ -55,7 +55,7 @@ export default async function PassportSignals({ searchParams }: { searchParams: 
   const web = webResult.status === "fulfilled" ? webResult.value : { available: false as const, reason: "Vercel Analytics could not be read." };
   const aso = asoResult.status === "fulfilled" ? asoResult.value : null;
   const sales = aso?.sales.filter((row) => row.date >= start && row.date <= end && row.source === "appstore_connect_sales") ?? [];
-  const asc = aso?.metrics.filter((row) => row.date >= start && row.date <= end) ?? [];
+  const asc = aso?.metrics.filter((row) => row.date >= start && row.date <= end && row.country.toLowerCase() === app?.primaryCountry.toLowerCase()) ?? [];
   const paid = aso?.paidSearch.filter((row) => row.metric_date >= start && row.metric_date <= end) ?? [];
   const ascTotal = (name: string) => {
     const rows = asc.filter((row) => row.event.toLowerCase().replace(/[^a-z]/g, "") === name);
@@ -95,8 +95,8 @@ export default async function PassportSignals({ searchParams }: { searchParams: 
         </> : <p className={styles.empty}>{counts === null ? "Read-only PASSPORT source could not be queried." : "No events have been uploaded for this channel and selected days."} No zero or sample activity is substituted.</p>}</section></div>
 
     <section className={styles.panel}><div className={styles.panelHead}><div><p className={styles.kicker}>03 / Acquisition</p><h3>Official App Store reporting</h3></div><span><Link href="/app-store-connect">Source status</Link></span></div>
-      <div className={styles.metrics}><Metric label="Impressions" value={ascTotal("impression")} detail="App Store Connect Analytics; delayed and thresholded" />
-        <Metric label="Product-page views" value={ascTotal("pageview")} detail="App Store Connect Analytics; not website page views" />
+      <div className={styles.metrics}><Metric label="Impressions" value={ascTotal("impression")} detail={`${app?.primaryCountry.toUpperCase() ?? "Primary"} App Store Connect Analytics; delayed and thresholded`} />
+        <Metric label="Product-page views" value={ascTotal("pageview")} detail={`${app?.primaryCountry.toUpperCase() ?? "Primary"} App Store Connect Analytics; not website page views`} />
         <Metric label="Sales report units" value={sales.length ? fmt(sales.reduce((sum, row) => sum + (row.downloads ?? 0), 0)) : "Unavailable"} detail="Official Sales and Trends units; not first-time downloads" /></div>
       <div className={styles.metrics}><Metric label="Apple Ads impressions" value={paid.length ? fmt(paid.reduce((sum, row) => sum + (row.impressions ?? 0), 0)) : "Unavailable"} detail="Only PASSPORT-mapped campaign rows" />
         <Metric label="Verified paid purchases" value="Unavailable" detail="App event counts are not App Store transactions" />
