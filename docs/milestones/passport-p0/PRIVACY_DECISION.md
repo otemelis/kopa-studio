@@ -1,0 +1,5 @@
+# PASSPORT detailed-event privacy decision — required before production
+
+The proposed event tier is **off by default**. Owner and privacy/legal review must decide and document: whether opt-in is required for each storefront; the consent text and withdrawal path; whether any analytics may be collected before consent; retention for raw events (proposal: 45–90 days) and derived cohorts; deletion after withdrawal; processor agreements and international transfers; privacy-policy and App Store privacy-label updates; and whether Travel Discovery permission prompts and analytics consent are separate. A device location permission is not consent to detailed analytics.
+
+Server controls must reject or discard forbidden properties, segregate production/TestFlight/debug, prevent arbitrary event names, and never log identifiers or payloads in function logs. Only aggregate report access should be given to Kopa UI. Installation IDs are pseudonymous, not anonymous under GDPR; treat them accordingly. No detailed event table, policy, client SDK, or production switch has been created under this handoff.

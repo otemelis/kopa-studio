@@ -28,6 +28,32 @@ export function validateHistoryWindow(start, end) {
   if (!Number.isFinite(first) || !Number.isFinite(last) || last < first || last - first > 34 * 86400000) throw new Error("Analytics backfill window must be 1–35 reporting days.");
   return { start, end };
 }
+
+export function buildAnalyticsPartitions(storefrontRows, dailyRows) {
+  const byKey = new Map();
+  for (const row of [...storefrontRows, ...dailyRows]) {
+    if (!row.raw_payload?.sourceRows?.length && !row.raw_payload?.derivedFromStorefrontImportKeys?.length) throw new Error("Apple partition row lacks provenance.");
+    const partitionSource = row.source === "appstore_connect_first_time_downloads" ? "appstore_connect_downloads" : row.source;
+    const key = `${row.app_id}:${row.date}:${partitionSource}`;
+    const part = byKey.get(key) ?? { app_id: row.app_id, date: row.date, source: partitionSource, storefront_rows: [], daily_rows: [], processing_date: null };
+    if (row.event) part.storefront_rows.push(row);
+    else part.daily_rows.push(row);
+    const dates = (row.raw_payload.sourceRows ?? []).map((source) => String(source.processingDate ?? ""));
+    for (const date of dates) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Apple processing date is missing or invalid.");
+      if (part.processing_date && part.processing_date !== date) throw new Error("Mixed Apple processing revisions in one partition.");
+      part.processing_date = date;
+    }
+    byKey.set(key, part);
+  }
+  return [...byKey.values()].sort((a, b) => `${a.app_id}:${a.date}:${a.source}`.localeCompare(`${b.app_id}:${b.date}:${b.source}`)).map((part) => {
+    if (!part.processing_date) throw new Error("Apple partition has no processing revision.");
+    part.storefront_rows.sort((a, b) => a.import_key.localeCompare(b.import_key));
+    part.daily_rows.sort((a, b) => a.import_key.localeCompare(b.import_key));
+    part.payload_hash = createHash("sha256").update(JSON.stringify(part)).digest("hex");
+    return part;
+  });
+}
 export const DISCOVERY_PARSER_VERSION = "discovery-v2";
 const REQUIRED_DISCOVERY_HEADERS = ["Date", "Event", "Page Type", "Source Type", "Territory", "Counts"];
 
@@ -280,6 +306,9 @@ async function reportSegments(requestId, reportName, maxInstances = 4) {
         segmentId: segment.id,
         instanceId: instance.id,
         processingDate: instance.attributes?.processingDate ?? null,
+        reportId: report.id,
+        requestId,
+        segmentChecksum: segment.attributes?.checksum,
       });
     }
   }
@@ -342,6 +371,9 @@ export async function syncDiscoveryAnalytics(db, apps, { dryRun = false, maxInst
               segmentId: selectedFile.segmentId,
               instanceId: file.instanceId,
               processingDate: file.processingDate,
+              reportId: file.reportId,
+              requestId: file.requestId,
+              segmentChecksum: file.segmentChecksum,
               row: row.rawPayload,
             });
           } else {
@@ -352,6 +384,9 @@ export async function syncDiscoveryAnalytics(db, apps, { dryRun = false, maxInst
                 segmentId: selectedFile.segmentId,
                 instanceId: file.instanceId,
                 processingDate: file.processingDate,
+                reportId: file.reportId,
+                requestId: file.requestId,
+                segmentChecksum: file.segmentChecksum,
                 row: row.rawPayload,
               }],
             });
@@ -409,7 +444,7 @@ export async function syncDiscoveryAnalytics(db, apps, { dryRun = false, maxInst
       const key = `${app.id}:${row.date}:${row.country}`;
       const entry = downloadDaily.get(key) ?? { app, date: row.date, country: row.country, downloads: 0, sourceRows: [] };
       entry.downloads += row.count;
-      entry.sourceRows.push({ segmentId: row.file.segmentId, instanceId: row.file.instanceId, processingDate: row.file.processingDate, row: row.rawPayload });
+      entry.sourceRows.push({ segmentId: row.file.segmentId, instanceId: row.file.instanceId, processingDate: row.file.processingDate, reportId: row.file.reportId, requestId: row.file.requestId, segmentChecksum: row.file.segmentChecksum, row: row.rawPayload });
       downloadDaily.set(key, entry);
     }
   }
@@ -427,7 +462,6 @@ export async function syncDiscoveryAnalytics(db, apps, { dryRun = false, maxInst
     parser_version: DISCOVERY_PARSER_VERSION,
     raw_payload: { sourceRows: row.rawPayloads },
   }));
-  if (!dryRun && rawRows.length) await db.upsert("aso_storefront_metrics", rawRows, "app_id,date,country,event,page_type,source_type,source");
   const downloadSourceRows = [...downloadDaily.values()].flatMap((entry) => {
     const bySource = new Map();
     for (const item of entry.sourceRows) {
@@ -446,7 +480,6 @@ export async function syncDiscoveryAnalytics(db, apps, { dryRun = false, maxInst
       raw_payload: { sourceRows: bucket.rows },
     }));
   });
-  if (!dryRun && downloadSourceRows.length) await db.upsert("aso_storefront_metrics", downloadSourceRows, "app_id,date,country,event,page_type,source_type,source");
 
   const daily = new Map();
   for (const row of raw.values()) {
@@ -471,8 +504,7 @@ export async function syncDiscoveryAnalytics(db, apps, { dryRun = false, maxInst
     parser_version: DISCOVERY_PARSER_VERSION,
     raw_payload: { derivedFromStorefrontImportKeys: row.importKeys },
   }));
-  if (!dryRun && dailyRows.length) await db.upsert("aso_daily_metrics", dailyRows, "app_id,date,country,source");
-  if (!dryRun && downloadDaily.size) await db.upsert("aso_daily_metrics", [...downloadDaily.values()].map((row) => ({
+  const downloadDailyRows = [...downloadDaily.values()].map((row) => ({
     app_id: row.app.id,
     date: row.date,
     country: row.country,
@@ -485,7 +517,10 @@ export async function syncDiscoveryAnalytics(db, apps, { dryRun = false, maxInst
     source: "appstore_connect_first_time_downloads",
     parser_version: DISCOVERY_PARSER_VERSION,
     raw_payload: { definition: "App Downloads Standard; Download Type=First-time download; UTC Analytics day", sourceRows: row.sourceRows },
-  })), "app_id,date,country,source");
+  }));
+  const partitions = buildAnalyticsPartitions([...rawRows, ...downloadSourceRows], [...dailyRows, ...downloadDailyRows]);
+  if (rejectedRows && !dryRun) throw new Error("Apple Discovery report contains rejected rows; refusing partial partition replacement.");
+  if (!dryRun) for (const partition of partitions) await db.rpc("aso_replace_analytics_partition", { p: partition });
   const now = new Date().toISOString();
   for (const outcome of requestOutcomes) {
     const detail = outcome.state === "success"
@@ -522,5 +557,5 @@ export async function syncDiscoveryAnalytics(db, apps, { dryRun = false, maxInst
     : requestOutcomes.some((outcome) => outcome.state === "success")
       ? "success"
       : requestOutcomes.length === 0 || requestOutcomes.some((outcome) => outcome.state === "pending") ? "pending" : "zero";
-  return { state, dryRun, parserVersion: DISCOVERY_PARSER_VERSION, segments, sourceRows, rawRows: rawRows.length, downloadSourceRows: downloadSourceRows.length, dailyRows: dailyRows.length, rejectedRows, requests: requestOutcomes.map((outcome) => ({ appId: outcome.request.app_id, state: outcome.state, evidenceStart: outcome.evidenceStart, evidenceEnd: outcome.evidenceEnd, importedRows: outcome.importedRows })) };
+  return { state, dryRun, parserVersion: DISCOVERY_PARSER_VERSION, segments, sourceRows, rawRows: rawRows.length, downloadSourceRows: downloadSourceRows.length, dailyRows: dailyRows.length, rejectedRows, partitions: dryRun ? partitions : partitions.map(({ app_id, date, source, processing_date, payload_hash, storefront_rows, daily_rows }) => ({ app_id, date, source, processing_date, payload_hash, storefrontRows: storefront_rows.length, dailyRows: daily_rows.length })), requests: requestOutcomes.map((outcome) => ({ appId: outcome.request.app_id, state: outcome.state, evidenceStart: outcome.evidenceStart, evidenceEnd: outcome.evidenceEnd, importedRows: outcome.importedRows })) };
 }

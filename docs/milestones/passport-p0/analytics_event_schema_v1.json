@@ -1,0 +1,798 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PASSPORT consented detailed event v1 — proposed, disabled",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "install_id",
+    "session_id",
+    "event_name",
+    "occurred_at",
+    "app_version",
+    "build_number",
+    "build_channel",
+    "device_layout",
+    "screen_id",
+    "control_id",
+    "properties"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "event_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "install_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "session_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "event_name": {
+      "type": "string",
+      "enum": [
+        "install_started",
+        "session_started",
+        "session_ended",
+        "foreground_resumed",
+        "screen_viewed",
+        "control_activated",
+        "onboarding_presented",
+        "onboarding_completed",
+        "stamp_editor_opened",
+        "stamp_editor_cancelled",
+        "stamp_created",
+        "stamp_milestone_reached",
+        "journey_opened",
+        "bookmark_selected",
+        "share_sheet_opened",
+        "edition_viewed",
+        "purchase_started",
+        "purchase_completed",
+        "restore_completed",
+        "flight_import_picker_opened",
+        "flight_import_file_selected",
+        "flight_import_previewed",
+        "flight_import_cancelled",
+        "flight_import_failed",
+        "flight_import_completed",
+        "flight_import_undone",
+        "discovery_feature_activated",
+        "discovery_permission_result",
+        "discovery_check_requested",
+        "discovery_candidate_created",
+        "discovery_candidate_suppressed",
+        "discovery_inbox_opened",
+        "discovery_suggestion_accepted",
+        "discovery_suggestion_dismissed",
+        "discovery_notification_scheduled",
+        "discovery_notification_opened",
+        "discovery_false_positive_reported"
+      ]
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "app_version": {
+      "type": "string",
+      "pattern": "^[0-9]+(\\.[0-9]+){0,2}$"
+    },
+    "build_number": {
+      "type": "string",
+      "pattern": "^[0-9]{1,8}$"
+    },
+    "build_channel": {
+      "enum": [
+        "appstore",
+        "testflight",
+        "debug"
+      ]
+    },
+    "device_layout": {
+      "enum": [
+        "regular",
+        "folded",
+        "unfolded",
+        "unknown"
+      ]
+    },
+    "screen_id": {
+      "enum": [
+        "app",
+        "onboarding",
+        "passport",
+        "stamp_editor",
+        "journey",
+        "library",
+        "flight_import",
+        "atelier",
+        "settings",
+        "discovery",
+        "unknown"
+      ]
+    },
+    "control_id": {
+      "enum": [
+        "none",
+        "add_stamp",
+        "confirm_stamp",
+        "cancel_stamp",
+        "open_journey",
+        "share",
+        "choose_file",
+        "preview_import",
+        "confirm_import",
+        "cancel_import",
+        "buy",
+        "restore",
+        "enable_discovery",
+        "check_location",
+        "accept_suggestion",
+        "dismiss_suggestion",
+        "report_false_positive"
+      ]
+    },
+    "properties": {
+      "type": "object"
+    }
+  },
+  "allOf": [
+    {
+      "oneOf": [
+        {
+          "properties": {
+            "event_name": {
+              "const": "install_started"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "session_started"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "start_reason": {
+                  "enum": [
+                    "launch",
+                    "foreground",
+                    "timeout_reentry"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "session_ended"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "end_reason": {
+                  "enum": [
+                    "background",
+                    "timeout",
+                    "unknown"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "foreground_resumed"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "screen_viewed"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "control_activated"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "onboarding_presented"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "onboarding_completed"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "stamp_editor_opened"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "collection_type": {
+                  "enum": [
+                    "country",
+                    "us_state",
+                    "airport",
+                    "park",
+                    "unknown"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "stamp_editor_cancelled"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "stamp_created"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "collection_type": {
+                  "enum": [
+                    "country",
+                    "us_state",
+                    "airport",
+                    "park",
+                    "unknown"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "stamp_milestone_reached"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "count_bucket": {
+                  "enum": [
+                    "one",
+                    "two_to_five",
+                    "six_to_twenty",
+                    "over_twenty",
+                    "unknown"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "journey_opened"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "bookmark_selected"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "share_sheet_opened"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "edition_viewed"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "product_key": {
+                  "enum": [
+                    "airports",
+                    "parks",
+                    "cosmetic",
+                    "unknown"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "purchase_started"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "product_key": {
+                  "enum": [
+                    "airports",
+                    "parks",
+                    "cosmetic",
+                    "unknown"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "purchase_completed"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "product_key": {
+                  "enum": [
+                    "airports",
+                    "parks",
+                    "cosmetic",
+                    "unknown"
+                  ]
+                },
+                "outcome": {
+                  "enum": [
+                    "client_completed",
+                    "pending",
+                    "cancelled",
+                    "failed",
+                    "restored"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "restore_completed"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "product_key": {
+                  "enum": [
+                    "airports",
+                    "parks",
+                    "cosmetic",
+                    "unknown"
+                  ]
+                },
+                "outcome": {
+                  "enum": [
+                    "client_completed",
+                    "pending",
+                    "cancelled",
+                    "failed",
+                    "restored"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "flight_import_picker_opened"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "flight_import_file_selected"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "flight_import_previewed"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "count_bucket": {
+                  "enum": [
+                    "one",
+                    "two_to_five",
+                    "six_to_twenty",
+                    "over_twenty",
+                    "unknown"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "flight_import_cancelled"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "import_stage": {
+                  "enum": [
+                    "picker",
+                    "preview",
+                    "confirm",
+                    "save"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "flight_import_failed"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "import_stage": {
+                  "enum": [
+                    "picker",
+                    "preview",
+                    "confirm",
+                    "save"
+                  ]
+                },
+                "failure_code": {
+                  "enum": [
+                    "unsupported_format",
+                    "invalid_columns",
+                    "read_error",
+                    "save_error",
+                    "cancelled",
+                    "unknown"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "flight_import_completed"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "count_bucket": {
+                  "enum": [
+                    "one",
+                    "two_to_five",
+                    "six_to_twenty",
+                    "over_twenty",
+                    "unknown"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "flight_import_undone"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "count_bucket": {
+                  "enum": [
+                    "one",
+                    "two_to_five",
+                    "six_to_twenty",
+                    "over_twenty",
+                    "unknown"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "discovery_feature_activated"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "discovery_permission_result"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "permission_result": {
+                  "enum": [
+                    "granted_while_using",
+                    "granted_always",
+                    "denied",
+                    "restricted",
+                    "not_determined",
+                    "unknown"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "discovery_check_requested"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "discovery_source": {
+                  "enum": [
+                    "manual",
+                    "passive",
+                    "unknown"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "discovery_candidate_created"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "discovery_source": {
+                  "enum": [
+                    "manual",
+                    "passive",
+                    "unknown"
+                  ]
+                },
+                "confidence_bucket": {
+                  "enum": [
+                    "low",
+                    "medium",
+                    "high",
+                    "unknown"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "discovery_candidate_suppressed"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "suppression_reason": {
+                  "enum": [
+                    "duplicate",
+                    "low_confidence",
+                    "permission",
+                    "other"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "discovery_inbox_opened"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "discovery_suggestion_accepted"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "discovery_suggestion_dismissed"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "discovery_notification_scheduled"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "discovery_notification_opened"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "discovery_false_positive_reported"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {}
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

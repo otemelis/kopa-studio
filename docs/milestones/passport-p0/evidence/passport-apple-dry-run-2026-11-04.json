@@ -1,0 +1,720 @@
+{
+  "generatedAt": "2026-11-04T21:19:55.837Z",
+  "app": {
+    "id": "926ad3c6-c68d-4b70-9dd0-c0073916d771",
+    "appleId": "6822753543"
+  },
+  "interval": {
+    "start": "2026-10-29",
+    "end": "2026-11-03",
+    "timezone": "UTC Analytics report Date"
+  },
+  "state": "success",
+  "requests": [
+    {
+      "appId": "926ad3c6-c68d-4b70-9dd0-c0073916d771",
+      "state": "success",
+      "evidenceStart": "2026-10-29",
+      "evidenceEnd": "2026-11-03",
+      "importedRows": 254
+    }
+  ],
+  "sourceRows": 515,
+  "segments": 6,
+  "partitions": [
+    {
+      "date": "2026-10-29",
+      "source": "appstore_connect_discovery",
+      "processingDate": "2026-11-01",
+      "payloadHash": "6b8c42b1b3c334b0baa21c8c46433288d1e369324f3337e592adb842126b49fc",
+      "before": {
+        "storefrontRows": 0,
+        "dailyRows": 0
+      },
+      "after": {
+        "storefrontRows": 6,
+        "dailyRows": 4
+      },
+      "storefrontDiff": {
+        "added": [
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-29:cd:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-29:de:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-29:de:Page view:Product page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-29:de:Tap:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-29:fr:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-29:lu:Impression:No page:App Store search"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "dailyDiff": {
+        "added": [
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-29:cd",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-29:de",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-29:fr",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-29:lu"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "totals": {
+        "Impression|No page|App Store search": 6,
+        "Page view|Product page|App Store search": 1,
+        "Tap|Product page|App Store browse": 2
+      },
+      "segmentChecksums": [
+        "a7134ac59299f519dffed89e35369c69"
+      ]
+    },
+    {
+      "date": "2026-10-29",
+      "source": "appstore_connect_downloads",
+      "processingDate": "2026-10-31",
+      "payloadHash": "a3923cd9c445fb924a9a0c3dc409623ea5da5d985a3455c2fec6c8f4615eb374",
+      "before": {
+        "storefrontRows": 0,
+        "dailyRows": 0
+      },
+      "after": {
+        "storefrontRows": 1,
+        "dailyRows": 1
+      },
+      "storefrontDiff": {
+        "added": [
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-29:de:App Store search"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "dailyDiff": {
+        "added": [
+          "appstore_connect_first_time_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-29:de"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "totals": {
+        "First-time download|No page|App Store search": 1
+      },
+      "segmentChecksums": [
+        "bb0d16b4706f1220d0615c79a3ced537"
+      ]
+    },
+    {
+      "date": "2026-10-30",
+      "source": "appstore_connect_discovery",
+      "processingDate": "2026-11-02",
+      "payloadHash": "5ea8790ea6d7828125eef5d71e28c946aca7d8e3afb3b9e43b196a33bae4e84d",
+      "before": {
+        "storefrontRows": 0,
+        "dailyRows": 0
+      },
+      "after": {
+        "storefrontRows": 18,
+        "dailyRows": 12
+      },
+      "storefrontDiff": {
+        "added": [
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:br:Impression:No page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:br:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:br:Tap:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:ci:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:cn:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:fi:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:fi:Page view:Product page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:id:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:mk:Impression:No page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:mx:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:ne:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:pl:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:pl:Page view:Product page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:pl:Tap:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:pt:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:pt:Page view:Product page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:se:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:vn:Impression:No page:App Store search"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "dailyDiff": {
+        "added": [
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:br",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:ci",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:cn",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:fi",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:id",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:mk",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:mx",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:ne",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:pl",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:pt",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:se",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:vn"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "totals": {
+        "Impression|No page|App Store browse": 5,
+        "Impression|No page|App Store search": 18,
+        "Tap|No page|App Store search": 1,
+        "Page view|Product page|App Store search": 4,
+        "Tap|Product page|App Store browse": 2
+      },
+      "segmentChecksums": [
+        "5bda40f50d04f95d5caaedd47852740c"
+      ]
+    },
+    {
+      "date": "2026-10-30",
+      "source": "appstore_connect_downloads",
+      "processingDate": "2026-11-01",
+      "payloadHash": "9b86e5f22ca1169b39ef4437906aefc8c51b9522c3f16059aa15195d600999df",
+      "before": {
+        "storefrontRows": 0,
+        "dailyRows": 0
+      },
+      "after": {
+        "storefrontRows": 2,
+        "dailyRows": 2
+      },
+      "storefrontDiff": {
+        "added": [
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:br:App Store search",
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:pl:App Store search"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "dailyDiff": {
+        "added": [
+          "appstore_connect_first_time_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:br",
+          "appstore_connect_first_time_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-30:pl"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "totals": {
+        "First-time download|No page|App Store search": 2
+      },
+      "segmentChecksums": [
+        "f5c7fab72d77cc1c5a04c92eff3d71c3"
+      ]
+    },
+    {
+      "date": "2026-10-31",
+      "source": "appstore_connect_discovery",
+      "processingDate": "2026-11-03",
+      "payloadHash": "a2d20a41be72f88b2866fb84e7193f4affdbfed2c547bd6b04b2b8fba70f20aa",
+      "before": {
+        "storefrontRows": 0,
+        "dailyRows": 0
+      },
+      "after": {
+        "storefrontRows": 25,
+        "dailyRows": 16
+      },
+      "storefrontDiff": {
+        "added": [
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:al:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:al:Page view:Product page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:br:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:br:Page view:Product page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:br:Tap:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:ca:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:ca:Tap:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:ci:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:de:Impression:No page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:de:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:de:Page view:Product page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:de:Tap:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:ee:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:il:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:in:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:mx:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:my:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:pk:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:pl:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:qa:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:sa:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:sn:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:sn:Page view:Product page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:sn:Tap:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:tr:Impression:No page:App Store search"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "dailyDiff": {
+        "added": [
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:al",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:br",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:ca",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:ci",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:de",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:ee",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:il",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:in",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:mx",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:my",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:pk",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:pl",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:qa",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:sa",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:sn",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:tr"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "totals": {
+        "Impression|No page|App Store search": 63,
+        "Page view|Product page|App Store search": 4,
+        "Tap|No page|App Store search": 4,
+        "Impression|No page|App Store browse": 2,
+        "Tap|Product page|App Store browse": 1
+      },
+      "segmentChecksums": [
+        "e6e862dec1e9e1e9fe8c4b98cf319ff4"
+      ]
+    },
+    {
+      "date": "2026-10-31",
+      "source": "appstore_connect_downloads",
+      "processingDate": "2026-11-02",
+      "payloadHash": "4aa1906fd7b8c96b25bcdd7ff7da0bfcd9efbe45ba6bdb045ae0f4bbaae89f13",
+      "before": {
+        "storefrontRows": 0,
+        "dailyRows": 0
+      },
+      "after": {
+        "storefrontRows": 3,
+        "dailyRows": 3
+      },
+      "storefrontDiff": {
+        "added": [
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:ca:App Store search",
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:de:App Store search",
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:sn:App Store search"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "dailyDiff": {
+        "added": [
+          "appstore_connect_first_time_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:ca",
+          "appstore_connect_first_time_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:de",
+          "appstore_connect_first_time_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-10-31:sn"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "totals": {
+        "First-time download|No page|App Store search": 3
+      },
+      "segmentChecksums": [
+        "8f5489c6fd1fe53656d39f07cac2e22d"
+      ]
+    },
+    {
+      "date": "2026-11-01",
+      "source": "appstore_connect_discovery",
+      "processingDate": "2026-11-04",
+      "payloadHash": "898b25de8a92ced3f91493a8dd8e29fa00d42ee58ce16268623e66c47d19b942",
+      "before": {
+        "storefrontRows": 0,
+        "dailyRows": 0
+      },
+      "after": {
+        "storefrontRows": 25,
+        "dailyRows": 19
+      },
+      "storefrontDiff": {
+        "added": [
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:au:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:ba:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:bf:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:bf:Tap:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:br:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:by:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:by:Page view:Product page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:ca:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:cd:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:ch:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:de:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:de:Page view:Product page:App referrer",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:de:Page view:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:fr:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:il:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:in:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:jp:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:na:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:na:Page view:Product page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:nl:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:pl:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:ua:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:ug:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:ug:Tap:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:us:Impression:No page:App Store search"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "dailyDiff": {
+        "added": [
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:au",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:ba",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:bf",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:br",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:by",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:ca",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:cd",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:ch",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:de",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:fr",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:il",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:in",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:jp",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:na",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:nl",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:pl",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:ua",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:ug",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:us"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "totals": {
+        "Impression|No page|App Store search": 75,
+        "Tap|No page|App Store search": 2,
+        "Page view|Product page|App Store search": 2,
+        "Page view|Product page|App referrer": 1,
+        "Page view|Product page|App Store browse": 1
+      },
+      "segmentChecksums": [
+        "2697313050778c57b4d1ed2074ffcde3"
+      ]
+    },
+    {
+      "date": "2026-11-01",
+      "source": "appstore_connect_downloads",
+      "processingDate": "2026-11-03",
+      "payloadHash": "c04535f820b84ec5dca46ca987e91d05ddd4ac479687a401bb45d221826a911d",
+      "before": {
+        "storefrontRows": 0,
+        "dailyRows": 0
+      },
+      "after": {
+        "storefrontRows": 1,
+        "dailyRows": 1
+      },
+      "storefrontDiff": {
+        "added": [
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:ug:App Store search"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "dailyDiff": {
+        "added": [
+          "appstore_connect_first_time_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-01:ug"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "totals": {
+        "First-time download|No page|App Store search": 1
+      },
+      "segmentChecksums": [
+        "6bffefa8a607ace8c14a5be44f465fcb"
+      ]
+    },
+    {
+      "date": "2026-11-02",
+      "source": "appstore_connect_discovery",
+      "processingDate": "2026-11-04",
+      "payloadHash": "1729dda704fd9e09c76d2943f183ddfa8fa7c5f3232d0b79104299a068038998",
+      "before": {
+        "storefrontRows": 0,
+        "dailyRows": 0
+      },
+      "after": {
+        "storefrontRows": 20,
+        "dailyRows": 18
+      },
+      "storefrontDiff": {
+        "added": [
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:br:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:br:Page view:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:ca:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:de:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:es:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:fi:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:in:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:jp:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:ke:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:kw:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:lt:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:lu:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:mt:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:mt:Tap:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:my:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:pl:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:sn:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:th:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:us:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:za:Impression:No page:App Store search"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "dailyDiff": {
+        "added": [
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:br",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:ca",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:de",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:es",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:fi",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:in",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:jp",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:ke",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:kw",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:lt",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:lu",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:mt",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:my",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:pl",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:sn",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:th",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:us",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:za"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "totals": {
+        "Impression|No page|App Store search": 50,
+        "Page view|Product page|App Store browse": 1,
+        "Tap|No page|App Store search": 2
+      },
+      "segmentChecksums": [
+        "2697313050778c57b4d1ed2074ffcde3"
+      ]
+    },
+    {
+      "date": "2026-11-02",
+      "source": "appstore_connect_downloads",
+      "processingDate": "2026-11-04",
+      "payloadHash": "5bc1f21fb44fdded7654c7cdbdad82fa3577b37889be4570471c69a9d334429c",
+      "before": {
+        "storefrontRows": 0,
+        "dailyRows": 0
+      },
+      "after": {
+        "storefrontRows": 1,
+        "dailyRows": 1
+      },
+      "storefrontDiff": {
+        "added": [
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:mt:App Store search"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "dailyDiff": {
+        "added": [
+          "appstore_connect_first_time_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-02:mt"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "totals": {
+        "First-time download|No page|App Store search": 1
+      },
+      "segmentChecksums": [
+        "4f88e96fa51f383b4ced1a1117f2ba27"
+      ]
+    },
+    {
+      "date": "2026-11-03",
+      "source": "appstore_connect_discovery",
+      "processingDate": "2026-11-04",
+      "payloadHash": "73267d3d994d55fcc730883f5702b88c6569c5f152c4be3a2cc602601cc83b46",
+      "before": {
+        "storefrontRows": 0,
+        "dailyRows": 0
+      },
+      "after": {
+        "storefrontRows": 60,
+        "dailyRows": 18
+      },
+      "storefrontDiff": {
+        "added": [
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:bm:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:br:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:br:Page view:Product page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ca:Impression:No page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ca:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ca:Page view:Developer page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ca:Page view:Product page:App referrer",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ca:Page view:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ca:Page view:Product page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ca:Page view:Product page:Web referrer",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ca:Tap:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ca:Tap:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ch:Impression:No page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ch:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ch:Page view:Product page:Web referrer",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ch:Tap:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:de:Impression:No page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:de:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:de:Page view:Developer page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:de:Page view:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:de:Page view:Product page:Web referrer",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:de:Tap:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:fr:Impression:No page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:fr:Page view:Product page:App referrer",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:fr:Page view:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:fr:Page view:Product page:Web referrer",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:fr:Tap:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:gb:Impression:No page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:gb:Page view:Product page:App referrer",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:gb:Page view:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:gb:Page view:Product page:Web referrer",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:gb:Tap:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:in:Page view:Product page:Web referrer",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:it:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:it:Page view:Product page:Web referrer",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:it:Tap:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:it:Tap:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:jp:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:nl:Impression:No page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:nl:Page view:Product page:Web referrer",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:nl:Tap:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:nz:Impression:No page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:nz:Page view:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:nz:Page view:Product page:Web referrer",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:nz:Tap:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ph:Page view:Product page:Web referrer",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:pl:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:sn:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:tn:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:tr:Impression:No page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:tr:Page view:Product page:App referrer",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:tr:Tap:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:us:Impression:No page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:us:Impression:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:us:Page view:Product page:App referrer",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:us:Page view:Product page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:us:Page view:Product page:Web referrer",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:us:Tap:No page:App Store browse",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:us:Tap:No page:App Store search",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:us:Tap:Product page:App Store browse"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "dailyDiff": {
+        "added": [
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:bm",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:br",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ca",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ch",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:de",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:fr",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:gb",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:in",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:it",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:jp",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:nl",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:nz",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ph",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:pl",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:sn",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:tn",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:tr",
+          "appstore_connect_discovery:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:us"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "totals": {
+        "Impression|No page|App Store search": 29,
+        "Page view|Product page|App Store search": 4,
+        "Impression|No page|App Store browse": 75,
+        "Page view|Developer page|App Store browse": 2,
+        "Page view|Product page|App referrer": 11,
+        "Page view|Product page|App Store browse": 14,
+        "Page view|Product page|Web referrer": 51,
+        "Tap|No page|App Store search": 3,
+        "Tap|Product page|App Store browse": 54,
+        "Tap|No page|App Store browse": 1
+      },
+      "segmentChecksums": [
+        "2697313050778c57b4d1ed2074ffcde3"
+      ]
+    },
+    {
+      "date": "2026-11-03",
+      "source": "appstore_connect_downloads",
+      "processingDate": "2026-11-04",
+      "payloadHash": "a5c354a5cf28f60bf3b0ca59f1bcac7fc1a53bca8b1c4e22d334becb9322b534",
+      "before": {
+        "storefrontRows": 0,
+        "dailyRows": 0
+      },
+      "after": {
+        "storefrontRows": 15,
+        "dailyRows": 10
+      },
+      "storefrontDiff": {
+        "added": [
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ca:App Store search",
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ch:Web referrer",
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:de:Web referrer",
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:fr:App Store browse",
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:gb:App referrer",
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:gb:App Store browse",
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:gb:Web referrer",
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:it:App Store search",
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:nl:Web referrer",
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:nz:App Store browse",
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:tr:App referrer",
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:us:App referrer",
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:us:App Store browse",
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:us:App Store search",
+          "appstore_connect_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:us:Web referrer"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "dailyDiff": {
+        "added": [
+          "appstore_connect_first_time_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ca",
+          "appstore_connect_first_time_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:ch",
+          "appstore_connect_first_time_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:de",
+          "appstore_connect_first_time_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:fr",
+          "appstore_connect_first_time_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:gb",
+          "appstore_connect_first_time_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:it",
+          "appstore_connect_first_time_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:nl",
+          "appstore_connect_first_time_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:nz",
+          "appstore_connect_first_time_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:tr",
+          "appstore_connect_first_time_downloads:926ad3c6-c68d-4b70-9dd0-c0073916d771:2026-11-03:us"
+        ],
+        "removed": [],
+        "changed": []
+      },
+      "totals": {
+        "First-time download|No page|App Store search": 3,
+        "First-time download|No page|Web referrer": 25,
+        "First-time download|No page|App Store browse": 4,
+        "First-time download|No page|App referrer": 4
+      },
+      "segmentChecksums": [
+        "4f88e96fa51f383b4ced1a1117f2ba27"
+      ]
+    }
+  ]
+}

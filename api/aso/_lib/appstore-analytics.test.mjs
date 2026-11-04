@@ -12,6 +12,7 @@ import {
   approvedRequestForApp,
   paginatedAppleRows,
   validateHistoryWindow,
+  buildAnalyticsPartitions,
 } from "./appstore-analytics.js";
 
 const productionFixture = readFileSync(new URL("./fixtures/appstore-discovery-innertype-sanitized.tsv", import.meta.url), "utf8");
@@ -186,4 +187,27 @@ test("backfill dates must be explicit and limited to 35 UTC reporting days", () 
   assert.throws(() => validateHistoryWindow("2026-09-01", "2026-11-04"), /35/);
   assert.throws(() => validateHistoryWindow("2026-11-04", null), /explicit/);
   assert.throws(() => validateHistoryWindow("2026-11-05", "2026-11-04"), /35/);
+});
+
+test("revised partitions include only latest Apple rows, including changed source types", () => {
+  const base = { app_id: "app-passport", date: "2026-11-03", country: "us", event: "Impression", page_type: "No page", source: "appstore_connect_discovery" };
+  const older = { ...base, source_type: "App Store browse", count: 10, import_key: "old", raw_payload: { sourceRows: [{ processingDate: "2026-11-04" }] } };
+  const revised = { ...base, source_type: "App Store search", count: 8, import_key: "new", raw_payload: { sourceRows: [{ processingDate: "2026-11-05" }] } };
+  const [partition] = buildAnalyticsPartitions([revised], []);
+  assert.equal(partition.processing_date, "2026-11-05");
+  assert.deepEqual(partition.storefront_rows.map((row) => row.import_key), ["new"]);
+  assert.equal(partition.storefront_rows.some((row) => row.import_key === older.import_key), false);
+  assert.match(partition.payload_hash, /^[0-9a-f]{64}$/);
+  assert.deepEqual(buildAnalyticsPartitions([revised], []), [partition]);
+  assert.throws(() => buildAnalyticsPartitions([older, revised], []), /Mixed Apple processing revisions/);
+});
+
+test("Downloads source breakdown and daily totals replace as one partition", () => {
+  const source = { app_id: "app-passport", date: "2026-11-03", country: "us", event: "First-time download", page_type: "No page", source_type: "Web referrer", count: 2, source: "appstore_connect_downloads", import_key: "download-source", raw_payload: { sourceRows: [{ processingDate: "2026-11-04" }] } };
+  const daily = { app_id: "app-passport", date: "2026-11-03", country: "us", downloads: 2, source: "appstore_connect_first_time_downloads", import_key: "download-daily", raw_payload: { sourceRows: [{ processingDate: "2026-11-04" }] } };
+  const [part] = buildAnalyticsPartitions([source], [daily]);
+  assert.equal(part.source, "appstore_connect_downloads");
+  assert.equal(part.storefront_rows.length, 1);
+  assert.equal(part.daily_rows.length, 1);
+  assert.equal(part.processing_date, "2026-11-04");
 });
