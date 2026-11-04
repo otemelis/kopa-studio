@@ -9,6 +9,9 @@ import {
   parseDiscoveryReport,
   inspectDownloadsReport,
   latestProcessingRows,
+  approvedRequestForApp,
+  paginatedAppleRows,
+  validateHistoryWindow,
 } from "./appstore-analytics.js";
 
 const productionFixture = readFileSync(new URL("./fixtures/appstore-discovery-innertype-sanitized.tsv", import.meta.url), "utf8");
@@ -159,4 +162,28 @@ test("Downloads parser selects first-time downloads and rejects invalid counts",
   const text = `${header}\n2026-10-25\t6820665225\tFirst-time download\tApp Store search\tAU\t1\n2026-10-25\t6820665225\tRedownload\tApp Store search\tAU\t2\n`;
   assert.deepEqual(inspectDownloadsReport(text).rows.map((row) => [row.date, row.country, row.count]), [["2026-10-25", "au", 1]]);
   assert.throws(() => inspectDownloadsReport(`${header}\n2026-10-25\t6820665225\tFirst-time download\tApp Store search\tAU\tbad\n`), /invalid rows/);
+});
+
+test("only an exact approved app/request pairing can be auto-mapped", () => {
+  assert.equal(approvedRequestForApp({ store_app_id: "6822753543", appstore_connect_id: "6822753543" }), "1a1002c3-3a07-4d10-afca-6352b89790d5");
+  assert.equal(approvedRequestForApp({ store_app_id: "6820665225", appstore_connect_id: "6820665225" }), "0a5174c1-f952-401f-abea-3f9fd6487a36");
+  assert.equal(approvedRequestForApp({ store_app_id: "6822753543", appstore_connect_id: "different" }), null);
+  assert.equal(approvedRequestForApp({ store_app_id: "unknown", appstore_connect_id: "unknown" }), null);
+});
+
+test("Apple report pagination keeps order and rejects off-host and loops", async () => {
+  const pages = new Map([
+    ["/v1/reports?limit=1", { data: [{ id: "first" }], links: { next: "https://api.appstoreconnect.apple.com/v1/reports?cursor=2" } }],
+    ["/v1/reports?cursor=2", { data: [{ id: "second" }], links: {} }],
+  ]);
+  assert.deepEqual((await paginatedAppleRows("/v1/reports?limit=1", async (path) => pages.get(path))).map((row) => row.id), ["first", "second"]);
+  await assert.rejects(paginatedAppleRows("/v1/reports", async () => ({ data: [], links: { next: "https://example.com/v1/reports" } })), /host or path/);
+  await assert.rejects(paginatedAppleRows("/v1/reports", async () => ({ data: [], links: { next: "/v1/reports" } })), /safe bound/);
+});
+
+test("backfill dates must be explicit and limited to 35 UTC reporting days", () => {
+  assert.deepEqual(validateHistoryWindow("2026-10-01", "2026-11-04"), { start: "2026-10-01", end: "2026-11-04" });
+  assert.throws(() => validateHistoryWindow("2026-09-01", "2026-11-04"), /35/);
+  assert.throws(() => validateHistoryWindow("2026-11-04", null), /explicit/);
+  assert.throws(() => validateHistoryWindow("2026-11-05", "2026-11-04"), /35/);
 });
