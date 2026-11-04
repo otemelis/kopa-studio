@@ -1,0 +1,12 @@
+.flowRow { align-items: center; display: grid; gap: 10px; grid-template-columns: minmax(116px, 1.2fr) minmax(80px, 2fr) 86px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.flowRow span { font-size: 12px; font-weight: 650; }
+.flowRow strong { font-size: 12px; text-align: right; }
+.flowTrack { background: var(--canvas-deep); border-radius: 9px; height: 10px; overflow: hidden; }
+.flowTrack i { background: var(--accent); border-radius: inherit; display: block; height: 100%; min-width: 0; }
+.flowNote { color: var(--muted); font-size: 11px; line-height: 1.5; margin: 12px 0 0; }
+.chartPair { display: grid; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.signalCallout { background: var(--canvas); border: 1px solid var(--line); border-radius: 8px; font-size: 12px; line-height: 1.5; margin-top: 16px; padding: 14px; }
+.signalCallout strong { display: block; font-size: 13px; margin-bottom: 4px; }
+.signalCallout p { color: var(--muted); margin: 0; }
+.sourceMeta { color: var(--muted); font-size: 11px; line-height: 1.5; }
+@media (max-width: 700px) { .chartPair { grid-template-columns: 1fr; } .flowRow { grid-template-columns: minmax(100px, 1fr) minmax(50px, 1fr) 68px; } }
