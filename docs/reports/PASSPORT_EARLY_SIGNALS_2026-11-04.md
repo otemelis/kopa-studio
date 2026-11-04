@@ -1,5 +1,7 @@
 # PASSPORT — early signals for consultant review
 
+> **Superseded later on 4 November:** Apple's 3 November Sales and Analytics reports became available after this snapshot. See the [current analytics diagnosis](PASSPORT_ANALYTICS_DIAGNOSIS_2026-11-04.md) before sharing or quoting launch totals.
+
 **Read on 4 November 2026.** This is an early, partial view of PASSPORT's launch, not a measure of market-wide demand. Keyword rankings and ASO keyword data are intentionally excluded. Sources are kept separate; none of the counts below identifies the same person across website, App Store, and app.
 
 ## What is observable
