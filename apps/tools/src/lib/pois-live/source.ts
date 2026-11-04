@@ -49,8 +49,10 @@ export async function readPoisReport(days: 7 | 28, channel: "appstore" | "testfl
     );
     const availableVersions = versionRows.map((row) => String(row.app_version))
       .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
+    // An omitted version means all observed versions. Selecting only the newest
+    // version by default hid active installations on older production builds.
     const version = requestedVersion && availableVersions.includes(requestedVersion)
-      ? requestedVersion : availableVersions[0] ?? null;
+      ? requestedVersion : null;
     const { rows } = await client.query(
       `SELECT event_id::text AS "eventId", installation_id::text AS "installationId",
               session_id::text AS "sessionId", event_name AS name,
@@ -58,7 +60,7 @@ export async function readPoisReport(days: 7 | 28, channel: "appstore" | "testfl
               app_version AS "appVersion", build_channel AS "buildChannel", properties
          FROM form.events
         WHERE build_channel = $1 AND occurred_at >= $2 AND occurred_at <= $3
-          AND app_version = $4
+          AND ($4::text IS NULL OR app_version = $4)
         ORDER BY occurred_at, event_id LIMIT 10001`,
       [channel, since, until, version],
     );
