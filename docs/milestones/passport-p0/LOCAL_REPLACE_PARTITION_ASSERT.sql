@@ -39,6 +39,23 @@ begin
     perform public.aso_replace_analytics_partition(jsonb_set(revised,'{storefront_rows,0,app_id}',to_jsonb(pois::text)));
     raise exception 'cross-app row was accepted';
   exception when sqlstate '22023' then null; end;
+  begin
+    perform public.aso_replace_analytics_partition(jsonb_set(revised,'{app_id}',to_jsonb(pois::text)));
+    raise exception 'non-PASSPORT partition was accepted';
+  exception when sqlstate '22023' then null; end;
+  if has_function_privilege('anon','public.aso_replace_analytics_partition(jsonb)','EXECUTE')
+     or has_function_privilege('authenticated','public.aso_replace_analytics_partition(jsonb)','EXECUTE')
+     or not has_function_privilege('service_role','public.aso_replace_analytics_partition(jsonb)','EXECUTE') then
+    raise exception 'RPC execution grants are not service-role only';
+  end if;
+  if has_table_privilege('anon','public.aso_analytics_partition_state','SELECT')
+     or has_table_privilege('authenticated','public.aso_analytics_partition_state','SELECT')
+     or not has_table_privilege('service_role','public.aso_analytics_partition_state','SELECT,INSERT,UPDATE,DELETE') then
+    raise exception 'partition-state grants are not service-role only';
+  end if;
+  if not (select relrowsecurity from pg_class where oid='public.aso_analytics_partition_state'::regclass) then
+    raise exception 'partition-state RLS is off';
+  end if;
   select count(*) into n from public.aso_storefront_metrics where app_id=passport and date=d;
   if n <> 1 then raise exception 'invalid transaction changed partition'; end if;
 end;

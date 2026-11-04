@@ -40,7 +40,8 @@ begin
   v_source := p->>'source';
   v_processing := (p->>'processing_date')::date;
   v_hash := p->>'payload_hash';
-  if v_source not in ('appstore_connect_discovery','appstore_connect_downloads')
+  if v_app <> '926ad3c6-c68d-4b70-9dd0-c0073916d771'::uuid
+     or v_source not in ('appstore_connect_discovery','appstore_connect_downloads')
      or v_date::text <> p->>'date' or v_processing::text <> p->>'processing_date'
      or v_processing < v_date or v_processing > current_date + 2
      or v_date < current_date - 35

@@ -525,7 +525,9 @@ export async function runCollection(trigger, scope = "full") {
     const requests = await db.select("aso_analytics_report_requests", "select=id");
     if (requests.length) {
       try {
-        const result = await syncDiscoveryAnalytics(db, apps);
+        // PASSPORT mapping/backfill is a separately approved owner action.
+        // Once mapped, normal daily refresh below still includes its request.
+        const result = await syncDiscoveryAnalytics(db, apps, { allowPassportDiscovery: false });
         storefrontAnalytics = { state: result.segments ? "ok" : "pending", ...result };
       } catch (error) {
         counters.warnings++;

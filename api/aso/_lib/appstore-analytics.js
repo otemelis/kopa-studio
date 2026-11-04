@@ -9,10 +9,11 @@ import {
 const DISCOVERY_REPORT = "App Store Discovery and Engagement Standard";
 const DOWNLOADS_REPORT = "App Downloads Standard";
 const POIS_APPLE_ID = "6820665225";
+const PASSPORT_APPLE_ID = "6822753543";
 const POIS_APPROVED_REQUEST_ID = "0a5174c1-f952-401f-abea-3f9fd6487a36";
 const APPROVED_REQUESTS = new Map([
   [POIS_APPLE_ID, POIS_APPROVED_REQUEST_ID],
-  ["6822753543", "1a1002c3-3a07-4d10-afca-6352b89790d5"],
+  [PASSPORT_APPLE_ID, "1a1002c3-3a07-4d10-afca-6352b89790d5"],
 ]);
 const MAX_REPORT_PAGES = 10;
 const MAX_HISTORY_INSTANCES = 35;
@@ -27,6 +28,14 @@ export function validateHistoryWindow(start, end) {
   const last = Date.parse(`${end}T00:00:00Z`);
   if (!Number.isFinite(first) || !Number.isFinite(last) || last < first || last - first > 34 * 86400000) throw new Error("Analytics backfill window must be 1–35 reporting days.");
   return { start, end };
+}
+export function passportBackfillScope(body, apps) {
+  if (body?.appId !== PASSPORT_APPLE_ID) throw new Error("PASSPORT backfill requires the exact approved Apple app ID.");
+  const window = validateHistoryWindow(body.start, body.end);
+  if (!window) throw new Error("PASSPORT backfill requires bounded report dates.");
+  const selected = apps.filter((app) => String(app.store_app_id) === PASSPORT_APPLE_ID && String(app.appstore_connect_id) === PASSPORT_APPLE_ID);
+  if (selected.length !== 1) throw new Error("PASSPORT App Store Connect mapping is missing or ambiguous.");
+  return { apps: selected, historyStart: window.start, historyEnd: window.end };
 }
 
 export function buildAnalyticsPartitions(storefrontRows, dailyRows) {
@@ -53,6 +62,15 @@ export function buildAnalyticsPartitions(storefrontRows, dailyRows) {
     part.payload_hash = createHash("sha256").update(JSON.stringify(part)).digest("hex");
     return part;
   });
+}
+export async function persistAnalyticsRows(db, partitions, storefrontRows, dailyRows, passportAppIds) {
+  const passportParts = partitions.filter((part) => passportAppIds.has(part.app_id));
+  const legacyStorefront = storefrontRows.filter((row) => !passportAppIds.has(row.app_id));
+  const legacyDaily = dailyRows.filter((row) => !passportAppIds.has(row.app_id));
+  if (legacyStorefront.length) await db.upsert("aso_storefront_metrics", legacyStorefront, "app_id,date,country,event,page_type,source_type,source");
+  if (legacyDaily.length) await db.upsert("aso_daily_metrics", legacyDaily, "app_id,date,country,source");
+  for (const part of passportParts) await db.rpc("aso_replace_analytics_partition", { p: part });
+  return { passportPartitions: passportParts.length, legacyRows: legacyStorefront.length + legacyDaily.length };
 }
 export const DISCOVERY_PARSER_VERSION = "discovery-v2";
 const REQUIRED_DISCOVERY_HEADERS = ["Date", "Event", "Page Type", "Source Type", "Territory", "Counts"];
@@ -315,13 +333,14 @@ async function reportSegments(requestId, reportName, maxInstances = 4) {
   return files;
 }
 
-export async function syncDiscoveryAnalytics(db, apps, { dryRun = false, maxInstances = MAX_HISTORY_INSTANCES, historyStart = null, historyEnd = null } = {}) {
+export async function syncDiscoveryAnalytics(db, apps, { dryRun = false, maxInstances = MAX_HISTORY_INSTANCES, historyStart = null, historyEnd = null, allowPassportDiscovery = true } = {}) {
   if (!Number.isInteger(maxInstances) || maxInstances < 1 || maxInstances > MAX_HISTORY_INSTANCES) throw new Error("Analytics history bound must be 1–35 instances.");
   const window = validateHistoryWindow(historyStart, historyEnd);
   const inWindow = (date) => !window || (date >= window.start && date <= window.end);
   const requests = await db.select("aso_analytics_report_requests", "select=*");
   for (const app of apps) {
     const appleId = String(app.store_app_id ?? "");
+    if (appleId === PASSPORT_APPLE_ID && !allowPassportDiscovery) continue;
     const approvedId = approvedRequestForApp(app);
     if (!approvedId || requests.some((request) => request.app_id === app.id)) continue;
     const remote = await remoteRequests(appleId);
@@ -520,7 +539,7 @@ export async function syncDiscoveryAnalytics(db, apps, { dryRun = false, maxInst
   }));
   const partitions = buildAnalyticsPartitions([...rawRows, ...downloadSourceRows], [...dailyRows, ...downloadDailyRows]);
   if (rejectedRows && !dryRun) throw new Error("Apple Discovery report contains rejected rows; refusing partial partition replacement.");
-  if (!dryRun) for (const partition of partitions) await db.rpc("aso_replace_analytics_partition", { p: partition });
+  if (!dryRun) await persistAnalyticsRows(db, partitions, rawRows, [...dailyRows, ...downloadDailyRows], new Set(apps.filter((app) => String(app.store_app_id) === PASSPORT_APPLE_ID).map((app) => app.id)));
   const now = new Date().toISOString();
   for (const outcome of requestOutcomes) {
     const detail = outcome.state === "success"

@@ -13,7 +13,34 @@ import {
   paginatedAppleRows,
   validateHistoryWindow,
   buildAnalyticsPartitions,
+  persistAnalyticsRows,
+  passportBackfillScope,
 } from "./appstore-analytics.js";
+
+test("PASSPORT partitions use the new RPC while POIS keeps its existing upsert path", async () => {
+  const calls = [];
+  const db = { upsert: async (table, rows) => calls.push({ method: "upsert", table, appIds: rows.map((row) => row.app_id) }), rpc: async (name, args) => calls.push({ method: "rpc", name, appId: args.p.app_id }) };
+  const parts = [{ app_id: "passport", storefront_rows: [], daily_rows: [] }, { app_id: "pois", storefront_rows: [], daily_rows: [] }];
+  const store = [{ app_id: "passport" }, { app_id: "pois" }];
+  const daily = [{ app_id: "passport" }, { app_id: "pois" }];
+  await persistAnalyticsRows(db, parts, store, daily, new Set(["passport"]));
+  assert.deepEqual(calls, [
+    { method: "upsert", table: "aso_storefront_metrics", appIds: ["pois"] },
+    { method: "upsert", table: "aso_daily_metrics", appIds: ["pois"] },
+    { method: "rpc", name: "aso_replace_analytics_partition", appId: "passport" },
+  ]);
+});
+
+test("bounded PASSPORT backfill excludes POIS and rejects ambiguous or broad scope", () => {
+  const apps = [
+    { id: "passport", store_app_id: "6822753543", appstore_connect_id: "6822753543" },
+    { id: "pois", store_app_id: "6820665225", appstore_connect_id: "6820665225" },
+  ];
+  assert.deepEqual(passportBackfillScope({ appId: "6822753543", start: "2026-10-29", end: "2026-11-03" }, apps),
+    { apps: [apps[0]], historyStart: "2026-10-29", historyEnd: "2026-11-03" });
+  assert.throws(() => passportBackfillScope({ appId: "6820665225", start: "2026-10-29", end: "2026-11-03" }, apps));
+  assert.throws(() => passportBackfillScope({ appId: "6822753543" }, apps));
+});
 
 const productionFixture = readFileSync(new URL("./fixtures/appstore-discovery-innertype-sanitized.tsv", import.meta.url), "utf8");
 
