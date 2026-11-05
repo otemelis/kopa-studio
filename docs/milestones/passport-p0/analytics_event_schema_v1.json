@@ -45,6 +45,8 @@
         "control_activated",
         "onboarding_presented",
         "onboarding_completed",
+        "cover_opened",
+        "page_turned",
         "stamp_editor_opened",
         "stamp_editor_cancelled",
         "stamp_created",
@@ -73,7 +75,9 @@
         "discovery_suggestion_dismissed",
         "discovery_notification_scheduled",
         "discovery_notification_opened",
-        "discovery_false_positive_reported"
+        "discovery_false_positive_reported",
+        "settings_opened",
+        "significant_error"
       ]
     },
     "occurred_at": {
@@ -154,7 +158,8 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
             }
           }
         },
@@ -174,7 +179,10 @@
                     "timeout_reentry"
                   ]
                 }
-              }
+              },
+              "required": [
+                "start_reason"
+              ]
             }
           }
         },
@@ -194,7 +202,10 @@
                     "unknown"
                   ]
                 }
-              }
+              },
+              "required": [
+                "end_reason"
+              ]
             }
           }
         },
@@ -206,7 +217,8 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
             }
           }
         },
@@ -218,7 +230,8 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
             }
           }
         },
@@ -230,7 +243,8 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
             }
           }
         },
@@ -242,7 +256,8 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
             }
           }
         },
@@ -254,7 +269,34 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "cover_opened"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {},
+              "required": []
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "page_turned"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {},
+              "required": []
             }
           }
         },
@@ -276,7 +318,10 @@
                     "unknown"
                   ]
                 }
-              }
+              },
+              "required": [
+                "collection_type"
+              ]
             }
           }
         },
@@ -288,7 +333,8 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
             }
           }
         },
@@ -309,8 +355,21 @@
                     "park",
                     "unknown"
                   ]
+                },
+                "creation_source": {
+                  "enum": [
+                    "manual",
+                    "discovery_manual",
+                    "discovery_inbox",
+                    "flight_import",
+                    "unknown"
+                  ]
                 }
-              }
+              },
+              "required": [
+                "collection_type",
+                "creation_source"
+              ]
             }
           }
         },
@@ -323,16 +382,17 @@
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "count_bucket": {
+                "milestone": {
                   "enum": [
-                    "one",
-                    "two_to_five",
-                    "six_to_twenty",
-                    "over_twenty",
-                    "unknown"
+                    "first",
+                    "third",
+                    "fifth"
                   ]
                 }
-              }
+              },
+              "required": [
+                "milestone"
+              ]
             }
           }
         },
@@ -344,7 +404,8 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
             }
           }
         },
@@ -356,7 +417,8 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
             }
           }
         },
@@ -368,7 +430,8 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
             }
           }
         },
@@ -389,7 +452,10 @@
                     "unknown"
                   ]
                 }
-              }
+              },
+              "required": [
+                "product_key"
+              ]
             }
           }
         },
@@ -410,7 +476,10 @@
                     "unknown"
                   ]
                 }
-              }
+              },
+              "required": [
+                "product_key"
+              ]
             }
           }
         },
@@ -440,7 +509,11 @@
                     "restored"
                   ]
                 }
-              }
+              },
+              "required": [
+                "product_key",
+                "outcome"
+              ]
             }
           }
         },
@@ -470,7 +543,11 @@
                     "restored"
                   ]
                 }
-              }
+              },
+              "required": [
+                "product_key",
+                "outcome"
+              ]
             }
           }
         },
@@ -482,7 +559,8 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
             }
           }
         },
@@ -494,7 +572,8 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
             }
           }
         },
@@ -516,7 +595,10 @@
                     "unknown"
                   ]
                 }
-              }
+              },
+              "required": [
+                "count_bucket"
+              ]
             }
           }
         },
@@ -537,7 +619,10 @@
                     "save"
                   ]
                 }
-              }
+              },
+              "required": [
+                "import_stage"
+              ]
             }
           }
         },
@@ -568,7 +653,11 @@
                     "unknown"
                   ]
                 }
-              }
+              },
+              "required": [
+                "import_stage",
+                "failure_code"
+              ]
             }
           }
         },
@@ -590,7 +679,10 @@
                     "unknown"
                   ]
                 }
-              }
+              },
+              "required": [
+                "count_bucket"
+              ]
             }
           }
         },
@@ -612,7 +704,10 @@
                     "unknown"
                   ]
                 }
-              }
+              },
+              "required": [
+                "count_bucket"
+              ]
             }
           }
         },
@@ -624,7 +719,8 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
             }
           }
         },
@@ -647,7 +743,10 @@
                     "unknown"
                   ]
                 }
-              }
+              },
+              "required": [
+                "permission_result"
+              ]
             }
           }
         },
@@ -667,7 +766,10 @@
                     "unknown"
                   ]
                 }
-              }
+              },
+              "required": [
+                "discovery_source"
+              ]
             }
           }
         },
@@ -695,7 +797,11 @@
                     "unknown"
                   ]
                 }
-              }
+              },
+              "required": [
+                "discovery_source",
+                "confidence_bucket"
+              ]
             }
           }
         },
@@ -716,7 +822,10 @@
                     "other"
                   ]
                 }
-              }
+              },
+              "required": [
+                "suppression_reason"
+              ]
             }
           }
         },
@@ -728,7 +837,8 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
             }
           }
         },
@@ -740,7 +850,8 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
             }
           }
         },
@@ -752,7 +863,8 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
             }
           }
         },
@@ -764,7 +876,8 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
             }
           }
         },
@@ -776,7 +889,8 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
             }
           }
         },
@@ -788,7 +902,47 @@
             "properties": {
               "type": "object",
               "additionalProperties": false,
-              "properties": {}
+              "properties": {},
+              "required": []
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "settings_opened"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {},
+              "required": []
+            }
+          }
+        },
+        {
+          "properties": {
+            "event_name": {
+              "const": "significant_error"
+            },
+            "properties": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "failure_code": {
+                  "enum": [
+                    "unsupported_format",
+                    "invalid_columns",
+                    "read_error",
+                    "save_error",
+                    "cancelled",
+                    "unknown"
+                  ]
+                }
+              },
+              "required": [
+                "failure_code"
+              ]
             }
           }
         }

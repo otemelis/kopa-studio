@@ -22,6 +22,7 @@ const schema = {
   allOf: [{ oneOf: Object.entries(manifest.events).map(([event, allowed]) => ({
     properties: { event_name: { const: event }, properties: { type: "object", additionalProperties: false,
       properties: Object.fromEntries(allowed.map((name) => [name, { enum: manifest.property_types[name] }])),
+      required: allowed,
     } },
   })) }],
 };
