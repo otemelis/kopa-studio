@@ -12,10 +12,12 @@
 
 ## Owner backup check
 
-In Supabase, select the **innertype** project (`dsjgbxkerucutrjltgws`) and open **Database → Backups**. Confirm the newest backup shows **Completed/Successful**, record its timestamp and timezone, type (Daily or PITR), and retention or earliest available recovery point. Confirm the restore option is available, but **do not click Restore**. If the project is on Free and no backup exists, report that; a scoped logical export and tested isolated restore would then be required before production writes. A managed backup listing is not itself a tested restore. Supabase documents that physical backups can be restored to a new project; doing so may create cost and is outside this preview authorization.
+The owner checked **innertype** (`dsjgbxkerucutrjltgws`) in Supabase and reported that the Free plan has **no managed backup**. This is an explicit production release blocker; no full-project restore point is available.
+
+As a bounded fallback, a read-only SQL export captured the exact PASSPORT reporting scope for 29 October–3 November 2026. It contains 17 existing `appstore_connect_sales` daily rows, zero storefront rows, and zero Analytics request mappings. The private local snapshot is `/Users/otastemelis/.codex/private-evidence/kopa/passport-reporting-snapshot-2026-11-05.json` (mode `0600`, SHA-256 `7e754312ba312671664f47ce385a5b1affa20959e0da97a701a0c93ec180ff5c`). Restoring all three sets into an isolated local PostgreSQL 16 instance yielded `17|0|0`; canonical source and restored Sales JSON hashes both equal `ffbdca94cc4dcfdffb256475edb742b1da70a3eaeea1e7cb010e723b32fd99bb`. The local instance was stopped after validation. This establishes a tested **scoped data snapshot**, not a full Supabase backup or schema-level restore. The Sales rows are outside the proposed Analytics mutation.
 
 ## Remaining release gates
 
-1. Owner reports the backup status above; a restore-safe procedure or isolated test must be established before live changes.
+1. A full logical database backup and an isolated PostgreSQL restore test are needed before live changes, or the owner must explicitly accept the narrower scoped rollback risk in a separate production decision. The tested scoped snapshot above is insufficient to claim full-project recoverability.
 2. A collector preview must be built without live write credentials (for example, an isolated project or a supported per-deployment environment override), then the exact scoped collector files and owner action must be smoke-tested.
 3. Only after a separate production authorization: recheck Apple revision and POIS baseline, apply the reviewed SQL, deploy collector, run bounded PASSPORT import, reconcile source partitions and POIS controls, then deploy the owner UI.
