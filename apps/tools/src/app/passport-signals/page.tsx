@@ -55,12 +55,15 @@ export default async function PassportSignals({ searchParams }: { searchParams: 
   const web = webResult.status === "fulfilled" ? webResult.value : { available: false as const, reason: "Vercel Analytics could not be read." };
   const aso = asoResult.status === "fulfilled" ? asoResult.value : null;
   const sales = aso?.sales.filter((row) => row.date >= start && row.date <= end && row.source === "appstore_connect_sales") ?? [];
-  const asc = aso?.metrics.filter((row) => row.date >= start && row.date <= end && row.country.toLowerCase() === app?.primaryCountry.toLowerCase()) ?? [];
+  const asc = aso?.metrics.filter((row) => row.date >= start && row.date <= end && row.source === "appstore_connect_discovery") ?? [];
+  const downloads = aso?.metrics.filter((row) => row.date >= start && row.date <= end && row.source === "appstore_connect_downloads" && row.event === "First-time download") ?? [];
   const paid = aso?.paidSearch.filter((row) => row.metric_date >= start && row.metric_date <= end) ?? [];
-  const ascTotal = (name: string) => {
-    const rows = asc.filter((row) => row.event.toLowerCase().replace(/[^a-z]/g, "") === name);
+  const ascTotal = (name: string, pageType?: string) => {
+    const rows = asc.filter((row) => row.event === name && (!pageType || row.page_type === pageType));
     return rows.length ? fmt(rows.reduce((sum, row) => sum + (row.count ?? 0), 0)) : "Unavailable";
   };
+  const downloadTotal = downloads.length ? fmt(downloads.reduce((sum, row) => sum + (row.count ?? 0), 0)) : "Unavailable";
+  const latestAppleDate = [...asc, ...downloads].map((row) => row.date).sort().at(-1);
   const appAvailable = counts !== null && counts.length > 0;
   const selectedQuery = (selectedDays: 7 | 28, selectedChannel: Channel) => `/passport-signals?days=${selectedDays}&channel=${selectedChannel}`;
 
@@ -95,9 +98,12 @@ export default async function PassportSignals({ searchParams }: { searchParams: 
         </> : <p className={styles.empty}>{counts === null ? "Read-only PASSPORT source could not be queried." : "No events have been uploaded for this channel and selected days."} No zero or sample activity is substituted.</p>}</section></div>
 
     <section className={styles.panel}><div className={styles.panelHead}><div><p className={styles.kicker}>03 / Acquisition</p><h3>Official App Store reporting</h3></div><span><Link href="/app-store-connect">Source status</Link></span></div>
-      <div className={styles.metrics}><Metric label="Impressions" value={ascTotal("impression")} detail={`${app?.primaryCountry.toUpperCase() ?? "Primary"} App Store Connect Analytics; delayed and thresholded`} />
-        <Metric label="Product-page views" value={ascTotal("pageview")} detail={`${app?.primaryCountry.toUpperCase() ?? "Primary"} App Store Connect Analytics; not website page views`} />
+      <p>Apple Analytics report dates {start}–{end} UTC · all reported territories · latest available date {latestAppleDate ?? "Unavailable"}. Apple reports may lag or be thresholded; missing dates are unavailable, not zero.</p>
+      <div className={styles.metrics}><Metric label="Impressions" value={ascTotal("Impression")} detail="App Store Connect Discovery; reported events across all territories" />
+        <Metric label="Product-page views" value={ascTotal("Page view", "Product page")} detail="App Store Connect Discovery; excludes developer-page views" />
+        <Metric label="First-time downloads" value={downloadTotal} detail="App Store Connect Downloads; not Sales units or unique people" />
         <Metric label="Sales report units" value={sales.length ? fmt(sales.reduce((sum, row) => sum + (row.downloads ?? 0), 0)) : "Unavailable"} detail="Official Sales and Trends units; not first-time downloads" /></div>
+      {downloads.length ? <Breakdown title="First-time downloads by Apple source" rows={Object.entries(downloads.reduce<Record<string, number>>((totals, row) => { const source = row.source_type ?? "Unspecified"; totals[source] = (totals[source] ?? 0) + (row.count ?? 0); return totals; }, {})).map(([label, value]) => ({ label, value }))} metric="Apple source type · not user attribution" /> : null}
       <div className={styles.metrics}><Metric label="Apple Ads impressions" value={paid.length ? fmt(paid.reduce((sum, row) => sum + (row.impressions ?? 0), 0)) : "Unavailable"} detail="Only PASSPORT-mapped campaign rows" />
         <Metric label="Verified paid purchases" value="Unavailable" detail="App event counts are not App Store transactions" />
         <Metric label="Website UTM / CTA actions" value="Unavailable" detail="Vercel API requires a paid analytics plan" /></div></section>

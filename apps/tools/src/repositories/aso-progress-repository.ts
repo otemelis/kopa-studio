@@ -3,7 +3,7 @@ import type { RankObservation } from "@/lib/aso/progress";
 
 export type ProgressKeyword = { id: string; term: string; country: string; language: string | null; priority: string };
 export type ProgressSnapshot = RankObservation & { keyword_id: string; store_app_id: string };
-export type ProgressMetric = { date: string; country: string; event: string; page_type: string | null; source_type: string | null; count: number | null; unique_count: number | null };
+export type ProgressMetric = { date: string; country: string; event: string; page_type: string | null; source_type: string | null; count: number | null; unique_count: number | null; source?: string };
 export type SalesMetric = { date: string; country: string; downloads: number | null; proceeds: number | null; proceeds_currency: string | null; source: string };
 export type ProgressChange = { happened_at: string; country: string | null; field: string | null; old_value: string | null; new_value: string | null; change_type: string };
 export type ProgressRun = { started_at: string; finished_at: string | null; status: string; processed: number; succeeded: number; failed: number; warnings: number; summary: Record<string, unknown> | null };
@@ -43,7 +43,7 @@ export async function getAsoProgressData(appId: string, country?: string) {
   const from = new Date(Date.now() - 36 * 86_400_000).toISOString();
   const [rankResult, metricResult, salesResult, changeResult, runResult, campaignResult] = await Promise.all([
     keywordIds.length ? loadRankSnapshotPages((start, end) => Promise.resolve(db.from("aso_keyword_rank_snapshots").select("id,keyword_id,store_app_id,captured_at,captured_on,rank,found,result_depth,collection_status,source").eq("app_kind", "owned").eq("store_app_id", app.store_app_id).in("keyword_id", keywordIds).gte("captured_at", from).order("captured_at", { ascending: true }).order("id", { ascending: true }).range(start, end))) : Promise.resolve([]),
-    db.from("aso_storefront_metrics").select("date,country,event,page_type,source_type,count,unique_count").eq("app_id", appId).gte("date", from.slice(0, 10)).order("date", { ascending: true }).limit(5000),
+    db.from("aso_storefront_metrics").select("date,country,event,page_type,source_type,count,unique_count,source").eq("app_id", appId).gte("date", from.slice(0, 10)).order("date", { ascending: true }).limit(5000),
     db.from("aso_daily_metrics").select("date,country,downloads,proceeds,proceeds_currency,source").eq("app_id", appId).gte("date", from.slice(0, 10)).order("date", { ascending: true }).limit(2000),
     db.from("aso_metadata_change_events").select("happened_at,country,field,old_value,new_value,change_type").eq("app_id", appId).gte("happened_at", from).order("happened_at", { ascending: false }).limit(100),
     db.from("aso_sync_runs").select("started_at,finished_at,status,processed,succeeded,failed,warnings,summary").eq("provider", "apple_public").order("started_at", { ascending: false }).limit(1).maybeSingle(),
