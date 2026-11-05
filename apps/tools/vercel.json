@@ -17,5 +17,10 @@
     "src/app/api/aso/collect-maintenance/route.ts": {
       "maxDuration": 60
     }
+  },
+  "git": {
+    "deploymentEnabled": {
+      "codex/passport-safe-preview-2026-11-05": false
+    }
   }
 }
