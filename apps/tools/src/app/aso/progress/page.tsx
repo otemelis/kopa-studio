@@ -1,5 +1,6 @@
 import { AsoAcquisitionTrendChart, AsoSourceTrendChart } from "@/components/aso-source-trend-chart";
 import { AsoKeywordRankExplorer } from "@/components/aso-keyword-rank-explorer";
+import { ApplePopularityRefresh } from "@/components/apple-popularity-refresh";
 import { PageShell } from "@/components/page-shell";
 import { requireUser } from "@/lib/auth";
 import { canonicalRankSource, isCollectionRunStalled, rankMovement, sourceCaveat, sourceLabel } from "@/lib/aso/progress";
@@ -154,10 +155,12 @@ export default async function AsoProgressPage({ searchParams }: { searchParams: 
     {!sourceNames.length ? <p className="notice">No ranking observations are available for this app and market yet.</p> : null}
 
     <div className="section-head"><h2>Keyword rankings</h2><span>Current rank, period change, best rank and selectable history</span></div>
+    {country ? <ApplePopularityRefresh appId={selectedApp.id} country={country} /> : <p className="notice">Choose one storefront to inspect Apple keyword demand.</p>}
     <AsoKeywordRankExplorer
       days={days}
       keywords={activeKeywords.map(({ id, term, country }) => ({ id, term, country }))}
       snapshots={scopedSnapshots.map(({ keyword_id, captured_at, captured_on, rank, found, result_depth, collection_status, source }) => ({ keyword_id, captured_at, captured_on, rank, found, result_depth, collection_status, source }))}
+      popularity={data.popularity}
       listingCoverage={Object.fromEntries(activeKeywords.map((keyword) => [keyword.id, listingCoverage(keyword.term, listing)]))}
       listingHref={country ? `/aso/listings?app=${selectedApp.id}&country=${country}` : undefined}
     />
