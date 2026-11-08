@@ -32,6 +32,25 @@ export class FileAppleAdsV1CredentialStore implements AppleAdsV1CredentialStore 
   }
 }
 
+/** Server-only secret variables are used by hosted refreshes; local work keeps the mode-600 file. */
+export class EnvironmentAppleAdsV1CredentialStore implements AppleAdsV1CredentialStore {
+  async getCredentials(): Promise<AppleAdsV1Credentials | null> {
+    const clientId = process.env.APPLE_ADS_V1_CLIENT_ID?.trim();
+    const teamId = process.env.APPLE_ADS_V1_TEAM_ID?.trim();
+    const keyId = process.env.APPLE_ADS_V1_KEY_ID?.trim();
+    const privateKey = process.env.APPLE_ADS_V1_PRIVATE_KEY?.replace(/\\n/g, "\n");
+    if (![clientId, teamId, keyId, privateKey].some(Boolean)) return null;
+    if (!clientId || !teamId || !keyId || !privateKey) throw new Error("Hosted Apple Ads v1 credential variables are incomplete.");
+    return { clientId, teamId, keyId, privateKey };
+  }
+}
+
+class DefaultAppleAdsV1CredentialStore implements AppleAdsV1CredentialStore {
+  async getCredentials() {
+    return await new EnvironmentAppleAdsV1CredentialStore().getCredentials() ?? new FileAppleAdsV1CredentialStore().getCredentials();
+  }
+}
+
 type AppleAdsTokenResponse = { access_token?: string; expires_in?: number };
 type AppleAdsResponse<T> = { result?: T; pagination?: Record<string, unknown> };
 
@@ -73,7 +92,7 @@ export type AppleAdsV1Result<T> = {
 export class AppleAdsApiV1Provider {
   private cachedToken: { value: string; expiresAt: number } | null = null;
 
-  constructor(private readonly credentialStore: AppleAdsV1CredentialStore = new FileAppleAdsV1CredentialStore()) {}
+  constructor(private readonly credentialStore: AppleAdsV1CredentialStore = new DefaultAppleAdsV1CredentialStore()) {}
 
   async getMe(): Promise<AppleAdsV1Result<Record<string, unknown>>> {
     return this.get("/me");

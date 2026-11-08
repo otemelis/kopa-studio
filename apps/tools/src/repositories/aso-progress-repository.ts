@@ -8,6 +8,7 @@ export type SalesMetric = { date: string; country: string; downloads: number | n
 export type ProgressChange = { happened_at: string; country: string | null; field: string | null; old_value: string | null; new_value: string | null; change_type: string };
 export type ProgressRun = { started_at: string; finished_at: string | null; status: string; processed: number; succeeded: number; failed: number; warnings: number; summary: Record<string, unknown> | null };
 export type PaidSearchMetric = { metric_date: string; country: string | null; impressions: number | null; taps: number | null; installs: number | null; spend: number | null; currency: string | null; source_synced_at: string | null };
+export type ApplePopularityMetric = { keyword_id: string; country: string; genre: string; week_start: string; status: "observed" | "not_reported"; popularity_1_to_100: number | null; popularity_in_genre: number | null; popularity_1_to_5: number | null; rank_in_genre: number | null; collected_at: string; source: string };
 
 const RANK_PAGE_SIZE = 1000;
 
@@ -41,15 +42,18 @@ export async function getAsoProgressData(appId: string, country?: string) {
   const keywords = allKeywords.filter((row) => !country || row.country === country);
   const keywordIds = keywords.map((row) => row.id);
   const from = new Date(Date.now() - 36 * 86_400_000).toISOString();
-  const [rankResult, metricResult, salesResult, changeResult, runResult, campaignResult] = await Promise.all([
+  const [rankResult, metricResult, salesResult, changeResult, runResult, campaignResult, popularityResult] = await Promise.all([
     keywordIds.length ? loadRankSnapshotPages((start, end) => Promise.resolve(db.from("aso_keyword_rank_snapshots").select("id,keyword_id,store_app_id,captured_at,captured_on,rank,found,result_depth,collection_status,source").eq("app_kind", "owned").eq("store_app_id", app.store_app_id).in("keyword_id", keywordIds).gte("captured_at", from).order("captured_at", { ascending: true }).order("id", { ascending: true }).range(start, end))) : Promise.resolve([]),
     db.from("aso_storefront_metrics").select("date,country,event,page_type,source_type,count,unique_count,source").eq("app_id", appId).gte("date", from.slice(0, 10)).order("date", { ascending: true }).limit(5000),
     db.from("aso_daily_metrics").select("date,country,downloads,proceeds,proceeds_currency,source").eq("app_id", appId).gte("date", from.slice(0, 10)).order("date", { ascending: true }).limit(2000),
     db.from("aso_metadata_change_events").select("happened_at,country,field,old_value,new_value,change_type").eq("app_id", appId).gte("happened_at", from).order("happened_at", { ascending: false }).limit(100),
     db.from("aso_sync_runs").select("started_at,finished_at,status,processed,succeeded,failed,warnings,summary").eq("provider", "apple_public").order("started_at", { ascending: false }).limit(1).maybeSingle(),
     db.from("apple_ads_campaigns").select("id").eq("app_id", appId).eq("is_deleted", false).limit(500),
+    keywordIds.length ? db.from("aso_apple_keyword_popularity").select("keyword_id,country,genre,week_start,status,popularity_1_to_100,popularity_in_genre,popularity_1_to_5,rank_in_genre,collected_at,source").in("keyword_id", keywordIds).order("week_start", { ascending: false }).limit(3000) : Promise.resolve({ data: [], error: null }),
   ]);
   if (metricResult.error || salesResult.error || changeResult.error || runResult.error) throw new Error("Could not read one or more ASO progress sources.");
+  // Before the separately approved migration, keep the established ASO page usable.
+  if (popularityResult.error && popularityResult.error.code !== "42P01" && popularityResult.error.code !== "PGRST205") throw new Error("Could not read Apple keyword popularity.");
   if (campaignResult.error) throw new Error("Could not read paid-search campaign coverage.");
   const campaignIds = (campaignResult.data ?? []).map((row) => row.id);
   const paidResult = campaignIds.length ? await db.from("apple_ads_daily_metrics").select("metric_date,country,impressions,taps,installs,spend,currency,source_synced_at").in("campaign_id", campaignIds).gte("metric_date", from.slice(0, 10)).order("metric_date", { ascending: true }).limit(2000) : { data: [], error: null };
@@ -63,5 +67,6 @@ export async function getAsoProgressData(appId: string, country?: string) {
     changes: (changeResult.data ?? []) as ProgressChange[],
     latestRun: runResult.data as ProgressRun | null,
     paidSearch: (paidResult.data ?? []) as PaidSearchMetric[],
+    popularity: (popularityResult.data ?? []) as ApplePopularityMetric[],
   };
 }
