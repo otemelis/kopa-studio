@@ -8,6 +8,8 @@ const GENRES: Record<string, string> = {
   "Health & Fitness": "HEALTH_FITNESS",
 };
 
+export const applePopularityGenre = (category: string): string | null => GENRES[category] ?? null;
+
 export type PopularityObservation = {
   keyword_id: string; country: string; genre: string; week_start: string;
   status: "observed" | "not_reported";
@@ -72,14 +74,14 @@ export function hasNextApplePopularityPage(rowCount: number, requestedPageSize: 
   return rowCount === requestedPageSize;
 }
 
-export async function refreshApplePopularity(appId: string, countryInput: string, weekStart = latestPublishedAppleWeek()) {
+export async function refreshApplePopularity(appId: string, countryInput: string, weekStart = latestPublishedAppleWeek(), api = new AppleAdsApiV1Provider()) {
   const country = countryInput.toUpperCase();
   if (!/^[A-Z]{2}$/.test(country)) throw new Error("A two-letter storefront country is required.");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(weekStart) || new Date(`${weekStart}T00:00:00Z`).getUTCDay() !== 0 || weekStart > latestPublishedAppleWeek()) throw new Error("Choose a published Sunday-start Apple week.");
   const db = createAdminClient();
   const { data: app, error: appError } = await db.from("aso_apps").select("id,category").eq("id", appId).single();
   if (appError || !app) throw new Error("Tracked app was not found.");
-  const genre = GENRES[app.category];
+  const genre = applePopularityGenre(app.category);
   if (!genre) throw new Error("The app's Apple genre has not been mapped for popularity queries.");
   const { data: links, error: linksError } = await db.from("aso_app_keywords").select("keyword_id").eq("app_id", appId).eq("status", "active").limit(1000);
   if (linksError) throw new Error("Could not read active keyword links.");
@@ -90,7 +92,6 @@ export async function refreshApplePopularity(appId: string, countryInput: string
   const keywords = (rawKeywords ?? []).map(({ id, term }) => ({ id, term }));
   if (!keywords.length) return { country, genre, weekStart, tracked: 0, observed: 0, notReported: 0 };
   if (keywords.length > 100) throw new Error("This market exceeds the bounded 100-term refresh limit.");
-  const api = new AppleAdsApiV1Provider();
   const end = new Date(Date.parse(`${weekStart}T00:00:00Z`) + 6 * 86_400_000).toISOString().slice(0, 10);
   const pages: AppleAdsV1Result<Record<string, unknown>>[] = [];
   let offset = 0;
