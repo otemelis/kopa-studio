@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { latestPublishedAppleWeek, parseApplePopularity } from "./apple-popularity";
+import { hasNextApplePopularityPage, latestPublishedAppleWeek, parseApplePopularity } from "./apple-popularity";
 import type { AppleAdsV1Result } from "@/lib/apple-ads/apple-ads-v1-provider";
 
 const page = (rows: unknown[]): AppleAdsV1Result<Record<string, unknown>> => ({
@@ -13,6 +13,13 @@ describe("Apple weekly keyword popularity", () => {
     expect(latestPublishedAppleWeek(new Date("2026-11-08T23:59:00Z"))).toBe("2026-10-25");
     expect(latestPublishedAppleWeek(new Date("2026-11-09T06:59:00Z"))).toBe("2026-10-25");
     expect(latestPublishedAppleWeek(new Date("2026-11-09T07:00:00Z"))).toBe("2026-11-01");
+  });
+
+  it("stops on Apple's zero-row pageSize=0 and a short page", () => {
+    expect(hasNextApplePopularityPage(0, 100)).toBe(false);
+    expect(hasNextApplePopularityPage(20, 100)).toBe(false);
+    expect(hasNextApplePopularityPage(100, 100)).toBe(true);
+    expect(() => hasNextApplePopularityPage(101, 100)).toThrow("length was invalid");
   });
 
   it("keeps observed scores and unreported terms distinct from zero", () => {

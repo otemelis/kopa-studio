@@ -66,6 +66,12 @@ export function parseApplePopularity(
   });
 }
 
+/** Apple's response pageSize can equal the returned count, including zero; use the requested limit. */
+export function hasNextApplePopularityPage(rowCount: number, requestedPageSize: number): boolean {
+  if (!Number.isSafeInteger(rowCount) || rowCount < 0 || rowCount > requestedPageSize) throw new Error("Apple popularity page length was invalid.");
+  return rowCount === requestedPageSize;
+}
+
 export async function refreshApplePopularity(appId: string, countryInput: string, weekStart = latestPublishedAppleWeek()) {
   const country = countryInput.toUpperCase();
   if (!/^[A-Z]{2}$/.test(country)) throw new Error("A two-letter storefront country is required.");
@@ -88,14 +94,14 @@ export async function refreshApplePopularity(appId: string, countryInput: string
   const end = new Date(Date.parse(`${weekStart}T00:00:00Z`) + 6 * 86_400_000).toISOString().slice(0, 10);
   const pages: AppleAdsV1Result<Record<string, unknown>>[] = [];
   let offset = 0;
+  const pageSize = 100;
   for (let pageNumber = 0; pageNumber < 10; pageNumber++) {
-    const page = await api.querySearchTermPopularity({ countryOrRegion: country, genre, start: weekStart, end, searchTerms: keywords.map((keyword) => keyword.term), weeks: [weekStart], offset, pageSize: 100 });
+    const page = await api.querySearchTermPopularity({ countryOrRegion: country, genre, start: weekStart, end, searchTerms: keywords.map((keyword) => keyword.term), weeks: [weekStart], offset, pageSize });
     pages.push(page);
     const rows = page.result.rows;
     if (!Array.isArray(rows)) throw new Error("Apple popularity response did not contain rows.");
-    const actualPageSize = Number(page.pagination?.pageSize ?? 100);
-    if (!Number.isSafeInteger(actualPageSize) || actualPageSize < 1) throw new Error("Apple popularity pagination was invalid.");
-    if (rows.length < actualPageSize) break;
+    if (page.pagination?.offset !== undefined && page.pagination.offset !== offset) throw new Error("Apple popularity pagination offset did not match the request.");
+    if (!hasNextApplePopularityPage(rows.length, pageSize)) break;
     offset += rows.length;
     if (pageNumber === 9) throw new Error("Apple popularity pagination exceeded the safe page limit.");
   }
