@@ -13,7 +13,7 @@ function fakeBrowser() {
 
 const partial = (term) => ({ status: "partial", ordered: [{ id: term }], depth: 1 });
 
-test("Apple web observations are serialized and use an isolated browser per keyword", async () => {
+test("Apple web observations are serialized and reuse a browser for at most four fresh contexts", async () => {
   const browsers = [];
   let active = 0;
   let peak = 0;
@@ -37,11 +37,11 @@ test("Apple web observations are serialized and use an isolated browser per keyw
     const results = await Promise.all(terms.map((term) => queue.observe("de", term)));
     assert.equal(peak, 1);
     assert.deepEqual(results.map((result) => result.ordered[0].id), terms);
-    assert.equal(browsers.length, 10);
-    assert.ok(browsers.every((browser) => browser.closeCalls === 1));
+    assert.equal(browsers.length, 3);
   } finally {
     await queue.close();
   }
+  assert.ok(browsers.every((browser) => browser.closeCalls === 1));
 });
 
 test("Apple web queue forwards the recorded search locale", async () => {
@@ -59,6 +59,28 @@ test("Apple web queue forwards the recorded search locale", async () => {
   } finally {
     await queue.close();
   }
+});
+
+test("an unavailable page discards the reused browser without affecting the next term", async () => {
+  const browsers = [];
+  const queue = createAppleWebQueue({
+    launchBrowser: async () => {
+      const browser = fakeBrowser();
+      browsers.push(browser);
+      return browser;
+    },
+    collectObservation: async (_browser, _country, term) => term === "unavailable"
+      ? { status: "failed", error: "Apple search page loaded without identifiable result cards." }
+      : partial(term),
+  });
+  try {
+    const results = await Promise.all(["first", "unavailable", "following"].map((term) => queue.observe("de", term)));
+    assert.deepEqual(results.map((result) => result.status), ["partial", "failed", "partial"]);
+    assert.equal(browsers.length, 2);
+  } finally {
+    await queue.close();
+  }
+  assert.ok(browsers.every((browser) => browser.closeCalls === 1));
 });
 
 test("ten-keyword batches keep collecting after repeated browser crashes instead of cascading failures", async () => {
@@ -82,7 +104,7 @@ test("ten-keyword batches keep collecting after repeated browser crashes instead
     const terms = Array.from({ length: 10 }, (_, index) => `term-${index + 1}`);
     const results = await Promise.all(terms.map((term) => queue.observe("de", term)));
     assert.deepEqual(results.map((result) => result.status), Array(10).fill("partial"));
-    assert.equal(launches, 18, "eight per-keyword recoveries do not exhaust a batch-wide restart allowance");
+    assert.equal(launches, 9, "eight browser-closure recoveries do not exhaust a batch-wide restart allowance");
   } finally {
     await queue.close();
   }
@@ -101,7 +123,7 @@ test("a full 48-keyword scheduled batch is not limited by the old batch-wide res
     const results = await Promise.all(terms.map((term) => queue.observe("de", term)));
     assert.equal(results.length, 48);
     assert.ok(results.every((result) => result.status === "partial"));
-    assert.equal(launches, 48);
+    assert.equal(launches, 12);
   } finally {
     await queue.close();
   }
@@ -125,7 +147,7 @@ test("a browser-closure failure retries only that keyword and the following keyw
   try {
     const results = await Promise.all(["first", "second", "third"].map((term) => queue.observe("de", term)));
     assert.deepEqual(results.map((result) => result.status), ["partial", "partial", "partial"]);
-    assert.equal(launches, 4, "the failed term is relaunched once; each subsequent term gets an isolated browser");
+    assert.equal(launches, 2, "the failed term is relaunched once; subsequent terms safely reuse its browser");
   } finally {
     await queue.close();
   }
