@@ -27,5 +27,8 @@ test("collector deployment owns twelve distinct daily ranking slots and maintena
 });
 
 test("Tools proxy does not duplicate collector cron schedules", () => {
-  assert.equal(toolsConfig.crons, undefined);
+  assert.deepEqual(
+    (toolsConfig.crons ?? []).filter(({ path }) => path.startsWith("/api/aso/collect-")),
+    [],
+  );
 });
