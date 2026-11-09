@@ -16,6 +16,15 @@
     },
     "src/app/api/aso/collect-maintenance/route.ts": {
       "maxDuration": 60
+    },
+    "src/app/api/aso/apple-popularity/scheduled/route.ts": {
+      "maxDuration": 180
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/aso/apple-popularity/scheduled",
+      "schedule": "15 9 * * *"
+    }
+  ]
 }
