@@ -43,20 +43,22 @@ async function closeBrowser(browser, timeoutMs) {
 }
 
 /**
- * Serialize Apple web observations, isolate each keyword in its own Chromium
- * process, retry one browser-closure failure, and bound both the observation
+ * Serialize Apple web observations, reuse Chromium for at most four fresh
+ * contexts, retry one browser-closure failure, and bound both the observation
  * and the whole batch so a wedged Playwright call cannot strand the cron lock.
  */
 export function createAppleWebQueue({
   launchBrowser,
   collectObservation,
   maxBrowserLaunches = 21,
+  maxObservationsPerBrowser = 4,
   observationTimeoutMs = DEFAULT_OBSERVATION_TIMEOUT_MS,
   batchTimeoutMs = DEFAULT_BATCH_TIMEOUT_MS,
   closeTimeoutMs = DEFAULT_CLOSE_TIMEOUT_MS,
 }) {
   let launches = 0;
   let activeBrowser = null;
+  let observationsInBrowser = 0;
   let closed = false;
   let tail = Promise.resolve();
   const batchStartedAt = Date.now();
@@ -70,29 +72,32 @@ export function createAppleWebQueue({
       if (closed) return failed("Apple web collection queue is closing.");
       const remaining = remainingBatchMs();
       if (remaining <= 0) return failed("Apple web batch time budget reached; remaining observations deferred to the next scheduled run.");
-      if (launches >= maxBrowserLaunches) return failed("Apple web browser launch limit reached for this batch.");
+      if (!activeBrowser && launches >= maxBrowserLaunches) return failed("Apple web browser launch limit reached for this batch.");
 
-      let browser = null;
+      let browser = activeBrowser;
       let launchExpired = false;
       try {
-        launches++;
-        const startup = Promise.resolve()
-          .then(() => launchBrowser())
-          .then(async (startedBrowser) => {
-            if (launchExpired || closed) {
-              await closeBrowser(startedBrowser, closeTimeoutMs);
-              return null;
-            }
-            return startedBrowser;
-          });
-        browser = await withTimeout(
-          startup,
-          Math.min(20_000, remaining),
-          "Apple web browser startup exceeded its time budget.",
-          () => { launchExpired = true; },
-        );
-        if (!browser) return failed("Apple web collection queue closed during browser startup.");
-        activeBrowser = browser;
+        if (!browser) {
+          launches++;
+          const startup = Promise.resolve()
+            .then(() => launchBrowser())
+            .then(async (startedBrowser) => {
+              if (launchExpired || closed) {
+                await closeBrowser(startedBrowser, closeTimeoutMs);
+                return null;
+              }
+              return startedBrowser;
+            });
+          browser = await withTimeout(
+            startup,
+            Math.min(20_000, remaining),
+            "Apple web browser startup exceeded its time budget.",
+            () => { launchExpired = true; },
+          );
+          if (!browser) return failed("Apple web collection queue closed during browser startup.");
+          activeBrowser = browser;
+          observationsInBrowser = 0;
+        }
 
         const observationBudget = Math.min(observationTimeoutMs, remainingBatchMs());
         if (observationBudget <= 0) return failed("Apple web batch time budget reached; remaining observations deferred to the next scheduled run.");
@@ -103,16 +108,33 @@ export function createAppleWebQueue({
           "Apple web observation exceeded its time budget.",
         );
         const browserClosed = result?.status === "failed" && CLOSED_BROWSER.test(result.error ?? "");
+        if (result?.status !== "failed") {
+          observationsInBrowser++;
+          if (observationsInBrowser >= maxObservationsPerBrowser) {
+            await closeBrowser(browser, closeTimeoutMs);
+            activeBrowser = null;
+            observationsInBrowser = 0;
+          }
+          return result;
+        }
+        await closeBrowser(browser, closeTimeoutMs);
+        activeBrowser = null;
+        observationsInBrowser = 0;
         if (!browserClosed || attempt > 0) return result;
         lastError = result.error;
       } catch (error) {
         if (browser === null) launchExpired = true;
+        await closeBrowser(browser, closeTimeoutMs);
+        if (activeBrowser === browser) activeBrowser = null;
+        observationsInBrowser = 0;
         const message = error instanceof Error ? error.message : String(error);
         if (!CLOSED_BROWSER.test(message) || attempt > 0) return failed(message);
         lastError = message;
       } finally {
-        await closeBrowser(browser, closeTimeoutMs);
-        if (activeBrowser === browser) activeBrowser = null;
+        if (activeBrowser === browser && browser && browser.isConnected?.() === false) {
+          activeBrowser = null;
+          observationsInBrowser = 0;
+        }
       }
     }
 
@@ -132,6 +154,7 @@ export function createAppleWebQueue({
       // Close an in-flight browser first so pending Playwright operations fail
       // promptly instead of making shutdown wait on an unbounded queue tail.
       await closeBrowser(activeBrowser, closeTimeoutMs);
+      activeBrowser = null;
       await withTimeout(tail, closeTimeoutMs, "Apple web queue shutdown exceeded its time budget.").catch(() => undefined);
     },
   };
