@@ -9,7 +9,87 @@ import {
 const DISCOVERY_REPORT = "App Store Discovery and Engagement Standard";
 const DOWNLOADS_REPORT = "App Downloads Standard";
 const POIS_APPLE_ID = "6820665225";
+const PASSPORT_APPLE_ID = "6822753543";
 const POIS_APPROVED_REQUEST_ID = "0a5174c1-f952-401f-abea-3f9fd6487a36";
+const APPROVED_REQUESTS = new Map([
+  [POIS_APPLE_ID, POIS_APPROVED_REQUEST_ID],
+  [PASSPORT_APPLE_ID, "1a1002c3-3a07-4d10-afca-6352b89790d5"],
+]);
+const MAX_REPORT_PAGES = 10;
+const MAX_HISTORY_INSTANCES = 35;
+export function approvedRequestForApp(app) {
+  const appleId = String(app?.store_app_id ?? "");
+  return String(app?.appstore_connect_id ?? "") === appleId ? APPROVED_REQUESTS.get(appleId) ?? null : null;
+}
+export function validateHistoryWindow(start, end) {
+  if (start == null && end == null) return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(start ?? "") || !/^\d{4}-\d{2}-\d{2}$/.test(end ?? "")) throw new Error("Analytics backfill requires an explicit ISO start and end date.");
+  const first = Date.parse(`${start}T00:00:00Z`);
+  const last = Date.parse(`${end}T00:00:00Z`);
+  if (!Number.isFinite(first) || !Number.isFinite(last) || last < first || last - first > 34 * 86400000) throw new Error("Analytics backfill window must be 1–35 reporting days.");
+  return { start, end };
+}
+export function passportBackfillScope(body, apps) {
+  if (body?.appId !== PASSPORT_APPLE_ID) throw new Error("PASSPORT backfill requires the exact approved Apple app ID.");
+  const window = validateHistoryWindow(body.start, body.end);
+  if (!window) throw new Error("PASSPORT backfill requires bounded report dates.");
+  const selected = apps.filter((app) => String(app.store_app_id) === PASSPORT_APPLE_ID && String(app.appstore_connect_id) === PASSPORT_APPLE_ID);
+  if (selected.length !== 1) throw new Error("PASSPORT App Store Connect mapping is missing or ambiguous.");
+  return { apps: selected, historyStart: window.start, historyEnd: window.end };
+}
+
+export function buildAnalyticsPartitions(storefrontRows, dailyRows) {
+  const byKey = new Map();
+  for (const row of [...storefrontRows, ...dailyRows]) {
+    if (!row.raw_payload?.sourceRows?.length && !row.raw_payload?.derivedFromStorefrontImportKeys?.length) throw new Error("Apple partition row lacks provenance.");
+    const partitionSource = row.source === "appstore_connect_first_time_downloads" ? "appstore_connect_downloads" : row.source;
+    const key = `${row.app_id}:${row.date}:${partitionSource}`;
+    const part = byKey.get(key) ?? { app_id: row.app_id, date: row.date, source: partitionSource, storefront_rows: [], daily_rows: [], processing_date: null };
+    if (row.event) part.storefront_rows.push(row);
+    else part.daily_rows.push(row);
+    const dates = (row.raw_payload.sourceRows ?? []).map((source) => String(source.processingDate ?? ""));
+    for (const date of dates) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Apple processing date is missing or invalid.");
+      if (part.processing_date && part.processing_date !== date) throw new Error("Mixed Apple processing revisions in one partition.");
+      part.processing_date = date;
+    }
+    byKey.set(key, part);
+  }
+  return [...byKey.values()].sort((a, b) => `${a.app_id}:${a.date}:${a.source}`.localeCompare(`${b.app_id}:${b.date}:${b.source}`)).map((part) => {
+    if (!part.processing_date) throw new Error("Apple partition has no processing revision.");
+    part.storefront_rows.sort((a, b) => a.import_key.localeCompare(b.import_key));
+    part.daily_rows.sort((a, b) => a.import_key.localeCompare(b.import_key));
+    part.payload_hash = createHash("sha256").update(JSON.stringify(part)).digest("hex");
+    return part;
+  });
+}
+export async function persistAnalyticsRows(db, partitions, storefrontRows, dailyRows, passportAppIds) {
+  const passportParts = partitions.filter((part) => passportAppIds.has(part.app_id));
+  const legacyStorefront = storefrontRows.filter((row) => !passportAppIds.has(row.app_id));
+  const legacyDaily = dailyRows.filter((row) => !passportAppIds.has(row.app_id));
+  if (legacyStorefront.length) await db.upsert("aso_storefront_metrics", legacyStorefront, "app_id,date,country,event,page_type,source_type,source");
+  if (legacyDaily.length) await db.upsert("aso_daily_metrics", legacyDaily, "app_id,date,country,source");
+  let skippedConflicts = 0;
+  let replaced = 0;
+  for (const appId of passportAppIds) {
+    const scoped = passportParts.filter((part) => part.app_id === appId);
+    if (!scoped.length) continue;
+    const first = scoped[0].date;
+    const last = scoped.at(-1).date;
+    const states = await db.select("aso_analytics_partition_state", `app_id=eq.${appId}&date=gte.${first}&date=lte.${last}&select=date,source,processing_date,payload_hash`);
+    const existing = new Map(states.map((row) => [`${row.date}:${row.source}`, row]));
+    for (const part of scoped) {
+      const prior = existing.get(`${part.date}:${part.source}`);
+      if (prior && String(prior.processing_date) >= part.processing_date) {
+        if (String(prior.processing_date) === part.processing_date && prior.payload_hash !== part.payload_hash) skippedConflicts++;
+        continue; // Preserve an already imported same-day revision and never downgrade it.
+      }
+      await db.rpc("aso_replace_analytics_partition", { p: part });
+      replaced++;
+    }
+  }
+  return { passportPartitions: replaced, skippedConflicts, legacyRows: legacyStorefront.length + legacyDaily.length };
+}
 export const DISCOVERY_PARSER_VERSION = "discovery-v2";
 const REQUIRED_DISCOVERY_HEADERS = ["Date", "Event", "Page Type", "Source Type", "Territory", "Counts"];
 
@@ -41,8 +121,25 @@ async function provisionRequest(appstoreConnectId) {
 }
 
 async function remoteRequests(appstoreConnectId) {
-  const body = await appStoreConnectJson(`/v1/apps/${encodeURIComponent(appstoreConnectId)}/analyticsReportRequests?limit=200`);
-  return body?.data ?? [];
+  return paginatedAppleRows(`/v1/apps/${encodeURIComponent(appstoreConnectId)}/analyticsReportRequests?limit=200`);
+}
+
+/** Follow Apple's links.next without accepting an off-host or unbounded page chain. */
+export async function paginatedAppleRows(path, get = appStoreConnectJson, maxPages = MAX_REPORT_PAGES) {
+  const rows = [];
+  const seen = new Set();
+  for (let page = 0; path; page++) {
+    if (page >= maxPages || seen.has(path)) throw new Error("Apple report pagination exceeded its safe bound.");
+    seen.add(path);
+    const body = await get(path);
+    rows.push(...(body?.data ?? []));
+    const next = body?.links?.next;
+    if (!next) break;
+    const url = new URL(next, "https://api.appstoreconnect.apple.com");
+    if (url.origin !== "https://api.appstoreconnect.apple.com" || !url.pathname.startsWith("/v1/")) throw new Error("Unexpected Apple report pagination host or path.");
+    path = `${url.pathname}${url.search}`;
+  }
+  return rows;
 }
 
 export async function provisionDiscoveryRequests(db, apps) {
@@ -227,16 +324,16 @@ export function inspectDownloadsReport(csv) {
 }
 
 async function reportSegments(requestId, reportName, maxInstances = 4) {
-  const reports = (await appStoreConnectJson(`/v1/analyticsReportRequests/${encodeURIComponent(requestId)}/reports?limit=50`)).data ?? [];
+  const reports = await paginatedAppleRows(`/v1/analyticsReportRequests/${encodeURIComponent(requestId)}/reports?limit=50`);
   const report = reports.find((item) => item.attributes?.name === reportName);
   if (!report) return [];
-  const instances = (await appStoreConnectJson(`/v1/analyticsReports/${encodeURIComponent(report.id)}/instances?filter[granularity]=DAILY&limit=200`)).data ?? [];
+  const instances = await paginatedAppleRows(`/v1/analyticsReports/${encodeURIComponent(report.id)}/instances?filter[granularity]=DAILY&limit=200`);
   const recent = [...instances]
     .sort((a, b) => String(b.attributes?.processingDate ?? "").localeCompare(String(a.attributes?.processingDate ?? "")))
     .slice(0, maxInstances);
   const files = [];
   for (const instance of recent) {
-    const segments = (await appStoreConnectJson(`/v1/analyticsReportInstances/${encodeURIComponent(instance.id)}/segments?limit=200`)).data ?? [];
+    const segments = await paginatedAppleRows(`/v1/analyticsReportInstances/${encodeURIComponent(instance.id)}/segments?limit=200`);
     for (const segment of segments) {
       const bytes = await downloadSegment(segment.attributes?.url);
       if (bytes.length !== Number(segment.attributes?.sizeInBytes) || createHash("md5").update(bytes).digest("hex") !== segment.attributes?.checksum) throw new Error("Apple Analytics segment size or checksum mismatch.");
@@ -245,21 +342,34 @@ async function reportSegments(requestId, reportName, maxInstances = 4) {
         segmentId: segment.id,
         instanceId: instance.id,
         processingDate: instance.attributes?.processingDate ?? null,
+        reportId: report.id,
+        requestId,
+        segmentChecksum: segment.attributes?.checksum,
       });
     }
   }
   return files;
 }
 
-export async function syncDiscoveryAnalytics(db, apps) {
+export async function syncDiscoveryAnalytics(db, apps, { dryRun = false, maxInstances = MAX_HISTORY_INSTANCES, historyStart = null, historyEnd = null, allowPassportDiscovery = true } = {}) {
+  if (!Number.isInteger(maxInstances) || maxInstances < 1 || maxInstances > MAX_HISTORY_INSTANCES) throw new Error("Analytics history bound must be 1–35 instances.");
+  const window = validateHistoryWindow(historyStart, historyEnd);
+  const inWindow = (date) => !window || (date >= window.start && date <= window.end);
   const requests = await db.select("aso_analytics_report_requests", "select=*");
-  const pois = apps.find((app) => app.store_app_id === POIS_APPLE_ID && app.appstore_connect_id === POIS_APPLE_ID);
-  if (pois && !requests.some((request) => request.app_id === pois.id)) {
-    const remote = await remoteRequests(POIS_APPLE_ID);
-    const approved = remote.find((request) => request.id === POIS_APPROVED_REQUEST_ID && request.attributes?.accessType === "ONGOING");
-    if (!approved) throw new Error("Approved POIS Analytics request is not available; no POIS data imported.");
-    await db.upsert("aso_analytics_report_requests", [{ app_id: pois.id, appstore_connect_request_id: approved.id, access_type: "ONGOING", status: "requested", last_checked_at: new Date().toISOString(), last_error: null }], "app_id");
-    requests.push(...await db.select("aso_analytics_report_requests", `app_id=eq.${pois.id}&select=*`));
+  for (const app of apps) {
+    const appleId = String(app.store_app_id ?? "");
+    if (appleId === PASSPORT_APPLE_ID && !allowPassportDiscovery) continue;
+    const approvedId = approvedRequestForApp(app);
+    if (!approvedId || requests.some((request) => request.app_id === app.id)) continue;
+    const remote = await remoteRequests(appleId);
+    const approved = remote.find((request) => request.id === approvedId && request.attributes?.accessType === "ONGOING");
+    if (!approved) throw new Error(`Approved Analytics request is not available for app ${appleId}; no data imported.`);
+    const mapping = { app_id: app.id, appstore_connect_request_id: approved.id, access_type: "ONGOING", status: "requested", last_checked_at: new Date().toISOString(), last_error: null };
+    if (dryRun) requests.push({ ...mapping, id: `dry-run:${app.id}` });
+    else {
+      await db.upsert("aso_analytics_report_requests", [mapping], "app_id");
+      requests.push(...await db.select("aso_analytics_report_requests", `app_id=eq.${app.id}&select=*`));
+    }
   }
   const appById = new Map(apps.map((app) => [app.id, app]));
   const raw = new Map();
@@ -271,7 +381,7 @@ export async function syncDiscoveryAnalytics(db, apps) {
     const app = appById.get(request.app_id);
     if (!app) continue;
     try {
-      const files = await reportSegments(request.appstore_connect_request_id, DISCOVERY_REPORT, app.store_app_id === POIS_APPLE_ID ? 35 : 4);
+      const files = await reportSegments(request.appstore_connect_request_id, DISCOVERY_REPORT, maxInstances);
       segments += files.length;
       const headers = new Set();
       const issues = [];
@@ -279,7 +389,7 @@ export async function syncDiscoveryAnalytics(db, apps) {
       let requestSourceRows = 0;
       let requestImportedRows = 0;
       let requestRejectedRows = 0;
-      const selected = latestProcessingRows(files, inspectDiscoveryReport, String(app.store_app_id));
+      const selected = latestProcessingRows(files, inspectDiscoveryReport, String(app.store_app_id)).filter((row) => inWindow(row.date));
       for (const file of files) {
         const result = inspectDiscoveryReport(file.text);
         result.headers.forEach((header) => headers.add(header));
@@ -298,6 +408,9 @@ export async function syncDiscoveryAnalytics(db, apps) {
               segmentId: selectedFile.segmentId,
               instanceId: file.instanceId,
               processingDate: file.processingDate,
+              reportId: file.reportId,
+              requestId: file.requestId,
+              segmentChecksum: file.segmentChecksum,
               row: row.rawPayload,
             });
           } else {
@@ -308,6 +421,9 @@ export async function syncDiscoveryAnalytics(db, apps) {
                 segmentId: selectedFile.segmentId,
                 instanceId: file.instanceId,
                 processingDate: file.processingDate,
+                reportId: file.reportId,
+                requestId: file.requestId,
+                segmentChecksum: file.segmentChecksum,
                 row: row.rawPayload,
               }],
             });
@@ -316,7 +432,7 @@ export async function syncDiscoveryAnalytics(db, apps) {
       }
       sourceRows += requestSourceRows;
       rejectedRows += requestRejectedRows;
-      const state = requestRejectedRows ? "partial" : requestImportedRows ? "success" : "zero";
+      const state = !files.length ? "pending" : requestRejectedRows ? "partial" : requestImportedRows ? "success" : "zero";
       requestOutcomes.push({
         request,
         state,
@@ -331,7 +447,7 @@ export async function syncDiscoveryAnalytics(db, apps) {
       });
     } catch (error) {
       const details = error instanceof DiscoveryReportParseError ? error.details : {};
-      await db.update(
+      if (!dryRun) await db.update(
         "aso_analytics_report_requests",
         {
           status: "error",
@@ -358,14 +474,14 @@ export async function syncDiscoveryAnalytics(db, apps) {
   const downloadDaily = new Map();
   for (const { request } of requestOutcomes) {
     const app = appById.get(request.app_id);
-    if (app?.store_app_id !== POIS_APPLE_ID) continue;
-    const files = await reportSegments(request.appstore_connect_request_id, DOWNLOADS_REPORT, 35);
-    const selected = latestProcessingRows(files, inspectDownloadsReport, POIS_APPLE_ID);
+    if (!app?.store_app_id) continue;
+    const files = await reportSegments(request.appstore_connect_request_id, DOWNLOADS_REPORT, maxInstances);
+    const selected = latestProcessingRows(files, inspectDownloadsReport, String(app.store_app_id)).filter((row) => inWindow(row.date));
     for (const row of selected) {
       const key = `${app.id}:${row.date}:${row.country}`;
       const entry = downloadDaily.get(key) ?? { app, date: row.date, country: row.country, downloads: 0, sourceRows: [] };
       entry.downloads += row.count;
-      entry.sourceRows.push({ segmentId: row.file.segmentId, instanceId: row.file.instanceId, processingDate: row.file.processingDate, row: row.rawPayload });
+      entry.sourceRows.push({ segmentId: row.file.segmentId, instanceId: row.file.instanceId, processingDate: row.file.processingDate, reportId: row.file.reportId, requestId: row.file.requestId, segmentChecksum: row.file.segmentChecksum, row: row.rawPayload });
       downloadDaily.set(key, entry);
     }
   }
@@ -383,7 +499,24 @@ export async function syncDiscoveryAnalytics(db, apps) {
     parser_version: DISCOVERY_PARSER_VERSION,
     raw_payload: { sourceRows: row.rawPayloads },
   }));
-  await db.upsert("aso_storefront_metrics", rawRows, "app_id,date,country,event,page_type,source_type,source");
+  const downloadSourceRows = [...downloadDaily.values()].flatMap((entry) => {
+    const bySource = new Map();
+    for (const item of entry.sourceRows) {
+      const source = item.row["Source Type"] || "Unavailable";
+      const bucket = bySource.get(source) ?? { count: 0, rows: [] };
+      bucket.count += Number(item.row.Counts);
+      bucket.rows.push(item);
+      bySource.set(source, bucket);
+    }
+    return [...bySource].map(([source, bucket]) => ({
+      app_id: entry.app.id, date: entry.date, country: entry.country,
+      event: "First-time download", page_type: "No page", source_type: source,
+      count: bucket.count, unique_count: null,
+      import_key: `appstore_connect_downloads:${entry.app.id}:${entry.date}:${entry.country}:${source}`,
+      source: "appstore_connect_downloads", parser_version: DISCOVERY_PARSER_VERSION,
+      raw_payload: { sourceRows: bucket.rows },
+    }));
+  });
 
   const daily = new Map();
   for (const row of raw.values()) {
@@ -408,8 +541,7 @@ export async function syncDiscoveryAnalytics(db, apps) {
     parser_version: DISCOVERY_PARSER_VERSION,
     raw_payload: { derivedFromStorefrontImportKeys: row.importKeys },
   }));
-  await db.upsert("aso_daily_metrics", dailyRows, "app_id,date,country,source");
-  if (downloadDaily.size) await db.upsert("aso_daily_metrics", [...downloadDaily.values()].map((row) => ({
+  const downloadDailyRows = [...downloadDaily.values()].map((row) => ({
     app_id: row.app.id,
     date: row.date,
     country: row.country,
@@ -422,7 +554,10 @@ export async function syncDiscoveryAnalytics(db, apps) {
     source: "appstore_connect_first_time_downloads",
     parser_version: DISCOVERY_PARSER_VERSION,
     raw_payload: { definition: "App Downloads Standard; Download Type=First-time download; UTC Analytics day", sourceRows: row.sourceRows },
-  })), "app_id,date,country,source");
+  }));
+  const partitions = buildAnalyticsPartitions([...rawRows, ...downloadSourceRows], [...dailyRows, ...downloadDailyRows]);
+  if (rejectedRows && !dryRun) throw new Error("Apple Discovery report contains rejected rows; refusing partial partition replacement.");
+  const persistence = dryRun ? null : await persistAnalyticsRows(db, partitions, rawRows, [...dailyRows, ...downloadDailyRows], new Set(apps.filter((app) => String(app.store_app_id) === PASSPORT_APPLE_ID).map((app) => app.id)));
   const now = new Date().toISOString();
   for (const outcome of requestOutcomes) {
     const detail = outcome.state === "success"
@@ -432,7 +567,7 @@ export async function syncDiscoveryAnalytics(db, apps) {
         : outcome.files
           ? "Apple generated a valid report with zero data rows."
           : "Apple has not generated a Discovery and Engagement segment yet.";
-    await db.update(
+    if (!dryRun) await db.update(
       "aso_analytics_report_requests",
       {
         status: outcome.files ? "active" : "pending",
@@ -454,10 +589,10 @@ export async function syncDiscoveryAnalytics(db, apps) {
       `id=eq.${outcome.request.id}`,
     );
   }
-  const state = requestOutcomes.some((outcome) => outcome.state === "partial")
+  const state = requestOutcomes.some((outcome) => outcome.state === "partial" || outcome.state === "error" || (outcome.state === "pending" && requestOutcomes.some((other) => other.state === "success")))
     ? "partial"
     : requestOutcomes.some((outcome) => outcome.state === "success")
       ? "success"
-      : "zero";
-  return { state, parserVersion: DISCOVERY_PARSER_VERSION, segments, sourceRows, rawRows: rawRows.length, dailyRows: dailyRows.length, rejectedRows };
+      : requestOutcomes.length === 0 || requestOutcomes.some((outcome) => outcome.state === "pending") ? "pending" : "zero";
+  return { state, dryRun, parserVersion: DISCOVERY_PARSER_VERSION, segments, sourceRows, rawRows: rawRows.length, downloadSourceRows: downloadSourceRows.length, dailyRows: dailyRows.length, rejectedRows, skippedConflicts: persistence?.skippedConflicts ?? 0, partitions: dryRun ? partitions : partitions.map(({ app_id, date, source, processing_date, payload_hash, storefront_rows, daily_rows }) => ({ app_id, date, source, processing_date, payload_hash, storefrontRows: storefront_rows.length, dailyRows: daily_rows.length })), requests: requestOutcomes.map((outcome) => ({ appId: outcome.request.app_id, state: outcome.state, evidenceStart: outcome.evidenceStart, evidenceEnd: outcome.evidenceEnd, importedRows: outcome.importedRows })) };
 }
