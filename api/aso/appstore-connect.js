@@ -1,5 +1,5 @@
 import { hasAppStoreConnectConfig, listAppStoreConnectApps } from "./_lib/appstore-connect.js";
-import { hasDiscoveryAnalyticsProvisioning, provisionDiscoveryRequests, syncDiscoveryAnalytics } from "./_lib/appstore-analytics.js";
+import { hasDiscoveryAnalyticsProvisioning, passportBackfillScope, provisionDiscoveryRequests, syncDiscoveryAnalytics } from "./_lib/appstore-analytics.js";
 import { hasSalesReportsConfig, salesSyncMessage, syncDailySalesMetrics } from "./_lib/appstore-sales.js";
 import { requireAdmin, serviceClient } from "./_lib/supabase.js";
 
@@ -74,7 +74,8 @@ export default async function handler(request, response) {
   if (action === "sync_analytics") {
     try {
       const apps = await db.select("aso_apps", "platform=eq.ios&appstore_connect_id=not.is.null&select=id,name,appstore_connect_id,store_app_id");
-      const result = await syncDiscoveryAnalytics(db, apps);
+      const scoped = request.body?.appId === undefined ? { apps } : passportBackfillScope(request.body, apps);
+      const result = await syncDiscoveryAnalytics(db, scoped.apps, scoped);
       const message = result.state === "partial"
         ? `Partially imported ${result.rawRows} storefront metric row(s) from ${result.segments} Apple report segment(s); ${result.rejectedRows} invalid source row(s) were excluded.`
         : result.state === "success"

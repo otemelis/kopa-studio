@@ -19,6 +19,10 @@
   ],
   "crons": [
     {
+      "path": "/api/aso/refresh-passport-analytics",
+      "schedule": "15 22 * * *"
+    },
+    {
       "path": "/api/aso/collect-rankings?slot=1",
       "schedule": "30 0 * * *"
     },
@@ -79,6 +83,9 @@
       "maxDuration": 300
     },
     "api/aso/collect-maintenance.js": {
+      "maxDuration": 300
+    },
+    "api/aso/refresh-passport-analytics.js": {
       "maxDuration": 300
     }
   }
