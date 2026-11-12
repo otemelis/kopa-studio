@@ -1,0 +1,10 @@
+{
+  "cases": [
+    {"reason":"No destination identities","base":0,"override":{"properties":{"collection_type":"country","country":"DE"}}},
+    {"reason":"No arbitrary screen text","base":0,"override":{"screen_id":"My trip to Berlin"}},
+    {"reason":"No unknown event","base":0,"override":{"event_name":"raw_touch"}},
+    {"reason":"No cross-app/device identifier","base":0,"override":{"device_id":"device-1"}},
+    {"reason":"Per-event property vocabulary","base":1,"override":{"properties":{"discovery_source":"manual","confidence_bucket":"secret_place"}}},
+    {"reason":"Only random UUIDv4","base":0,"override":{"install_id":"22222222-2222-1222-8222-222222222222"}}
+  ]
+}

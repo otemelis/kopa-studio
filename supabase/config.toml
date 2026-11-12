@@ -1,0 +1,8 @@
+# PASSPORT detailed events use the install's random erase token, not a user JWT.
+# All write/read access still goes through the service-only RPC; RLS blocks anon.
+[functions.passport-detailed-events]
+verify_jwt = false
+
+# Keep the existing aggregate endpoint's JWT verification unchanged.
+[functions.passport-ingest-aggregates]
+verify_jwt = true

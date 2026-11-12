@@ -5,13 +5,14 @@ import { passportEvents, summarizePassportCounts } from "@/lib/passport-signals/
 import { passportWindow, readPassportCounts, readPassportWeb } from "@/lib/passport-signals/source";
 import { readPassportWebEvents } from "@/lib/passport-signals/web-events";
 import { summarizePassportWebEvents } from "@/lib/passport-signals/web-model";
+import { detailedEventTotal, detailedSections, readPassportDetailed } from "@/lib/passport-signals/detailed";
 import { getAsoProgressData } from "@/repositories/aso-progress-repository";
 import { listApps } from "@/repositories/apps-repository";
 import styles from "../lovetype-signals/signals.module.css";
 
 export const dynamic = "force-dynamic";
 type Channel = "appstore" | "testflight";
-type Params = Promise<{ days?: string; channel?: string }>;
+type Params = Promise<{ days?: string; channel?: string; detailed_channel?: string; version?: string }>;
 const fmt = (value: number) => new Intl.NumberFormat("en-US").format(value);
 const time = (value: string | null) => value ? `${new Date(value).toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "UTC" })} UTC` : "No upload observed";
 
@@ -41,15 +42,26 @@ export default async function PassportSignals({ searchParams }: { searchParams: 
   const channel: Channel = params.channel === "testflight" ? "testflight" : "appstore";
   const { start, end } = passportWindow(days);
   const app = (await listApps()).find((item) => item.storeAppId === "6822753543");
-  const [countsResult, testflightResult, webResult, webEventsResult, asoResult] = await Promise.allSettled([
+  const detailedChannel = params.detailed_channel === "testflight" || params.detailed_channel === "debug" ? params.detailed_channel : "appstore";
+  const detailedVersion = params.version || "all";
+  const [countsResult, testflightResult, webResult, webEventsResult, asoResult, detailedResult] = await Promise.allSettled([
     readPassportCounts(days, channel),
     channel === "testflight" ? Promise.resolve(null) : readPassportCounts(days, "testflight"),
     readPassportWeb(days),
     readPassportWebEvents(days),
     app ? getAsoProgressData(app.id) : Promise.resolve(null),
+    readPassportDetailed(days, detailedChannel, detailedVersion),
   ]);
+  const detailed = detailedResult.status === "fulfilled" ? detailedResult.value
+    : { available: false as const, reason: "Detailed PASSPORT source is unavailable. No data was substituted." };
   const counts = countsResult.status === "fulfilled" ? countsResult.value.counts : null;
   const summary = counts ? summarizePassportCounts(counts) : null;
+  const stampSources = counts?.filter((row) => row.event === "stamp_created" || row.event === "stamps_bulk_created")
+    .reduce<Record<string, number>>((totals, row) => {
+      const token = row.dims.split("|").find((part) => part.startsWith("source="))?.slice(7);
+      if (token) totals[token] = (totals[token] ?? 0) + row.count;
+      return totals;
+    }, {}) ?? {};
   const testflight = testflightResult.status === "fulfilled" && testflightResult.value
     ? summarizePassportCounts(testflightResult.value.counts) : null;
   const releaseTestRows = channel === "testflight" ? counts?.filter((row) => row.appVersion === "1.2")
@@ -102,6 +114,10 @@ export default async function PassportSignals({ searchParams }: { searchParams: 
             {passportEvents.map(([event, label]) => <div className={styles.testRow} key={event}><span>{label}</span><strong>{fmt(summary.total(event))}</strong></div>)}</div>
           <div className={styles.breakdown}><div className={styles.sectionTitle}><h3>App versions</h3><span>Selected channel</span></div>
             {summary.byVersion.map((version) => <div className={styles.testRow} key={version.version}><span>v{version.version}</span><span>{version.opens} opens · {version.firstStamps} first stamps</span><strong>{version.events} events</strong></div>)}</div>
+          <div className={styles.journey}><div className={styles.sectionTitle}><h3>Version 1.3 aggregate actions</h3><span>Anonymous event totals · no ordered conversion rate</span></div>
+            {["first_stamp_hint_tapped", "begin_ways_opened", "discovery_intro_shown", "discovery_intro_action", "travel_import_started", "travel_import_detected", "travel_import_completed", "travel_import_cancelled", "travel_import_undone", "data_exported", "press_handoff_opened"].map((event) =>
+              <div className={styles.testRow} key={event}><span>{event.replaceAll("_", " ")}</span><strong>{counts?.some((row) => row.event === event) ? fmt(summary.total(event)) : "Unavailable"}</strong></div>)}</div>
+          <Breakdown title="Stamp creation source" rows={Object.entries(stampSources).map(([label, value]) => ({ label, value }))} metric="Aggregate event counts · source emitted by app" />
         </> : <p className={styles.empty}>{counts === null ? "Read-only PASSPORT source could not be queried." : "No events have been uploaded for this channel and selected days."} No zero or sample activity is substituted.</p>}</section></div>
 
     <section className={styles.panel}><div className={styles.panelHead}><div><p className={styles.kicker}>Website interactions</p><h3>PASSPORT web activity</h3></div><span>Supabase public.events · app_id passport-web · production only</span></div>
@@ -130,6 +146,34 @@ export default async function PassportSignals({ searchParams }: { searchParams: 
       <div className={styles.metrics}><Metric label="Apple Ads impressions" value={paid.length ? fmt(paid.reduce((sum, row) => sum + (row.impressions ?? 0), 0)) : "Unavailable"} detail="Only PASSPORT-mapped campaign rows" />
         <Metric label="Verified paid purchases" value="Unavailable" detail="App event counts are not App Store transactions" />
         <Metric label="Website CTA actions" value={website?.latestReceived ? fmt(website.ctaClicks) : "Unavailable"} detail="Supabase passport-web events; not attributed downloads" /></div></section>
+
+    <section className={styles.panel}><div className={styles.panelHead}><div><p className={styles.kicker}>05 / Opt-in</p><h3>Detailed app activity</h3></div><span>UTC event time · consented installations only</span></div>
+      <form className="filter-form" method="get">
+        <input type="hidden" name="days" value={days} /><input type="hidden" name="channel" value={channel} />
+        <label>Build channel <select name="detailed_channel" defaultValue={detailedChannel}><option value="appstore">App Store</option><option value="testflight">TestFlight</option><option value="debug">Debug</option></select></label>
+        <label>Version <input name="version" defaultValue={detailedVersion === "all" ? "" : detailedVersion} placeholder="All versions" /></label>
+        <button type="submit">Apply</button>
+      </form>
+      {detailed.available ? <>
+        <p>{detailed.latest ? `Last received ${time(detailed.latest)}.` : "No detailed events received for this channel and version."} Values below five distinct installations per event and UTC day are suppressed. Displayed totals sum only visible cells and may undercount.</p>
+        <div className={styles.metrics}>
+          <Metric label="Observed opted-in installations" value={detailed.optedInInstalls === null ? "Unavailable / suppressed" : fmt(detailed.optedInInstalls)} detail="Distinct install IDs with an accepted event in this window" />
+          <Metric label="Opt-in rate" value="Unavailable" detail="Aggregate session counts are not distinct active installations" />
+          <Metric label="Latest sufficiently observed build" value={detailed.latestBuild ?? "Unavailable / suppressed"} detail="Version and build with at least five observed installations" />
+          <Metric label="Erasures" value="Unavailable" detail="Erase operations are not yet stored as privacy-safe aggregate counts" />
+          <Metric label="Duplicate / rejected uploads" value="Unavailable" detail="No server-side upload-health counter is available" />
+        </div>
+        <Bars title="Observed opt-ins by UTC event day" points={detailed.groups.filter((row) => row.event === "install_started").map((row) => ({ date: row.day, value: row.installs }))} color="var(--app)" dateNote="Only days with at least five installations" />
+        <div className={styles.journey}><div className={styles.sectionTitle}><h3>Ordered first-use path</h3><span>Distinct consenting installations · events in UTC order within selected window</span></div>
+          {detailed.funnel.map((step) => <div className={styles.testRow} key={step.label}><span>{step.label}</span><strong>{step.installs === null ? "Unavailable / suppressed" : fmt(step.installs)}</strong></div>)}
+          <p>Name-card and discovery-card stages are unavailable in the detailed v1 manifest. This path is a subset of consenting installations, not all App Store downloads.</p>
+        </div>
+        {detailedSections.map(([title, events]) => <div className={styles.journey} key={title}><div className={styles.sectionTitle}><h3>{title}</h3><span>Event totals from cells with ≥5 installations · not an ordered funnel</span></div>
+          {events.map((event) => { const value = detailedEventTotal(detailed.groups, event); return <div className={styles.testRow} key={event}><span>{event.replaceAll("_", " ")}</span><strong>{value === null ? "Unavailable / suppressed" : fmt(value)}</strong></div>; })}
+        </div>)}
+        <p>Detailed purchase completions are client signals, not verified transactions or revenue. Stamp-source breakdowns require the aggregate source dimension and remain separate from detailed installation metrics.</p>
+      </> : <p className={styles.empty}>{detailed.reason} No sample data is shown.</p>}
+    </section>
 
     <section className={styles.attribution}><div><p className={styles.kicker}>04 / Version 1.2 readiness</p><h3>Keep the release baseline honest</h3>
       <p>{channel === "appstore" ? `Production versions observed: ${summary?.versions.join(", ") || "none"}. ` : ""}{testflight?.versions.includes("1.2") || channel === "testflight" && summary?.versions.includes("1.2")
