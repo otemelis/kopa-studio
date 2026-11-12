@@ -1,0 +1,25 @@
+{
+ "_note": "What 1.0\u20131.2 clients send today (AggregateUploader.payload). Server: 200 {ok:true, rows:2, rejected:0}. Additive, so a lost-response retry double counts.",
+ "request": {
+  "schema": 1,
+  "build_channel": "testflight",
+  "app_version": "1.2",
+  "days": [
+   {
+    "day": "2026-11-03",
+    "counts": {
+     "app_opened|layout=folded|days_since_install=0|days_since_last_open=0|first_use=true|passport_size=0": 1,
+     "stamp_created|layout=folded|collection=world|destination_kind=country|first_use=true|has_city=false|has_departure=false|passport_size=1|precision=day|repeat_visit=false": 1
+    }
+   }
+  ]
+ },
+ "expected_response": {
+  "status": 200,
+  "body": {
+   "ok": true,
+   "rows": 2,
+   "rejected": 0
+  }
+ }
+}

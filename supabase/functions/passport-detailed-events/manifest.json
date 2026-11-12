@@ -1,0 +1,43 @@
+{
+  "contract": "passport-detailed-events",
+  "schema_version": 1,
+  "status": "proposed-not-deployed",
+  "consent": "explicit-opt-in-default-off",
+  "envelope": ["schema_version", "event_id", "install_id", "session_id", "event_name", "occurred_at", "app_version", "build_number", "build_channel", "device_layout", "screen_id", "control_id", "properties"],
+  "build_channels": ["appstore", "testflight", "debug"],
+  "device_layouts": ["regular", "folded", "unfolded", "unknown"],
+  "screen_ids": ["app", "onboarding", "passport", "stamp_editor", "journey", "library", "flight_import", "atelier", "settings", "discovery", "unknown"],
+  "control_ids": ["none", "add_stamp", "confirm_stamp", "cancel_stamp", "open_journey", "share", "choose_file", "preview_import", "confirm_import", "cancel_import", "buy", "restore", "enable_discovery", "check_location", "accept_suggestion", "dismiss_suggestion", "report_false_positive"],
+  "property_types": {
+    "start_reason": ["launch", "foreground", "timeout_reentry"],
+    "end_reason": ["background", "timeout", "unknown"],
+    "collection_type": ["country", "us_state", "airport", "park", "unknown"],
+    "creation_source": ["manual", "discovery_manual", "discovery_inbox", "flight_import", "unknown"],
+    "milestone": ["first", "third", "fifth"],
+    "count_bucket": ["one", "two_to_five", "six_to_twenty", "over_twenty", "unknown"],
+    "failure_code": ["unsupported_format", "invalid_columns", "read_error", "save_error", "cancelled", "unknown"],
+    "import_stage": ["picker", "preview", "confirm", "save"],
+    "permission_result": ["granted_while_using", "granted_always", "denied", "restricted", "not_determined", "unknown"],
+    "discovery_source": ["manual", "passive", "unknown"],
+    "confidence_bucket": ["low", "medium", "high", "unknown"],
+    "suppression_reason": ["duplicate", "low_confidence", "permission", "other"],
+    "product_key": ["airports", "parks", "cosmetic", "unknown"],
+    "outcome": ["client_completed", "pending", "cancelled", "failed", "restored"]
+  },
+  "events": {
+    "install_started": [], "session_started": ["start_reason"], "session_ended": ["end_reason"], "foreground_resumed": [],
+    "screen_viewed": [], "control_activated": [],
+    "onboarding_presented": [], "onboarding_completed": [],
+    "cover_opened": [], "page_turned": [],
+    "stamp_editor_opened": ["collection_type"], "stamp_editor_cancelled": [], "stamp_created": ["collection_type", "creation_source"], "stamp_milestone_reached": ["milestone"],
+    "journey_opened": [], "bookmark_selected": [], "share_sheet_opened": [],
+    "edition_viewed": ["product_key"], "purchase_started": ["product_key"], "purchase_completed": ["product_key", "outcome"], "restore_completed": ["product_key", "outcome"],
+    "flight_import_picker_opened": [], "flight_import_file_selected": [], "flight_import_previewed": ["count_bucket"], "flight_import_cancelled": ["import_stage"], "flight_import_failed": ["import_stage", "failure_code"], "flight_import_completed": ["count_bucket"], "flight_import_undone": ["count_bucket"],
+    "discovery_feature_activated": [], "discovery_permission_result": ["permission_result"], "discovery_check_requested": ["discovery_source"],
+    "discovery_candidate_created": ["discovery_source", "confidence_bucket"], "discovery_candidate_suppressed": ["suppression_reason"],
+    "discovery_inbox_opened": [], "discovery_suggestion_accepted": [], "discovery_suggestion_dismissed": [],
+    "discovery_notification_scheduled": [], "discovery_notification_opened": [], "discovery_false_positive_reported": [],
+    "settings_opened": [], "significant_error": ["failure_code"]
+  },
+  "forbidden_properties": ["country", "state", "airport", "park", "latitude", "longitude", "travel_date", "name", "notes", "photo", "filename", "raw_text", "transaction_id", "receipt"]
+}
