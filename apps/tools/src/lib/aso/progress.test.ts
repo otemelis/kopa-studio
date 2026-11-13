@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canonicalRankSource, isCollectionRunStalled, observedRank, rankMovement, sourceCaveat, sourceLabel, type RankObservation } from "./progress";
+import { bestRecordedRanks, canonicalRankSource, isCollectionRunStalled, observedRank, rankMovement, sourceCaveat, sourceLabel, type RankObservation } from "./progress";
 
 const observation = (day: string, rank: number | null, found = rank != null): RankObservation => ({
   captured_at: `${day}T12:00:00.000Z`, captured_on: day, rank, found, result_depth: 100,
@@ -28,6 +28,16 @@ describe("ASO progress semantics", () => {
     expect(canonicalRankSource("apple_web_search")).toBe("apple_web_search");
     expect(sourceCaveat("itunes_catalog")).toContain("not native organic rank");
     expect(sourceCaveat("apple_web_search")).toContain("may be uncertain");
+  });
+
+  it("calculates a recorded best separately for each keyword and source", () => {
+    expect(bestRecordedRanks([
+      { keyword_id: "one", source: "apple_web_search", rank: 8 },
+      { keyword_id: "one", source: "apple_web_search", rank: 3 },
+      { keyword_id: "one", source: "itunes_catalog", rank: 1 },
+      { keyword_id: "two", source: "apple_web_search", rank: 5 },
+      { keyword_id: "one", source: "apple_web_search", rank: 0 },
+    ])).toEqual({ "apple_web_search:one": 3, "itunes_catalog:one": 1, "apple_web_search:two": 5 });
   });
 
   it("marks a collector run stalled only after its six-minute lease", () => {

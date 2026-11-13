@@ -16,6 +16,16 @@ export type RankMovement = {
   positions: number | null;
 };
 
+export function bestRecordedRanks(rows: { keyword_id: string; source: string; rank: number }[]): Record<string, number> {
+  const best: Record<string, number> = {};
+  for (const row of rows) {
+    if (!Number.isInteger(row.rank) || row.rank < 1) continue;
+    const key = `${canonicalRankSource(row.source)}:${row.keyword_id}`;
+    best[key] = Math.min(best[key] ?? row.rank, row.rank);
+  }
+  return best;
+}
+
 export function isCollectionRunStalled(status: string, startedAt: string, now = Date.now()): boolean {
   return status === "running" && now - Date.parse(startedAt) > 6 * 60_000;
 }

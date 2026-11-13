@@ -3,7 +3,7 @@ import { AsoKeywordRankExplorer } from "@/components/aso-keyword-rank-explorer";
 import { ApplePopularityRefresh } from "@/components/apple-popularity-refresh";
 import { PageShell } from "@/components/page-shell";
 import { requireUser } from "@/lib/auth";
-import { canonicalRankSource, isCollectionRunStalled, rankMovement, sourceCaveat, sourceLabel } from "@/lib/aso/progress";
+import { bestRecordedRanks, canonicalRankSource, isCollectionRunStalled, rankMovement, sourceCaveat, sourceLabel } from "@/lib/aso/progress";
 import { getAsoProgressData } from "@/repositories/aso-progress-repository";
 import { listApps } from "@/repositories/apps-repository";
 import { getPublicListing } from "@/repositories/public-listing-repository";
@@ -40,6 +40,7 @@ export default async function AsoProgressPage({ searchParams }: { searchParams: 
   const activeKeywords = data.keywords.filter((keyword) => !country || keyword.country === country);
   const activeKeywordIds = new Set(activeKeywords.map((keyword) => keyword.id));
   const scopedSnapshots = data.snapshots.filter((row) => activeKeywordIds.has(row.keyword_id));
+  const historicalBest = bestRecordedRanks(data.historicalRanks);
   const scopedChanges = data.changes.filter((row) => !country || row.country === country);
   const scopedMetrics = data.metrics.filter((row) => !country || row.country === country);
   const scopedSales = data.sales.filter((row) => !country || row.country === country);
@@ -160,6 +161,7 @@ export default async function AsoProgressPage({ searchParams }: { searchParams: 
       days={days}
       keywords={activeKeywords.map(({ id, term, country }) => ({ id, term, country }))}
       snapshots={scopedSnapshots.map(({ keyword_id, captured_at, captured_on, rank, found, result_depth, collection_status, source }) => ({ keyword_id, captured_at, captured_on, rank, found, result_depth, collection_status, source }))}
+      historicalBest={historicalBest}
       popularity={data.popularity}
       listingCoverage={Object.fromEntries(activeKeywords.map((keyword) => [keyword.id, listingCoverage(keyword.term, listing)]))}
       listingHref={country ? `/aso/listings?app=${selectedApp.id}&country=${country}` : undefined}

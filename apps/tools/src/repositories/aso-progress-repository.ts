@@ -9,13 +9,14 @@ export type ProgressChange = { happened_at: string; country: string | null; fiel
 export type ProgressRun = { started_at: string; finished_at: string | null; status: string; processed: number; succeeded: number; failed: number; warnings: number; summary: Record<string, unknown> | null };
 export type PaidSearchMetric = { metric_date: string; country: string | null; impressions: number | null; taps: number | null; installs: number | null; spend: number | null; currency: string | null; source_synced_at: string | null };
 export type ApplePopularityMetric = { keyword_id: string; country: string; genre: string; week_start: string; status: "observed" | "not_reported"; popularity_1_to_100: number | null; popularity_in_genre: number | null; popularity_1_to_5: number | null; rank_in_genre: number | null; collected_at: string; source: string };
+export type HistoricalRank = { keyword_id: string; source: string; rank: number };
 
 const RANK_PAGE_SIZE = 1000;
 
-export async function loadRankSnapshotPages(
-  fetchPage: (from: number, to: number) => Promise<{ data: ProgressSnapshot[] | null; error: { message: string } | null }>,
+export async function loadRankSnapshotPages<T>(
+  fetchPage: (from: number, to: number) => Promise<{ data: T[] | null; error: { message: string } | null }>,
 ) {
-  const rows: ProgressSnapshot[] = [];
+  const rows: T[] = [];
   for (let offset = 0; ; offset += RANK_PAGE_SIZE) {
     const { data, error } = await fetchPage(offset, offset + RANK_PAGE_SIZE - 1);
     if (error) throw new Error(error.message);
@@ -42,8 +43,9 @@ export async function getAsoProgressData(appId: string, country?: string) {
   const keywords = allKeywords.filter((row) => !country || row.country === country);
   const keywordIds = keywords.map((row) => row.id);
   const from = new Date(Date.now() - 36 * 86_400_000).toISOString();
-  const [rankResult, metricResult, salesResult, changeResult, runResult, campaignResult, popularityResult] = await Promise.all([
+  const [rankResult, historicalRanks, metricResult, salesResult, changeResult, runResult, campaignResult, popularityResult] = await Promise.all([
     keywordIds.length ? loadRankSnapshotPages((start, end) => Promise.resolve(db.from("aso_keyword_rank_snapshots").select("id,keyword_id,store_app_id,captured_at,captured_on,rank,found,result_depth,collection_status,source").eq("app_kind", "owned").eq("store_app_id", app.store_app_id).in("keyword_id", keywordIds).gte("captured_at", from).order("captured_at", { ascending: true }).order("id", { ascending: true }).range(start, end))) : Promise.resolve([]),
+    keywordIds.length ? loadRankSnapshotPages((start, end) => Promise.resolve(db.from("aso_keyword_rank_snapshots").select("id,keyword_id,source,rank").eq("app_kind", "owned").eq("store_app_id", app.store_app_id).in("keyword_id", keywordIds).eq("found", true).neq("collection_status", "failed").not("rank", "is", null).order("id", { ascending: true }).range(start, end))) : Promise.resolve([]),
     db.from("aso_storefront_metrics").select("date,country,event,page_type,source_type,count,unique_count,source").eq("app_id", appId).gte("date", from.slice(0, 10)).order("date", { ascending: true }).limit(5000),
     db.from("aso_daily_metrics").select("date,country,downloads,proceeds,proceeds_currency,source").eq("app_id", appId).gte("date", from.slice(0, 10)).order("date", { ascending: true }).limit(2000),
     db.from("aso_metadata_change_events").select("happened_at,country,field,old_value,new_value,change_type").eq("app_id", appId).gte("happened_at", from).order("happened_at", { ascending: false }).limit(100),
@@ -62,6 +64,7 @@ export async function getAsoProgressData(appId: string, country?: string) {
     app,
     keywords: allKeywords,
     snapshots: (rankResult ?? []) as ProgressSnapshot[],
+    historicalRanks: (historicalRanks ?? []) as HistoricalRank[],
     metrics: (metricResult.data ?? []) as ProgressMetric[],
     sales: (salesResult.data ?? []) as SalesMetric[],
     changes: (changeResult.data ?? []) as ProgressChange[],
