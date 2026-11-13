@@ -23,6 +23,12 @@ describe("PASSPORT detailed v1 contract", () => {
   it("accepts the app's positive fixture events", () => {
     expect(appFixtures.events.every((event: unknown) => validateEvent(event, new Date("2026-11-12T12:00:00Z").getTime()))).toBe(true);
   });
+  it("accepts all agreed stamp creation sources without relaxing other properties", () => {
+    for (const creationSource of ["manual", "discovery_manual", "discovery_inbox", "flight_import", "photo_discovery", "web_import", "bulk_import", "unknown"]) {
+      expect(validateEvent({ ...sample, properties: { collection_type: "country", creation_source: creationSource } }), creationSource).toBe(true);
+    }
+    expect(validateEvent({ ...sample, properties: { collection_type: "country", creation_source: "arbitrary" } })).toBe(false);
+  });
   it("rejects every app negative fixture", () => {
     for (const item of negativeFixtures.cases) {
       expect(validateEvent({ ...appFixtures.events[item.base], ...item.override }, new Date("2026-11-12T12:00:00Z").getTime()), item.reason).toBe(false);

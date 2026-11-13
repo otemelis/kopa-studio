@@ -1,7 +1,7 @@
 {
   "contract": "passport-detailed-events",
   "schema_version": 1,
-  "status": "proposed-not-deployed",
+  "status": "deployed",
   "consent": "explicit-opt-in-default-off",
   "envelope": ["schema_version", "event_id", "install_id", "session_id", "event_name", "occurred_at", "app_version", "build_number", "build_channel", "device_layout", "screen_id", "control_id", "properties"],
   "build_channels": ["appstore", "testflight", "debug"],
@@ -12,7 +12,7 @@
     "start_reason": ["launch", "foreground", "timeout_reentry"],
     "end_reason": ["background", "timeout", "unknown"],
     "collection_type": ["country", "us_state", "airport", "park", "unknown"],
-    "creation_source": ["manual", "discovery_manual", "discovery_inbox", "flight_import", "unknown"],
+    "creation_source": ["manual", "discovery_manual", "discovery_inbox", "flight_import", "photo_discovery", "web_import", "bulk_import", "unknown"],
     "milestone": ["first", "third", "fifth"],
     "count_bucket": ["one", "two_to_five", "six_to_twenty", "over_twenty", "unknown"],
     "failure_code": ["unsupported_format", "invalid_columns", "read_error", "save_error", "cancelled", "unknown"],
