@@ -1,33 +1,39 @@
 "use client";
 
 import { useState } from "react";
-import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Legend, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { positionSummary, type AppPosition } from "@/lib/aso/keyword-competition";
+import { AsoChangeNotes } from "@/components/aso-change-notes";
+import type { ChangeAnnotation } from "@/lib/aso/change-annotations";
 
 type Series = { id: string; name: string; owned: boolean; tracked: boolean; points: AppPosition[] };
 const colors = ["#176344", "#5969c6", "#c47b33", "#a14f83", "#238b78", "#aa554f", "#638844", "#8065ad", "#577487"];
 const rankLabel = (point: AppPosition | null) => !point ? "Unavailable" : point.rank === null ? `Not seen · first ${point.depth}` : `#${point.rank}`;
 
-export function KeywordCompetitionView({ series, source, keyword }: { series: Series[]; source: string; keyword: string }) {
+export function KeywordCompetitionView({ series, source, keyword, changes = [], appId = "" }: { series: Series[]; source: string; keyword: string; changes?: ChangeAnnotation[]; appId?: string }) {
   const [plotted, setPlotted] = useState<string[]>(series.filter((item) => item.owned || (item.tracked && positionSummary(item.points).latest?.rank != null)).slice(0, 4).map((item) => item.id));
   const [showAll, setShowAll] = useState(false);
   const visibleSeries = [...(showAll ? series : series.filter((item) => item.tracked))].sort((a, b) => (positionSummary(a.points).latest?.rank ?? 999) - (positionSummary(b.points).latest?.rank ?? 999) || Number(b.owned) - Number(a.owned) || a.name.localeCompare(b.name));
-  const allDays = [...new Set(series.flatMap((item) => item.points.map((point) => point.day)))].sort();
+  const allDays = [...new Set([...series.flatMap((item) => item.points.map((point) => point.day)), ...changes.map((change) => change.date)])].sort();
+  const changeDates = [...new Set(changes.map((change) => change.date))];
   const dates: string[] = [];
   if (allDays.length) for (let day = Date.parse(`${allDays[0]}T00:00:00Z`); day <= Date.parse(`${allDays.at(-1)}T00:00:00Z`); day += 86_400_000) dates.push(new Date(day).toISOString().slice(0, 10));
   const chart = dates.map((date) => Object.fromEntries([["date", date], ...series.map((item) => [item.id, item.points.find((point) => point.day === date)?.rank ?? null])]));
+  const hasSnapshots = series.some((item) => item.points.length > 0);
   const maxRank = Math.max(10, ...series.flatMap((item) => item.points.map((point) => point.rank ?? 0)));
   return <>
     <section className="panel rank-selected-chart">
       <div className="panel-head"><div><h2>Position history · {keyword}</h2><p>{source} · lower position is better · gaps mean no ranked observation</p></div><span>{allDays.length ? `${allDays[0]}–${allDays.at(-1)} UTC` : "No snapshots"}</span></div>
-      {chart.length ? <div className="rank-chart-frame"><ResponsiveContainer width="100%" height="100%"><LineChart data={chart} margin={{ top: 12, right: 20, bottom: 10, left: 3 }} accessibilityLayer>
+      {hasSnapshots ? <div className="rank-chart-frame"><ResponsiveContainer width="100%" height="100%"><LineChart data={chart} margin={{ top: 12, right: 20, bottom: 10, left: 3 }} accessibilityLayer>
         <CartesianGrid vertical={false} stroke="var(--line)" strokeDasharray="3 5" />
         <XAxis dataKey="date" tickFormatter={(value) => String(value).slice(5)} tick={{ fill: "var(--muted)", fontSize: 11 }} tickLine={false} axisLine={false} minTickGap={24} />
         <YAxis reversed domain={[1, maxRank]} tickFormatter={(value) => `#${value}`} tick={{ fill: "var(--muted)", fontSize: 11 }} tickLine={false} axisLine={false} width={42} />
         <Tooltip contentStyle={{ background: "var(--panel)", borderColor: "var(--line)", color: "var(--ink)" }} formatter={(value) => value == null ? "Unavailable" : `#${value}`} labelFormatter={(value) => `${value} UTC`} />
+        {changeDates.map((date) => <ReferenceLine key={date} x={date} stroke="var(--accent)" strokeDasharray="3 4" label={{ value: "●", position: "top", fill: "var(--accent)" }} />)}
         <Legend />
         {series.filter((item) => plotted.includes(item.id)).map((item) => <Line key={item.id} dataKey={item.id} name={item.name} stroke={colors[series.indexOf(item) % colors.length]} strokeWidth={item.owned ? 3 : 2} dot={{ r: 2 }} activeDot={{ r: 5 }} connectNulls={false} isAnimationActive={false} />)}
       </LineChart></ResponsiveContainer></div> : <p className="empty-state">No stored search-result snapshots for this keyword and source yet.</p>}
+      <AsoChangeNotes changes={changes} appId={appId} />
     </section>
     <div className="section-head"><h2>App movements</h2><span>First to latest stored observation in this window</span></div>
     <div className="rank-legend"><button type="button" className="secondary" aria-pressed={!showAll} onClick={() => setShowAll(false)}>Tracked apps ({series.filter((item) => item.tracked).length})</button><button type="button" className="secondary" aria-pressed={showAll} onClick={() => setShowAll(true)}>All observed apps ({series.length})</button></div>

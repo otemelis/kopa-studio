@@ -8,6 +8,9 @@ import { getAsoProgressData } from "@/repositories/aso-progress-repository";
 import { listApps } from "@/repositories/apps-repository";
 import { getPublicListing } from "@/repositories/public-listing-repository";
 import { listingCoverage } from "@/lib/aso/listing-coverage";
+import { chartChanges } from "@/lib/aso/change-annotations";
+import { loadExperiments } from "@/services/experiment-service";
+import { AsoChangeNotes } from "@/components/aso-change-notes";
 
 export const dynamic = "force-dynamic";
 
@@ -36,7 +39,10 @@ export default async function AsoProgressPage({ searchParams }: { searchParams: 
   const selectedCountry = filters.country === "all" ? "all" : (filters.country?.toLowerCase() || selectedApp.primaryCountry);
   const country = selectedCountry === "all" ? undefined : selectedCountry;
   const days: 1 | 7 | 28 = filters.window === "1" ? 1 : filters.window === "28" ? 28 : 7;
-  const [data, listing] = await Promise.all([getAsoProgressData(selectedApp.id, country), country ? getPublicListing(selectedApp.storeAppId, country) : Promise.resolve(null)]);
+  const [data, listing, loggedChanges] = await Promise.all([getAsoProgressData(selectedApp.id, country), country ? getPublicListing(selectedApp.storeAppId, country) : Promise.resolve(null), loadExperiments({ appId: selectedApp.id, limit: 300 })]);
+  const today = new Date().toISOString().slice(0, 10);
+  const windowStart = new Date(Date.parse(`${today}T00:00:00Z`) - (days - 1) * 86_400_000).toISOString().slice(0, 10);
+  const annotations = chartChanges(loggedChanges.filter((change) => change.startDate).map((change) => ({ id: change.id, date: change.startDate!, title: change.title, changeType: change.changeType, country: change.country })), country, windowStart, today);
   const activeKeywords = data.keywords.filter((keyword) => !country || keyword.country === country);
   const activeKeywordIds = new Set(activeKeywords.map((keyword) => keyword.id));
   const scopedSnapshots = data.snapshots.filter((row) => activeKeywordIds.has(row.keyword_id));
@@ -64,7 +70,7 @@ export default async function AsoProgressPage({ searchParams }: { searchParams: 
     for (const keyword of activeKeywords) movementByKeyword.set(keyword.id, rankMovement(byKeyword.get(keyword.id) ?? [], days));
     sourceMovements.set(source, movementByKeyword);
     const dates = [...new Set(scopedSnapshots.filter((row) => canonicalRankSource(row.source) === source).map((row) => row.captured_on))].sort();
-    sourcePoints.set(source, dates.map((date) => {
+    sourcePoints.set(source, dates.filter((date) => date >= windowStart && date <= today).map((date) => {
       const rows = scopedSnapshots.filter((row) => canonicalRankSource(row.source) === source && row.captured_on === date && row.collection_status !== "failed" && row.found && row.rank !== null);
       return { date, averageRank: rows.length ? rows.reduce((sum, row) => sum + (row.rank ?? 0), 0) / rows.length : null, observed: rows.length };
     }));
@@ -151,9 +157,9 @@ export default async function AsoProgressPage({ searchParams }: { searchParams: 
 
     <div className="section-head"><h2>Ranking history</h2><span>Mean observed position by source; lower position number is better</span></div>
     <div className="structure-grid">
-      {sourceNames.map((source) => <AsoSourceTrendChart key={source} source={sourceLabel(source)} caveat={sourceCaveat(source)} points={sourcePoints.get(source) ?? []} />)}
+      {sourceNames.map((source) => <AsoSourceTrendChart key={source} source={sourceLabel(source)} caveat={sourceCaveat(source)} points={sourcePoints.get(source) ?? []} changes={annotations} appId={selectedApp.id} />)}
     </div>
-    {!sourceNames.length ? <p className="notice">No ranking observations are available for this app and market yet.</p> : null}
+    {!sourceNames.length ? <><p className="notice">No ranking observations are available for this app and market yet.</p><AsoChangeNotes changes={annotations} appId={selectedApp.id} /></> : null}
 
     <div className="section-head"><h2>Keyword rankings</h2><span>Current rank, period change, best rank and selectable history</span></div>
     {country ? <ApplePopularityRefresh appId={selectedApp.id} country={country} /> : <p className="notice">Choose one storefront to inspect Apple keyword demand.</p>}

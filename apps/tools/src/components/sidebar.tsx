@@ -21,6 +21,7 @@ const workspaces = [
       ["App Store listings", "/aso/listings"],
       ["Keywords", "/keywords"],
       ["Competitors", "/competitors"],
+      ["Keyword competition", "/competitors/keyword"],
       ["Markets", "/localizations"],
     ],
   },

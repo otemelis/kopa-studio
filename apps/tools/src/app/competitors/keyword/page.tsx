@@ -6,6 +6,9 @@ import { observedPositions } from "@/lib/aso/keyword-competition";
 import { canonicalRankSource, sourceLabel } from "@/lib/aso/progress";
 import { listApps } from "@/repositories/apps-repository";
 import { getKeywordCompetition } from "@/repositories/keyword-competition-repository";
+import { chartChanges } from "@/lib/aso/change-annotations";
+import { loadExperiments } from "@/services/experiment-service";
+import { AsoChangeNotes } from "@/components/aso-change-notes";
 
 export const dynamic = "force-dynamic";
 type Params = { app?: string; keyword?: string; source?: string; days?: string };
@@ -18,7 +21,10 @@ export default async function KeywordCompetitionPage({ searchParams }: { searchP
   const app = filters.app ? apps.find((item) => item.id === filters.app) : apps.find((item) => /passport/i.test(item.name));
   if (!app) return <PageShell title="Keyword competition"><p className="notice">Select a tracked app to inspect keyword competition.</p></PageShell>;
   const days = filters.days === "7" ? 7 : 28;
-  const data = await getKeywordCompetition(app.id, filters.keyword, days);
+  const [data, loggedChanges] = await Promise.all([getKeywordCompetition(app.id, filters.keyword, days), loadExperiments({ appId: app.id, limit: 300 })]);
+  const today = new Date().toISOString().slice(0, 10);
+  const windowStart = new Date(Date.parse(`${today}T00:00:00Z`) - (days - 1) * 86_400_000).toISOString().slice(0, 10);
+  const annotations = chartChanges(loggedChanges.filter((change) => change.startDate).map((change) => ({ id: change.id, date: change.startDate!, title: change.title, changeType: change.changeType, country: change.country })), data.selected?.country, windowStart, today);
   const sources = [...new Set(data.snapshots.map((row) => canonicalRankSource(row.source)))].sort();
   const source = filters.source && sources.includes(filters.source) ? filters.source : sources.includes("apple_web_search") ? "apple_web_search" : sources[0] ?? "";
   const observedApps = new Map<string, string>();
@@ -41,7 +47,7 @@ export default async function KeywordCompetitionPage({ searchParams }: { searchP
       <label>Period<select name="days" defaultValue={String(days)}><option value="7">7 days</option><option value="28">28 days</option></select></label>
       <button type="submit">Apply filters</button>
     </form>
-    {data.selected && source ? <KeywordCompetitionView key={`${data.selected.id}:${source}:${days}`} series={series} source={sourceLabel(source)} keyword={`${data.selected.term} · ${data.selected.country.toUpperCase()}`} /> : <p className="notice">{data.selected ? "No stored search-result observations for this keyword and period." : "This keyword is not active for the selected app."}</p>}
+    {data.selected && source ? <KeywordCompetitionView key={`${data.selected.id}:${source}:${days}`} series={series} source={sourceLabel(source)} keyword={`${data.selected.term} · ${data.selected.country.toUpperCase()}`} changes={annotations} appId={app.id} /> : <><p className="notice">{data.selected ? "No stored search-result observations for this keyword and period." : "This keyword is not active for the selected app."}</p><AsoChangeNotes changes={annotations} appId={app.id} /></>}
     {/passport/i.test(app.name) ? <section className="panel keyword-coverage"><div className="panel-head"><div><h2>Requested PASSPORT terms</h2><p>Tracking varies by storefront. Untracked terms have no collection history.</p></div></div><div className="keyword-coverage-list">{available.map((item) => <div key={item.term}><strong>{item.term}</strong><span>{item.keywords.length ? item.keywords.map((keyword) => <Link key={keyword.id} href={`/competitors/keyword?app=${app.id}&keyword=${keyword.id}&days=${days}`}>{keyword.country.toUpperCase()}</Link>) : "Not tracked"}</span></div>)}</div></section> : null}
     <p className="rank-explorer-note"><Link href={`/competitors?app=${app.id}`}>← Competitor overview</Link></p>
   </PageShell>;

@@ -218,6 +218,10 @@ tr:last-child td { border-bottom: 0; }
 .rank-sparkline { display: block; height: 34px; width: 112px; }
 .rank-spark-empty { color: var(--muted); font-size: 11px; }
 .rank-explorer-note { color: var(--muted); font-size: 12px; line-height: 1.45; margin: 0; }
+.aso-change-notes { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 8px 16px 14px; color: var(--muted); font-size: 12px; line-height: 1.4; }
+.aso-change-notes span { border-left: 2px dashed var(--accent); padding-left: 9px; }
+.aso-change-notes strong { color: var(--foreground); }
+.aso-change-notes a { margin-left: auto; }
 .keyword-coverage { padding: 16px; }
 .keyword-coverage-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(235px, 1fr)); gap: 8px; }
 .keyword-coverage-list > div { align-items: center; border: 1px solid var(--line); border-radius: 7px; display: flex; gap: 8px; justify-content: space-between; padding: 9px 10px; }
