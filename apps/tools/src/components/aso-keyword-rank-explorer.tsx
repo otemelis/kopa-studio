@@ -24,7 +24,7 @@ import {
 type Keyword = { id: string; term: string; country: string };
 type Snapshot = RankObservation & { keyword_id: string };
 type Popularity = { keyword_id: string; week_start: string; status: "observed" | "not_reported"; popularity_1_to_100: number | null; popularity_in_genre: number | null; genre: string };
-type Props = { keywords: Keyword[]; snapshots: Snapshot[]; days: 1 | 7 | 28; popularity?: Popularity[]; listingCoverage?: Record<string, ListingCoverage>; listingHref?: string };
+type Props = { keywords: Keyword[]; snapshots: Snapshot[]; days: 1 | 7 | 28; historicalBest: Record<string, number>; popularity?: Popularity[]; listingCoverage?: Record<string, ListingCoverage>; listingHref?: string };
 
 const COLORS = ["#5969c6", "#d18443", "#238b78", "#a14f83", "#638844"];
 const signed = (value: number | null) =>
@@ -79,7 +79,7 @@ function Sparkline({ rows, color, label }: { rows: DailySnapshot[]; color: strin
   );
 }
 
-export function AsoKeywordRankExplorer({ keywords, snapshots, days, popularity = [], listingCoverage: coverage = {}, listingHref }: Props) {
+export function AsoKeywordRankExplorer({ keywords, snapshots, days, historicalBest, popularity = [], listingCoverage: coverage = {}, listingHref }: Props) {
   const latestPopularity = new Map<string, Popularity>();
   for (const row of popularity) if (!latestPopularity.has(row.keyword_id) || latestPopularity.get(row.keyword_id)!.week_start < row.week_start) latestPopularity.set(row.keyword_id, row);
   const sourceNames = useMemo(
@@ -183,11 +183,11 @@ export function AsoKeywordRankExplorer({ keywords, snapshots, days, popularity =
         ) : <p className="empty-state">Select tracked keywords with observations to compare their trend.</p>}
       </section>
 
-      <div className="section-head"><h2>Keyword rankings</h2><span>Lower rank number is better · best is the lowest observed in this window</span></div>
+      <div className="section-head"><h2>Keyword rankings</h2><span>Lower rank number is better · recorded bests are source-specific</span></div>
       <div className="rank-legend" aria-label="Ranking change legend"><span className="rank-movement rank-movement-up">↑ Improved</span><span className="rank-movement rank-movement-down">↓ Declined</span><span className="rank-movement rank-movement-flat">= Unchanged</span><span className="rank-legend-note">Changes compare observations from the same source.</span></div>
       <div className="table-wrap rank-table-wrap">
         <table aria-label="Keyword rankings">
-          <thead><tr><th>Plot</th><th>Keyword</th><th>Market</th><th>Apple demand</th><th>Listing match</th><th>Latest rank</th><th>Change · {days}d</th><th>Best · {days}d</th><th>Trend</th><th>Observed</th></tr></thead>
+          <thead><tr><th>Plot</th><th>Keyword</th><th>Market</th><th>Apple demand</th><th>Listing match</th><th>Latest rank</th><th>Change · {days}d</th><th>Best · {days}d</th><th>Best recorded</th><th>Trend</th><th>Observed</th></tr></thead>
           <tbody>{withRows.map(({ keyword, rows, daily, latest, best, movement }, index) => {
             const color = COLORS[index % COLORS.length];
             const latestStatus = latest?.collection_status === "failed" ? "Unavailable" : latest?.collection_status === "partial" ? "Partial results" : "Observed";
@@ -205,13 +205,14 @@ export function AsoKeywordRankExplorer({ keywords, snapshots, days, popularity =
               <td><span className={`rank-current ${hasCurrentObservation && latest?.found ? "rank-current-found" : "rank-current-muted"}`}>{currentIsLatestFromWindow ? rankText(latest) : "No recent observation"}</span><small>{currentIsLatestFromWindow ? latest?.collection_status === "partial" ? "Partial web results" : latest?.collection_status === "failed" ? "Collection failed" : latest && !latest.found ? `Not found in first ${latest.result_depth}` : "" : latest ? `Last seen ${latest.captured_on} UTC` : ""}</small></td>
               <td><span className={`rank-movement rank-movement-${movementTone}`}>{movementText}</span></td>
               <td><span className={best === null ? "rank-best-muted" : "rank-best"}>{best === null ? "Unavailable" : `#${best}`}</span></td>
+              <td><span className={historicalBest[`${source}:${keyword.id}`] === undefined ? "rank-best-muted" : "rank-best"}>{historicalBest[`${source}:${keyword.id}`] === undefined ? "Unavailable" : `#${historicalBest[`${source}:${keyword.id}`]}`}</span></td>
               <td><Sparkline rows={daily} color={color} label={`${keyword.term} observed rank trend for the last ${days} days`} /></td>
               <td>{latest ? <><span>{latestStatus}</span><small>{new Date(latest.captured_at).toLocaleDateString("en-GB", { timeZone: "UTC" })} UTC</small></> : "No snapshot"}</td>
             </tr>;
-          })}{!withRows.length ? <tr><td colSpan={10}>No tracked keywords in this market.</td></tr> : null}</tbody>
+          })}{!withRows.length ? <tr><td colSpan={11}>No tracked keywords in this market.</td></tr> : null}</tbody>
         </table>
       </div>
-      <p className="rank-explorer-note">Apple demand is Apple Ads weekly relative search popularity (1–100), scoped to country and app genre. It is not search volume, an organic rank, or app-specific acquisition. A missing Apple row means unavailable, never zero. Listing match checks visible catalog copy, not Apple&apos;s private keyword field. Change is previous position minus current position. Unranked means absent within observed result depth; unavailable means collection failed. Rank sources remain separate.</p>
+      <p className="rank-explorer-note">Best recorded is the lowest valid position stored since Kopa began collecting that keyword and source; it is not an App Store lifetime record. Apple demand is Apple Ads weekly relative search popularity (1–100), scoped to country and app genre. It is not search volume, an organic rank, or app-specific acquisition. A missing Apple row means unavailable, never zero. Listing match checks visible catalog copy, not Apple&apos;s private keyword field. Change is previous position minus current position. Unranked means absent within observed result depth; unavailable means collection failed. Rank sources remain separate.</p>
     </section>
   );
 }
