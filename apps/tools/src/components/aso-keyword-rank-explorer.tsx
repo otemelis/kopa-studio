@@ -183,7 +183,8 @@ export function AsoKeywordRankExplorer({ keywords, snapshots, days, popularity =
         ) : <p className="empty-state">Select tracked keywords with observations to compare their trend.</p>}
       </section>
 
-      <div className="section-head"><h2>Keyword rankings</h2><span>Best rank is the lowest position number observed in this window and source</span></div>
+      <div className="section-head"><h2>Keyword rankings</h2><span>Lower rank number is better · best is the lowest observed in this window</span></div>
+      <div className="rank-legend" aria-label="Ranking change legend"><span className="rank-movement rank-movement-up">↑ Improved</span><span className="rank-movement rank-movement-down">↓ Declined</span><span className="rank-movement rank-movement-flat">= Unchanged</span><span className="rank-legend-note">Changes compare observations from the same source.</span></div>
       <div className="table-wrap rank-table-wrap">
         <table aria-label="Keyword rankings">
           <thead><tr><th>Plot</th><th>Keyword</th><th>Market</th><th>Apple demand</th><th>Listing match</th><th>Latest rank</th><th>Change · {days}d</th><th>Best · {days}d</th><th>Trend</th><th>Observed</th></tr></thead>
@@ -191,16 +192,19 @@ export function AsoKeywordRankExplorer({ keywords, snapshots, days, popularity =
             const color = COLORS[index % COLORS.length];
             const latestStatus = latest?.collection_status === "failed" ? "Unavailable" : latest?.collection_status === "partial" ? "Partial results" : "Observed";
             const currentIsLatestFromWindow = latest && latest.captured_on >= startDate;
-            const movementText = movement.state === "comparable" ? `${signed(movement.positions)} positions` : movement.state === "not_observed" ? "Unranked in comparison" : "Insufficient history";
+            const hasCurrentObservation = currentIsLatestFromWindow && latest?.collection_status !== "failed";
+            const movementValue = hasCurrentObservation && movement.state === "comparable" ? movement.positions : null;
+            const movementTone = movementValue === null ? "unknown" : movementValue > 0 ? "up" : movementValue < 0 ? "down" : "flat";
+            const movementText = !hasCurrentObservation ? "No comparison" : movement.state === "comparable" ? movement.positions! > 0 ? `↑ ${signed(movement.positions)} places` : movement.positions! < 0 ? `↓ ${Math.abs(movement.positions!)} places` : "= Unchanged" : movement.state === "not_observed" ? "Not comparable" : "Insufficient history";
             return <tr key={keyword.id} className={activeSelected.includes(keyword.id) ? "is-plotted" : undefined}>
               <td><input type="checkbox" aria-label={`Plot ${keyword.term}`} checked={activeSelected.includes(keyword.id)} disabled={!rows.length && !activeSelected.includes(keyword.id)} onChange={() => toggle(keyword.id)} /></td>
               <td><strong>{keyword.term}</strong></td>
               <td>{keyword.country.toUpperCase()}</td>
               <td>{(() => { const demand = latestPopularity.get(keyword.id); return demand?.status === "observed" && demand.popularity_1_to_100 !== null ? <><strong>{demand.popularity_1_to_100}/100</strong><small>Apple · week of {demand.week_start}<br />{demand.genre.replaceAll("_", " ")} · relative demand</small></> : <><strong>Unavailable</strong><small>{demand ? `Apple did not report · week of ${demand.week_start}` : "No Apple observation"}</small></>; })()}</td>
               <td>{listingHref ? <><Link href={listingHref}>{listingCoverageLabel(coverage[keyword.id] ?? "unavailable")}</Link>{coverage[keyword.id] === "not_visible" && currentIsLatestFromWindow && latest?.found && latest.rank !== null && latest.rank <= 10 ? <small>Top 10 here · review metadata</small> : null}</> : "Choose one market"}</td>
-              <td><strong>{currentIsLatestFromWindow ? rankText(latest) : "No recent observation"}</strong><small>{latest?.collection_status === "partial" ? "Partial web results" : latest?.collection_status === "failed" ? "Collection failed" : latest && !latest.found ? `Not found in first ${latest.result_depth}` : ""}</small></td>
-              <td className={movement.positions === null ? "" : movement.positions >= 0 ? "rank-improved" : "rank-declined"}>{movementText}</td>
-              <td>{best === null ? "Unavailable" : `#${best}`}</td>
+              <td><span className={`rank-current ${hasCurrentObservation && latest?.found ? "rank-current-found" : "rank-current-muted"}`}>{currentIsLatestFromWindow ? rankText(latest) : "No recent observation"}</span><small>{currentIsLatestFromWindow ? latest?.collection_status === "partial" ? "Partial web results" : latest?.collection_status === "failed" ? "Collection failed" : latest && !latest.found ? `Not found in first ${latest.result_depth}` : "" : latest ? `Last seen ${latest.captured_on} UTC` : ""}</small></td>
+              <td><span className={`rank-movement rank-movement-${movementTone}`}>{movementText}</span></td>
+              <td><span className={best === null ? "rank-best-muted" : "rank-best"}>{best === null ? "Unavailable" : `#${best}`}</span></td>
               <td><Sparkline rows={daily} color={color} label={`${keyword.term} observed rank trend for the last ${days} days`} /></td>
               <td>{latest ? <><span>{latestStatus}</span><small>{new Date(latest.captured_at).toLocaleDateString("en-GB", { timeZone: "UTC" })} UTC</small></> : "No snapshot"}</td>
             </tr>;
