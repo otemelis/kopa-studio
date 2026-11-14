@@ -1,10 +1,10 @@
 # PASSPORT running-count ingest: migration review
 
-Status: local candidate only. **No production migration, collector deployment, app change, or live fixture upload has occurred.**
+Status: approved Supabase migration and collector deployed 14 November 2026. PASSPORT app code has not changed.
 
-## What is live now
+## Prior live contract
 
-The deployed `passport-ingest-aggregates` function (version 12, checked 14 November 2026) accepts schema 1 additive counts and the older schema 2 `batch_id` receipt contract. The three fixtures in the PASSPORT repository describe that older `batch_id` contract. They contain no `install_day_key`; the live function has no running-total branch. The existing `public.passport_ingest_batch` RPC deduplicates byte-identical batches but adds new batches to `passport_analytics.daily_counts`. No released PASSPORT client is known to use the new per-day contract.
+The previously deployed `passport-ingest-aggregates` function (version 12, checked 14 November 2026) accepted schema 1 additive counts and the older schema 2 `batch_id` receipt contract. The three fixtures in the PASSPORT repository describe that older `batch_id` contract. They contain no `install_day_key`. The existing `public.passport_ingest_batch` RPC deduplicates byte-identical batches but adds new batches to `passport_analytics.daily_counts`. No released PASSPORT client is known to use the new per-day contract.
 
 ## Proposed additive contract
 
@@ -42,8 +42,11 @@ For each accepted key, the new RPC stores the greatest per-day running count and
 ## Validation and release gate
 
 - Isolated PostgreSQL 16.15 test: schema-1 seed 5; first running count 2, identical retry, higher 5, stale 3, second token 4 produced daily totals 7, 7, 10, 10, 14. Replacement counts were 0, 0, 1, 0, 0. The test also verified `anon` and `authenticated` cannot execute the new RPC.
-- Edge function typecheck passed with Deno 2.9.6. No live schema-2 running request was sent.
-- After approval: apply the reviewed migration, verify grants/RLS and a restorable backup or approved alternative; deploy the single collector function with JWT verification retained; send a controlled schema-2 test key to the live route, including identical and smaller retries; verify SQL totals and Kopa; verify a schema-1 request still adds once. Use dedicated testflight channel and a unique test day/key so no customer metric is contaminated.
+- Edge function typecheck passed with Deno 2.9.6. PR #33 Vercel preview checks passed.
+- Owner approved the migration and collector deployment, and explicitly waived the unavailable managed backup. Migration `passport_running_daily_counts` applied to project `dsjgbxkerucutrjltgws`. RLS is enabled; `anon` and `authenticated` have neither SELECT on the new table nor EXECUTE on its RPC; `service_role` has both. Collector version 13 is ACTIVE with `verify_jwt=true`.
+- Live TestFlight fixture on 2026-11-14, version `9.9.9`: first count 2, identical retry 2, higher 5, older 3, second day key 4. The route returned HTTP 200 with `replaced` 0, 0, 1, 0, 0. Reusing the first day key for the previous day returned HTTP 409. SQL showed two token rows summing to 9 and the same `daily_counts` total of 9.
+- Legacy schema-1 fixture (`testflight`, version `9.9.7`) returned HTTP 200 and stored 1. Legacy schema-2 `batch_id` fixture (`testflight`, version `9.9.8`) returned HTTP 200 twice with the same receipt/hash and stored 1 only once. These deliberate test rows remain separate from appstore data.
+- Appstore rows for the latest two UTC days were 572 rows, total 1,986 before and after validation. This is a stored-row reconciliation, not a claim that the live Kopa page was visually opened.
 
 The app owner should implement a durable per-day key and monotonic cumulative counts, send on background when possible, retry without changing the key, and remove a day only after the first post-midnight final send receives `ok=true`, `rejected=0` and the expected `rows`. A background send is best effort on iOS; the next foreground launch remains a necessary retry path.
 
