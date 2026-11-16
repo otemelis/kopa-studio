@@ -1,0 +1,65 @@
+# System and worker inventory
+
+Read-only audit on 16 November 2026 against Git `e9f27797`, Vercel project metadata/environment **names only**, and Supabase project `dsjgbxkerucutrjltgws`. Repo `vercel.json` describes schedules; the Vercel Schedules UI was not available as a separate machine-readable schedule inventory, so compare there before changing anything. Vercel production deployments were READY: `kopa.studio` last visible production deployment `dpl_BVQDSR2yBN6LpdzUuT6LjnyKVG84`; `kopa-tools` production `dpl_Ag5CxcHfPonCvHdJCvMA8u3oQECU` at Git `e9f27797`.
+
+## Repository and runtime
+
+| Area | Implementation | Build / runtime |
+| --- | --- | --- |
+| Root site + legacy APIs | Static HTML/JS, Vercel Node functions in `api/aso`, `playwright-core`, `@sparticuz/chromium` | Root `npm ci`; `npm run test:aso`, `npm run test:reporting`; Vercel Node **24.x**. Root `npm start` is a static Python HTTP server, not the API runtime. |
+| Owner dashboard | `apps/tools` Next.js **16.4.1**, React 19, TypeScript, `pg`, Supabase JS, Recharts | `cd apps/tools && npm ci && npm run typecheck && npm test && npm run build`; Node **>=22**, Vercel Node **24.x**. `apps/tools/AGENTS.md` applies to code edits. |
+| Local historical reports | `scripts/app-store`, `scripts/apple-ads-verification`, `scripts/product-analytics`, `reporting/portfolio` | Node 24 and Python 3; some commands read Apple APIs or publish local files, so run only explicit tests during setup. |
+| Supabase Edge Functions | `supabase/functions`; Deno and database RPCs | Cloud-hosted public ingest/webhook endpoints, not Mac scheduled workers. Deployed function versions may be ahead of Git (notably PASSPORT PR #33). |
+
+Two `package-lock.json` files are committed. No repo-level `.nvmrc`/`.node-version` exists. Production Vercel project metadata reports Node 24.x for both projects. Root package scripts do not have a general production build command; the Tools app does.
+
+## Scheduled workloads declared in Git
+
+All Vercel schedules below use UTC cron expressions. Hobby delivery may occur anywhere within the scheduled hour. Vercel can miss or duplicate invocations and does not retry a failed cron invocation; every migrated worker needs reconciliation and idempotency ([Vercel cron behavior](https://vercel.com/docs/schedules/cron-jobs/manage-cron-jobs)).
+
+| Worker / route | Git schedule | Inputs and work | Output / state | Cost and migration class |
+| --- | --- | --- | --- | --- |
+| Root ranking collection `api/aso/collect-rankings.js` → `collect.js` | 12 daily slots: `00:30`, `02:30`, `04:30`, `06:30`, `08:30`, `10:30`, `12:30`, `14:30`, `16:30`, `18:30`, `21:30`, `23:30` UTC | 48 least-recently-collected distinct country/term keywords per run; Apple iTunes Search limit 100 and Apple web iPhone search via headless Chromium; owned and competitor IDs. | `aso_keyword_search_results` (up to 100 IDs/source), `aso_keyword_rank_snapshots`, `aso_sync_runs`, `aso_sync_errors`; source-specific `partial`/`failed` states. | Main browser/Function load. 12×48=576 attempts/day for 527 distinct active keywords observed live; not a success guarantee. **Move after code changes**: Mac Chromium launcher and direct CLI entrypoint. |
+| Root maintenance `api/aso/collect-maintenance.js` → `collect.js` | `20:30` UTC daily | iTunes app metadata, competitor metadata, public reviews, latest Sales Summary, App Store Connect Analytics instances, insight rules. | `aso_apps`, `aso_competitors`, metadata/review snapshots and change events, `aso_daily_metrics`, `aso_storefront_metrics`, `aso_analytics_partition_state`, `aso_platform_connections`, `aso_insights`, sync runs/errors. | One Function invocation plus Apple APIs/day. **Move after code changes**; keep source-specific failure states. |
+| Root PASSPORT ASC `api/aso/refresh-passport-analytics.js` | `22:15` UTC daily | Bounded last 10 complete UTC days, mapped PASSPORT app and approved Apple Analytics request; max 16 instances. | Revisions in `aso_analytics_partition_state`, `aso_daily_metrics`, `aso_storefront_metrics`; returns status/coverage. | One Function + Apple report calls/day. **Move after direct CLI adapter**; overlaps maintenance ASC and must use revision-safe partition RPC. |
+| Tools Apple keyword demand `apps/tools/src/app/api/aso/apple-popularity/scheduled/route.ts` | `09:15` UTC daily | Apple Ads v1 Search Term Popularity for latest published weekly period; at most 20 app-country groups/invocation, max 100 terms/group. Daily schedule catches up incomplete groups; source data is weekly. | `aso_apple_keyword_popularity` upsert keyed by keyword, genre, week; logs selected/completed/remaining/failures. | One Function invocation/day; Apple API volume depends on pending groups. **Move after CLI extraction and exclusive claim**; endpoint currently refuses non-production Vercel environment. |
+
+The root `collect.js` also supports owner-triggered full POST and job queue claiming; Tools `POST /api/jobs` wakes the root collector via `after()`. These are **on-demand**, not additional cron schedules. `apps/tools` has proxy GET routes `/api/aso/collect-rankings` and `/api/aso/collect-maintenance`; they are not declared as Tools crons. `api/aso/appstore-connect.js` and Tools `/api/app-store-connect/sync` offer owner-driven ASC sync. No Vercel cron is declared for Apple Ads campaign/daily-report sync: Tools `/api/apple-ads/sync/*` and owner report/export routes are on-demand. Do not infer scheduled Apple Ads freshness from the existence of those routes.
+
+### HTTP route ownership
+
+| Route group | Current role | Mac migration disposition |
+| --- | --- | --- |
+| Root `/api/aso/collect-rankings`, `/collect-maintenance`, `/refresh-passport-analytics` | Scheduled GET wrappers around root collector/ASC importer. | Extract direct CLI work first; retire **only each cron schedule** after approval. Keep any owner/manual route until separately reviewed. |
+| Root `/api/aso/collect`, `/lookup`, `/appstore-connect` and `/api/config` | Owner/job wake, public catalog lookup, ASC proxy and configuration. | Remain cloud HTTP while clients use them; do not replace them with a Mac-only endpoint as part of schedule migration. |
+| Tools `/api/aso/apple-popularity/scheduled` | Scheduled Apple weekly-demand catch-up. | Extract direct CLI and retire its cron only after approval. |
+| Tools `/api/aso/apple-popularity`, `/collect-rankings`, `/collect-maintenance`; `/api/jobs`, `/api/keywords/*`, `/api/competitors`, `/api/insights/*`, `/api/experiments/*`, `/api/review-pack`, `/api/apps` | Owner reads, configuration edits and collector wake/proxy. | Keep on Vercel for authenticated dashboard operations; none is a separately declared cron. |
+| Tools `/api/apple-ads/connections`, `/mappings`, `/reports/*`, `/sync/*`, `/recommendations/recompute`, `/test`, `/attribution` | Owner Ads reads/imports and inbound attribution. | Keep HTTP/auth and inbound endpoints cloud-hosted. A future scheduled read worker would be a new, separately approved task. |
+| Tools `/api/app-store-connect/sync`, `/api/signal`, `/api/signal/product` | Owner-driven ASC proxy and signal reads. | Keep cloud-hosted with the dashboard; no additional Vercel schedule is declared. |
+
+This groups every checked-in application HTTP route by responsibility; route source files are under `api/` and `apps/tools/src/app/api/`. It does not imply that each route is externally public or that each owner action is safe to run without its own approval.
+
+## Other schedulers and cloud ingress
+
+Read-only `cron.job` inspection in Supabase found three **active**, unrelated Form/POIS retention jobs: job 1 `03:17` UTC deletes expired research/contact records; job 2 `03:27` calls `form.feedback_retention()`; job 3 `03:37` calls `form.analytics_retention()`. Leave them in Supabase; they operate within the database and are not a Vercel-to-Mac migration target. No Kopa ranking/ASC/Apple Ads jobs were found in `cron.job`. There may be external schedulers outside the connected Vercel/Supabase accounts; none were evidenced here.
+
+Supabase Edge Functions (`passport-ingest-aggregates`, `passport-detailed-events`, Form ingest/webhook functions and others) receive app/webhook traffic and need cloud availability. PASSPORT aggregate function version 13 is live with JWT verification, but its schema-2 running-count code/migration resides in open PR #33 rather than `main`. The owner website projects `meetpassport` and `withpois` use Vercel Web Analytics; Tools reads visits/day, paths and referrer hostnames from Vercel's API **on page request**, using server-side tokens. PASSPORT also has a Supabase `passport-web` event pipeline read by Tools. Website analytics should remain cloud-side; moving Kopa workers does not move website collection.
+
+## Data access and behavior
+
+| Process | Live credential / permissions | Important tables |
+| --- | --- | --- |
+| Root collectors | `SUPABASE_SERVICE_ROLE_KEY` via PostgREST; broad service-role writes. `CRON_SECRET` authenticates scheduled GETs. | `aso_*` catalog, ranking, metadata, ASC, jobs, locks and run/error tables. Broad service role is a migration risk: create a narrower worker credential only as a separately approved permission change. |
+| Tools demand / Ads sync | Tools server-side Supabase service role and Apple Ads OAuth/private key; owner/API-secret checks. | `aso_apple_keyword_popularity`; `apple_ads_connections`, mappings, campaigns, ad groups, keywords, search terms, daily metrics, sync runs. |
+| Tools product/dashboard reads | Supabase Auth owner check; server-side service role for public `aso_*` and Ads reads; dedicated `kopa_report_reader` PG role for PASSPORT `passport_analytics.daily_counts` and detailed events. POIS code reads `form.events` using this role, but the current SQL privilege probe returned `has_table_privilege(...,'form.events','SELECT') = false`; recheck actual column grants and live POIS page before claiming POIS read access works. | `form.events`, `passport_analytics.*`, `public.events` for PASSPORT web, `aso_*`, `apple_ads_*`. |
+| Supabase Edge ingest | Function's cloud service role and purpose-specific auth/token checks; no Mac runtime. | `passport_analytics.*`, `form.*` and app-specific tables/RPCs. |
+
+Root collector has a database lease RPC (`aso_try_acquire_collection_lock` / release), 6-minute stale-run cleanup, a process-local in-flight flag, checkpoints, per-source errors and per-day/source upsert keys. iTunes search retries once; Apple-web retries a transient navigation once and a browser-closure once, but does not evade challenges. Partial web depth stays partial, not an invented rank. Metadata uses checksums; PASSPORT Analytics uses date/processing-revision partition replacement. **Gaps:** the keyword cursor is derived from only the latest 5,000 search-result rows over 45 days, not a durable per-source cursor; no universal missed-run backfill, distributed lease for Apple demand, or central alerting is evident. Root rank writes and Tools Ads report writes should be regression-tested for concurrency before dual execution.
+
+## Observed load and freshness, not a bill
+
+Supabase read-only check: 540 active app-keyword links, **527 distinct** keyword IDs. On 14 and 15 November, `aso_sync_runs` had 13 cron-triggered runs/day, 591 and 591 terms processed, aggregate elapsed time **34.5** and **36.5 minutes** respectively; zero failed runs, but 9 and 6 partial runs. These are wall-clock sums, **not billed active CPU**. Latest checked Apple web/iTunes result rows and Apple popularity rows existed on 16 November. `aso_storefront_metrics` had App Store Connect source dates through 14 November, inserted 15 November; `apple_ads_daily_metrics` latest metric date was **22 October**, so Apple Ads persisted-report freshness is a separate gap. Tools can show live read-on-open Ads exports even when persisted Ads rows are older. Moving 12 ranking invocations/day could remove roughly 360 ranking Function invocations/month (30-day month), plus their browser CPU, but actual savings cannot be priced without Vercel usage broken down by project/function and Mac mini electricity/maintenance. Do not equate elapsed time with Vercel Fluid Active CPU.
+
+## Non-Git state and transfer boundary
+
+The old primary checkout `/Users/otastemelis/Documents/kopa-studio` is on `nextjs-migration`, **28 commits ahead** of its remote branch, with `SUPPORT_LANDING_2048_RUN_MERGE.md`, three untracked screenshots and `docs/kopa-reassessment/` untracked. These concern separate site/design work, not collector startup. Do not discard or overwrite them; review and push/merge intentionally before declaring a full development migration. Other checked worktrees also have uncommitted files; inventory each with `git worktree list` and `git -C PATH status --short` before archiving the old Mac. Local `.env*`, `.vercel/*`, keys, auth caches and `node_modules` are excluded from transfer. The ignored `apps/tools/.env.example` was present locally but could contain nonempty example values; this handover supplies a newly sanitized empty template instead.
