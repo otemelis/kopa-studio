@@ -17,8 +17,7 @@ cd "$HOME/Developer"
 git clone https://github.com/otemelis/kopa-studio.git
 cd kopa-studio
 git fetch origin
-git switch main
-git pull --ff-only
+git switch --track origin/codex/mac-mini-handover-2026-11-16
 git log -1 --oneline
 npm ci
 npm run test:aso
@@ -29,6 +28,8 @@ npm run typecheck
 npm test
 npm run build
 ```
+
+The handover is on this branch until reviewed and merged. After merge, a fresh clone can use `main`; check the commit and documentation path rather than assuming the branch name remains the long-term source of truth.
 
 At the handover commit, `npm run test:aso` has one known stale assertion for five ranking slots while `vercel.json` has twelve. Do not reduce the live schedule to make the test pass; record the failure and repair that assertion in a separate reviewed code change. See [validation](VALIDATION.md).
 
