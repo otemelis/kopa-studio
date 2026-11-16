@@ -1,0 +1,29 @@
+# Worker-by-worker cutover plan
+
+No step below has been executed in Phase 1. Maintain one writer per source at cutover. Running a Mac worker in write mode alongside the Vercel schedule is **not** a shadow test; even upserts can change `captured_at`, revision state, or run histories.
+
+## Target shape
+
+Extract the existing provider/parser/persistence functions into small Node CLI entrypoints. Each entrypoint reads its exact source state and calls Supabase/Apple directly; it must not invoke `www.kopa.studio/api/aso/*` or `tools.kopa.studio/api/*`. Reuse the existing tables, source names, analytics partition RPC, and dashboard queries. Do not introduce a new queue/platform. Keep cloud-hosted owner-authenticated manual APIs and public ingestion/webhooks on Vercel/Supabase.
+
+Every CLI accepts `--dry-run` (provider read + parse, **no writes**) and a bounded `--from/--through` or `--slot` where meaningful. Log a generated run ID, UTC interval, source, counts, duration and classified failure, never URLs with secrets or raw report bodies. Enforce one distributed Supabase lease **per worker/source** with a lease-expiry recovery path; the current global `aso_collection_locks` lease is usable for the root collector only after its behavior is verified across Mac/Vercel. File locks alone cannot prevent cloud overlap. Write source-attributed upserts with unique keys, then mark the run successful only after source-to-table checks pass.
+
+## Order and acceptance
+
+1. **Rankings and competitor observations (first, largest compute savings).** Preserve 48-query bounds, least-recently-collected selection, 100 iTunes catalog IDs and actual web depth, ad exclusion, country/language, per-source status and history separation. Replace only the browser launcher for macOS. Add a durable pending-keyword check beyond the current 5,000-row/45-day recent-result window. Dry-run three terms; compare ordered IDs to existing rows and require no unsupported native-rank label. Test duplicate invocation and an interrupted run in an isolated DB. Only then approve disabling the 12 root Vercel ranking crons and enabling one or more Mac LaunchAgents with equivalent daily coverage. Keep the root HTTPS owner/manual path until separately replaced.
+2. **Root maintenance.** Split the existing full function into a bounded maintenance CLI that keeps metadata checksum/diff, reviews, Sales units, ASC Analytics date-aware revisions, insight dedupe and source-specific warnings. Current `20:30 UTC` slot stays active until parity. Verify a repeated source report does not duplicate rows. Preserve unavailable and `pending` states. Decide whether the PASSPORT-specific ASC job remains separately needed; do not run two importers over the same partition without concurrency tests.
+3. **PASSPORT ASC catch-up.** Reuse the existing 10-complete-day window and max-16-instance bound. It overlaps general ASC import. Retain `aso_replace_analytics_partition` monotonic processing-date guard. Test missing report, revised report and same-date conflict. Disable only the `22:15 UTC` Vercel job once Mac production parity and rollback are approved.
+4. **Apple demand.** Extract `refreshPendingApplePopularity` from the Next route; preserve latest published week calculation, at most 20 app-country groups/run, 100 terms/group, pagination bounds and `observed` versus `not_reported`. Add a cross-host claim/lease so the Mac and current `09:15 UTC` route cannot both write. Reconcile the pending group set after missed days. Keep Apple Ads v1 account permissions read-only.
+5. **Apple Ads v5 persisted reports/structure (not currently a Vercel cron).** Existing owner/API-secret routes are on-demand and persisted daily metrics were only current through 22 October at audit time. A scheduled Mac read worker requires a separate product decision and a tested direct CLI for campaign mapping, campaign/daily/search-term reads, per-day/currency reconciliation, retry and claim. Do not disable any current route or assume the read-on-open report should move.
+
+The local `scripts/app-store/refresh.py` and Apple Ads verification scripts already run on a Mac, but produce historical local reporting files; they are **not** interchangeable with the live Supabase importers. They may be useful as independent controls. POIS/PASSPORT app events and RevenueCat/form webhooks, PASSPORT website events, dashboard auth, direct-read Apple Ads export, Vercel Web Analytics and all public endpoints remain cloud-hosted. Supabase Form retention jobs remain in Supabase.
+
+## Cutover transaction for each worker
+
+1. Check Git SHA, live schedule, last successful run, source date coverage and pending backlog. Record a read-only before snapshot and Vercel usage baseline.
+2. Obtain specific approval for code deployment, secret/permission changes and schedule cutover. Put the Mac worker in dry-run; compare source IDs/rows against the Vercel output.
+3. At a quiet boundary, disable **only** that Vercel schedule in a reviewed deployment; verify it no longer fires. Do not remove shared routes or credentials yet.
+4. Enable the corresponding LaunchAgent, manually kick one bounded run, read its logs/status and reconcile every intended source date/keyword. Verify the next natural run too.
+5. Keep a rollback window. If the Mac is off, delayed, or produces incomplete data, pause that LaunchAgent and restore the reviewed Vercel schedule before restarting the source-specific backfill. Never have both writers active without an explicit lease test.
+
+The current root collector reports `ok` when iTunes succeeds even if Apple web fails, recording web warnings. Acceptance requires checking per-source completeness, not merely HTTP 200 or the top-level `ok` flag. Apple's web search can be partial or challenge-blocked; no evasion or fabricated depth is permitted.
